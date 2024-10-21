@@ -20,22 +20,50 @@ open Real
 /-! # Exercises to practice. -/
 
 example {a b : ℝ} (h1 : a + 2 * b = 4) (h2 : a - b = 1) : a = 2 := by {
-  sorry
+    have h: 4 = 1+3*b := by
+      calc
+        4 = a+2*b := by rw[←h1]
+        _ = a+(a-b)-(a-b)+2*b := by ring
+        _ = a+1-(a-b)+2*b := by rw[h2]
+        _ = 1+3*b := by ring
+    have h3: 1 = b := by
+      calc
+        1 = (4-1) / 3 := by ring
+        _ = (1+3*b-1) / 3 := by rw[← h]
+        _ = 3*b/3  := by ring
+        _ = b := by ring
+    rw[←h3] at h2
+    calc
+      a = a-1+1 := by ring
+      _ = 1+1 := by rw[h2]
+      _ = 2 := by ring
   }
 
 example {u v : ℝ} (h1 : u + 1 = v) : u ^ 2 + 3 * u + 1 = v ^ 2 + v - 1 := by {
-  sorry
+  calc
+    u^2+3*u+1 = u^2+2*u+1+u+1-1 := by ring
+    _ = (u+1)^2+(u+1)-1 := by ring
+    _ = v^2+v-1 := by rw[h1]
   }
 
 example (a b c x y : ℝ) (h : a ≤ b) (h2 : b < c) (h3 : x ≤ y) :
     a + exp x ≤ c + exp (y + 2) := by {
-  sorry
+    apply add_le_add
+    · apply le_trans
+      · exact h
+      · exact le_of_lt h2
+    rw[exp_le_exp]
+    apply le_trans
+    · exact h3
+    · norm_num
   }
 
 /-- Prove the following using `linarith`.
 Note that `linarith` cannot deal with implication or if and only if statements. -/
 example (a b c : ℝ) : a + b ≤ c ↔ a ≤ c - b := by {
-  sorry
+  constructor
+  · linarith
+  · linarith
   }
 
 /- Note: for purely numerical problems, you can use `norm_num`

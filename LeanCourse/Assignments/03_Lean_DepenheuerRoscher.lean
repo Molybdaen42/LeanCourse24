@@ -1,7 +1,7 @@
 /-
 
  Nora Depenheuer & Joachim Roscher
- 
+
 -/
 
 --import LeanCourse.Common
@@ -107,11 +107,11 @@ that are not in `f x`
 lemma exercise_cantor (α : Type*) (f : α → Set α) : ¬ Surjective f := by {
   -- let's define a useful set
   let R := {x | x ∉ f x}
-  
+
   -- unfold stuff
-  unfold Surjective 
-  
-  -- it will be a proof by contradiction 
+  unfold Surjective
+
+  -- it will be a proof by contradiction
   by_contra f_surj
 
   -- R would have a preimage under f
@@ -175,7 +175,7 @@ lemma sequentialLimit_mul_const {s : ℕ → ℝ} {a : ℝ} (c : ℝ) (hs : Sequ
   -- prove that ε / (|c| + 1) is positive
   have := by exact abs_nonneg c -- |c| ≥ 0
   have hc : |c|+1 > 0 := by linarith
-  
+
   -- plug ε / (|c| + 1) in hs and get Ns such that hNs
   obtain ⟨Ns, hNs⟩ := hs (ε / (|c| + 1)) (div_pos hε hc)
 
@@ -243,7 +243,7 @@ lemma eventuallyGrowsFaster_add {s₁ s₂ t₁ t₂ : ℕ → ℕ}
   -- plug k in h₁ and h₂ and obtain the N-s
   obtain ⟨N₁, hN₁⟩ := h₁ k
   obtain ⟨N₂, hN₂⟩ := h₂ k
-  
+
   -- use N = max N₁ N₂
   let N := max N₁ N₂
   use N
@@ -252,7 +252,7 @@ lemma eventuallyGrowsFaster_add {s₁ s₂ t₁ t₂ : ℕ → ℕ}
   intro n hn
   specialize hN₁ n
   specialize hN₂ n
-  
+
   -- check that n ≥ N₁ and n ≥ N₂
   have hn₁ : n ≥ N₁ := by exact le_of_max_le_left hn
   have hn₂ : n ≥ N₂ := by exact le_of_max_le_right hn

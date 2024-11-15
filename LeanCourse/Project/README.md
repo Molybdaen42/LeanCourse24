@@ -46,7 +46,8 @@ Pushing another commit after the first one is easy:
 * Write a small commit message and press `Commit`.
 * Press `Sync changes`
 
-Make sure to commit your work at least occasionally (and definitely before giving the presentati
+Make sure to commit your work at least occasionally (and definitely before giving the presentation).
+Comitting early and often can help avoid conflicting changes if you're collaborating with a partner on your formalization project.
 
 ### Pulling commits
 
@@ -57,15 +58,6 @@ To get new changes, do the following:
 * (optionally) press `sync changes`.
 
 Note: After you have created a fork, `git pull` will likely not work anymore from the command line. You can still pull changes from the command line using `git pull upstream master`.
-<!--
-### Latest Mathlib version
-
-If you want to update to the latest version of Mathlib, you can do this by merging your project into the branch `upstream/newversion`. In this case you have to also run `lake exe cache get!` again.
-
-Detailed instructions in VSCode:
-* Press the three dots icon at the top-right of the `source control` panel `... > Pull / Push > Fetch From All Remotes`
-* Then do `... > Branch > Merge branch > upstream/newversion`
-* Then run `lake exe cache get!` on the command line (you can do this now also within VSCode with `ctrl+shift+P`/`cmd+shift+P` and then start typing `Lean 4 Project: Fetch Mathlib Build Cache` and press enter). -->
 
 ### Working with a partner
 
@@ -76,7 +68,6 @@ Detailed instructions in VSCode:
 ### Command-line
 
 If you would like to use Git from your command-line instead, you can use the commands `git pull`, `git add`, `git commit -am "commit message"`, `git push`, `git status`, `git log`, among others. Google for information how to exactly use these commands.
-
 
 ## Formalization Topics
 
@@ -97,38 +88,41 @@ On the mathlib website there are some useful pages:
 
 Some suggested topics:
 
-<!-- * In **algebraic topology** define CW-complexes and cellular (co)homology.
-  Prove some abstract properties of CW-complexes, or compute the cellular (co)homology of some concrete CW-complexes (e.g. spheres). -->
-
-<!-- * In **algebraic topology** prove the adjunction between suspensions and loop spaces. -->
-
 * In **analysis**: the Fourier transform and convolution have been defined in mathlib. Show that the Fourier transform of a convolution is the product of Fourier transforms.
 
-* In **complex analysis** define the winding number of a closed curve. You can either use topological path lifting, or its analytic definition (Cauchy's integral formula exists in mathlib).
+* In **calculus**: prove the gradient theorem for Euclidean space, also know as the fundamental theorem of calculus for line integrals. As stretch goals use it to prove the equivalence of two definitions of a conservative vector field and provide an example of a non-conservative vector field.
 
-* In **complex analysis** define the Laurent series and show that it converges on an annulus.
+* In **complex analysis**
+  - define the winding number of a closed curve and prove basic properties. You can either use topological path lifting, or its analytic definition (Cauchy's integral formula exists in mathlib). Stretch goal: prove the equivalence of these two definitions.
+  - Prove that the Laurent series for a complex function converges on an annulus.
 
-<!-- * In **differential geometry** define a Riemannian metric and define basic notions of Riemannian geometry. -->
+* In **differential geometry**
+  - define differential 1-forms and exact 1-forms (closed 1-forms are harder to define).
+    Show that on a simply connected domain, every 1-form is exact. (Mathlib is still missing a general definition of n-forms, but that is too hard for a project)
+  - Prove that the product of orientable manifolds is orientable (copy-paste the definition of orientable manifold from Mathlib PR [#16239](https://github.com/leanprover-community/mathlib4/pull/16239/files) and assume your manifolds have no boundary).
+  - Prove that a diffeomorphism between connected manifolds is either orientation-preserving or orientation-reversing (copy-paste the definition of orientable manifold from Mathlib PR [#16239](https://github.com/leanprover-community/mathlib4/pull/16239/files) and assume your manifolds have no boundary).
 
-<!-- * In **differential geometry** define smooth `n`-forms and de Rham cohomology. -->
-
-<!-- * [taken] In **Galois theory** define constructible numbers in ℂ and prove that they form the smallest subfield of ℂ closed under square roots. If time permits, prove some famous impossibility results (trisection of an angle / doubling of a cube). Example reference: [David Cox, Galois Theory, Ch 10.1]. -->
-
-<!-- * In **game theory**, define games, pure and mixed strategies, and Nash equilibria. Assuming Brouwer's fixed point theorem, prove that there always exists a Nash equilibrium of mixed strategies. (Brouwer's fixed point theorem is [proven in Lean](https://github.com/Shamrock-Frost/BrouwerFixedPoint/blob/master/src/brouwer_fixed_point.lean#L274), though not yet incorporated in mathlib.) -->
-
-* In **general topology** define some spaces that are typically used for counterexamples, such as the Hawaiian earring, the long line, wild knots or the horned sphere, and (dis)prove some topological properties for them.
-
-<!-- * [taken] In **group theory**, classify all groups of order 8, or if you want a challenge, of order 16. -->
+* In **functional analysis** define Fredholm operators and prove basic properties.
 
 * In **hyperbolic geometry** define the Poincaré model of hyperbolic geometry - either the disc model or the half-plane model (or another model altogether), and show that is satisfies most of Euclid's axioms for geometry, but that the parallel postulate fails.
 
 * In **model theory**: complete types of a language are defined in mathlib. Prove for a countable theory that if there are uncountably many types with `n` free variables, then there are continuum many. Or harder: show that in this case that the theory has continuum many non-isomorphic models.
 
-* In **number theory** solve some diophantine equations. For example: show that there are no nonzero integer solutions to `x^4-y^4=z^2`. Find all solutions to `x^2+y^2=z^3` and to `|2^k-3^l|=1`.
+* In **number theory**:
+  - Define Carmichael numbers in Lean and formalize their basic theory, including Korselt's criterion. Prove that 561 is the smallest Carmichael number.
+  - Prove the Hasse-Minkowski theorem for quadratic forms of the form `a_1*X_1^2 + a_2 * X_2^2`. If you have time, prove the `n = 3` case `(a_1*X_1^2 + a_2 * X_2^2 + a_3 * X_3^2)`.
+  - Solve some diophantine equations. For example: show that there are no nonzero integer solutions to `x^4-y^4=z^2`. Find all solutions to `x^2+y^2=z^3` and to `|2^k-3^l|=1`.
 
 * In **planar geometry** many results are missing. Choose one: the theorem of Ceva's theorem, Desargues's theorem, Feuerbach's theorem, Menelaus's theorem, Morley's trisecor theorem.
 
-<!-- * In **set theory** define club sets, stationary sets and prove Fodor's lemma. -->
+* In noncommutative **ring theory**: prove the Artin-Wedderburn Theorem (classification theorem for semisimple rings and algebras). This is listed as a TODO in `Mathlib.RingTheory.SimpleModule`.
+
+* In **topology**:
+  - [general topology] Define the adjunction space or pushout of topological spaces and prove topological properties and the universal property of this space.
+  - [general topology] Define the Möbius strip and/or the Klein bottle and prove basic properties (e.g.: different constructions are equivalent; boundary of Möbius strip is connected and homotopy equivalent to `S¹`)
+  Optional: prove they are smooth manifolds (with boundary).
+  - [general topology] Define some spaces that are typically used for counterexamples, such as the Hawaiian earring, the long line, wild knots or the horned sphere, and (dis)prove some topological properties for them.
+  - [algebraic topology] Mathlib has a definition of simplicial complexes. Define oriented simplices and simplicial homology (if useful you can define abstract simplicial complexes yourself and do it for that definition).
 
 ## Formalization Tips
 
@@ -138,9 +132,10 @@ Here are some tips for your project.
 
 * There is a rough Mathlib overview here: https://leanprover-community.github.io/mathlib-overview.html
   This can give you an idea what is already in Mathlib.
-* Look for related work in the mathlib documentation pages:
+* Make sure you look through Mathlib what related concepts to your project already exists. It is useful to use https://leansearch.net/ for this
+* Look at the related work in more detail in the Mathlib docs:
   https://leanprover-community.github.io/mathlib4_docs/.
-  For some results, the source code will be easier to read.
+  For some results, opening the file in Lean will give you even more information.
 * The link above is for the newest version of Mathlib. It is possible that some things have changed slightly since the course started. There is also a version of the documentation pages for the exact version of Mathlib this course uses, here: https://florisvandoorn.com/LeanCourse24/docs/
 * Step through some of the proofs in Lean.
   You can open the file locally by going to e.g.

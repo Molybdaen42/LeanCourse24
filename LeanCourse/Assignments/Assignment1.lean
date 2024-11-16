@@ -99,7 +99,11 @@ but it doesn't use the assumptions h and h'
 -/
 
 example (a b c d : ℝ) (h : b = d + d) (h' : a = b + c) : a + b = c + 4 * d := by {
+<<<<<<< HEAD
   rw [h',h]
+=======
+  rw[h',h]
+>>>>>>> 5663d078bac59c03c939d9f752daffc49d7769a5
   ring
   }
 
@@ -139,9 +143,15 @@ right-hand side.
 -/
 
 example (a b c : ℝ) : exp (a + b - c) = (exp a * exp b) / (exp c * exp 0) := by {
+<<<<<<< HEAD
   rw [exp_zero]
   ring_nf
   rw [exp_add a (b - c), exp_sub]
+=======
+  rw[exp_sub (a + b ) c]
+  rw[exp_zero]
+  rw[exp_add a b]
+>>>>>>> 5663d078bac59c03c939d9f752daffc49d7769a5
   ring
   }
 
@@ -153,7 +163,12 @@ The two lemmas below express the associativity and commutativity of multiplicati
 #check (mul_comm : ∀ a b : ℝ, a * b = b * a)
 
 example (a b c : ℝ) : a * b * c = b * (a * c) := by {
+<<<<<<< HEAD
   rw[mul_comm a b, mul_assoc]
+=======
+  rw[mul_comm a b]
+  rw[mul_assoc b a c]
+>>>>>>> 5663d078bac59c03c939d9f752daffc49d7769a5
   }
 
 
@@ -177,11 +192,23 @@ variable {G : Type*} [Group G] (g h : G)
 #check inv_inv g
 
 lemma inverse_of_a_commutator : ⁅g, h⁆⁻¹ = ⁅h, g⁆ := by {
+<<<<<<< HEAD
   rw[commutatorElement_def, commutatorElement_def]
   rw[mul_inv_rev, inv_inv]
   rw[mul_inv_rev, inv_inv]
   rw[mul_inv_rev]
   rw[mul_assoc, mul_assoc]
+=======
+  rw[ commutatorElement_def g h]
+  rw[ mul_inv_rev (g * h * g⁻¹) h⁻¹]
+  rw[ mul_inv_rev (g * h ) g⁻¹]
+  rw[ mul_inv_rev g h]
+  rw[ inv_inv g]
+  rw[ inv_inv h]
+  rw[ commutatorElement_def h g]
+  rw[ mul_assoc (h * g) h⁻¹ g⁻¹]
+  rw[ mul_assoc h g (h⁻¹ * g⁻¹)]
+>>>>>>> 5663d078bac59c03c939d9f752daffc49d7769a5
   }
 
 end
@@ -192,7 +219,7 @@ end
 Since equality is a symmetric relation, we can also replace the right-hand side of an
 equality by the left-hand side using ← as in the following example.
 -/
-example (a b c : ℝ) (h : a = b + c) (h' : a + e = d + c) : b + c + e = d + c := by {
+example (a b c d e: ℝ) (h : a = b + c) (h' : a + e = d + c) : b + c + e = d + c := by {
   rw [← h, h']
   }
 
@@ -207,11 +234,19 @@ by the left-hand side, so it will look for b + c in the current goal and replace
 -/
 
 example (a b c d : ℝ) (h : a = b + b) (h' : b = c) (h'' : a = d) : b + c = d := by {
+<<<<<<< HEAD
   rw [← h', ← h, h'']
   }
 
 example (a b c d : ℝ) (h : a*d - 1 = c) (h' : a*d = b) : c = b - 1 := by {
   rw [← h, h']
+=======
+  rw[← h'', h , ← h']
+  }
+
+example (a b c d : ℝ) (h : a*d - 1 = c) (h' : a*d = b) : c = b - 1 := by {
+  rw[← h, ← h']
+>>>>>>> 5663d078bac59c03c939d9f752daffc49d7769a5
   }
 
 /- ## Rewriting in a local assumption
@@ -253,10 +288,17 @@ Let's do some exercises using calc. Feel free to use ring in some steps.
 
 example (a b c : ℝ) (h : a = b + c) : exp (2 * a) = (exp b) ^ 2 * (exp c) ^ 2 := by {
   calc
+<<<<<<< HEAD
     exp (2 * a) = exp (2 * (b + c))                 := by rw [h]
               _ = exp ((b + b) + (c + c))           := by ring
               _ = exp (b + b) * exp (c + c)         := by rw [exp_add]
               _ = (exp b * exp b) * (exp c * exp c) := by rw [exp_add, exp_add]
+=======
+    exp (2 * a) = exp (2 * (b + c))                 := by rw[ h]
+              _ = exp ((b + b) + (c + c))           := by ring
+              _ = exp (b + b) * exp (c + c)         := by rw[exp_add]
+              _ = (exp b * exp b) * (exp c * exp c) := by rw[exp_add, exp_add]
+>>>>>>> 5663d078bac59c03c939d9f752daffc49d7769a5
               _ = (exp b) ^ 2 * (exp c)^2           := by ring
   }
 
@@ -274,9 +316,15 @@ Aligning the equal signs and := signs is not necessary but looks tidy.
 /- Prove the following using a calc block. -/
 example (a b c d : ℝ) (h : c = d*a + b) (h' : b = a*d) : c = 2*a*d := by {
   calc
+<<<<<<< HEAD
     c = d*a + b   := by rw [h]
     _ = d*a + a*d := by rw [h']
     _ = 2*a*d     := by ring
+=======
+    c = d*a + b         := by rw[h]
+    _ = d*a + a*d       := by rw[h']
+    _ = 2*a*d           := by ring
+>>>>>>> 5663d078bac59c03c939d9f752daffc49d7769a5
   }
 
 
@@ -285,7 +333,12 @@ example (a b c d : ℝ) (h : c = d*a + b) (h' : b = a*d) : c = 2*a*d := by {
 
 example (a b c d : ℝ) : a + b + c + d = d + (b + a) + c := by
   calc
+<<<<<<< HEAD
     a + b + c + d = d + (b + a) + c := by ring
+=======
+    a + b + c + d = d + b + a + c   := by ring
+                _ = d + (b + a) + c := by ring
+>>>>>>> 5663d078bac59c03c939d9f752daffc49d7769a5
 
 /- Prove the following using a calc block. -/
 
@@ -293,11 +346,18 @@ example (a b c d : ℝ) : a + b + c + d = d + (b + a) + c := by
 
 example (a b c d : ℝ) (h : c + a = b*a - d) (h' : d = a * b) : a + c = 0 := by {
   calc
+<<<<<<< HEAD
     a + c = c + a   := by ring
         _ = b*a - d := by rw [h]
         _ = a*b - d := by ring
         _ = d - d   := by rw [h']
         _ = 0       := by rw [sub_self]
+=======
+    a + c = c + a     := by ring
+        _ = b*a -d    := by rw[h]
+        _ = b*a - a*b := by rw[h']
+        _ = 0         := by ring
+>>>>>>> 5663d078bac59c03c939d9f752daffc49d7769a5
   }
 
 
@@ -321,6 +381,7 @@ variable (R : Type*) [Ring R]
 
 example {a b c : R} (h : a + b = a + c) : b = c := by {
   calc
+<<<<<<< HEAD
     b = 0 + b         := by rw [zero_add]
     _ = -a + a + b    := by rw [neg_add_cancel]
     _ = -a + (a + b)  := by rw [add_assoc]
@@ -328,6 +389,15 @@ example {a b c : R} (h : a + b = a + c) : b = c := by {
     _ = -a + a + c    := by rw [add_assoc]
     _ = 0 + c         := by rw [neg_add_cancel]
     _ = c             := by rw [zero_add]
+=======
+    b = 0 + b       := by rw[zero_add]
+    _ = -a + a + b  := by rw[neg_add_cancel]
+    _ = -a +(a + b) := by rw[add_assoc]
+    _ = -a +(a + c) := by rw[h]
+    _ = -a + a + c  := by rw[add_assoc]
+    _ = 0 + c       := by rw[neg_add_cancel]
+    _ = c           := by rw[zero_add]
+>>>>>>> 5663d078bac59c03c939d9f752daffc49d7769a5
   }
 
 end
@@ -364,11 +434,34 @@ variable (a b c x : ℝ)
 #check (add_zero a      : a + 0 = a)
 #check (zero_add a      : 0 + a = a)
 
+<<<<<<< HEAD
 example : (a + b) * (a - b) = a^2 - b^2 := by rw [add_mul, mul_sub, mul_sub, pow_two, pow_two, add_sub, sub_add, mul_comm a b, sub_self, ← sub_self (a*a), ← sub_add, sub_self, zero_add]
+=======
+example : (a + b) * (a - b) = a^2 - b^2 := by {
+  rw[add_mul ]
+  rw[mul_sub ]
+  rw[mul_sub ]
+  rw[add_sub ]
+  rw[sub_add ]
+  rw[mul_comm a b]
+  rw[sub_self]
+  rw[← sub_self (a*a)]
+  rw[← sub_add]
+  rw[sub_self]
+  rw[zero_add]
+  rw[pow_two, pow_two]
+}
+>>>>>>> 5663d078bac59c03c939d9f752daffc49d7769a5
 
 
 -- Now redo it with ring.
 
+<<<<<<< HEAD
 example : (a + b) * (a - b) = a^2 - b^2 := by ring
+=======
+example : (a + b) * (a - b) = a^2 - b^2 := by {
+  ring
+}
+>>>>>>> 5663d078bac59c03c939d9f752daffc49d7769a5
 
 end

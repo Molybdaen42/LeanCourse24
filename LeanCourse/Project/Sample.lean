@@ -10,4 +10,4 @@ noncomputable section
 
 /- Now write definitions and theorems. -/
 
--- Hello WOrld!
+-- Hello World!

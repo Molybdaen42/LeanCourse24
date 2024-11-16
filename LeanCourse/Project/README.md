@@ -2,9 +2,9 @@
 
 Please fill out the following. Fill in the project topic once you have decided.
 ```
-First & last name:
+First & last name: Joachim Roscher
 Project topic:
-Partner (optional):
+Partner (optional): Nora Depenheuer
 ```
 
 ## Your own project

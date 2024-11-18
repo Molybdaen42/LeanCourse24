@@ -6,6 +6,13 @@ example (a b c : ℝ) : a * b * c = b * (a * c) := by
   rw [mul_assoc b a c]
 
 -- Try these.
+<<<<<<< HEAD
+example (a b c : ℝ) : c * b * a = b * (a * c) := by
+  rw [mul_comm c b, mul_assoc, mul_comm a c]
+
+example (a b c : ℝ) : a * (b * c) = b * (a * c) := by
+  rw [← mul_assoc, mul_comm a b, mul_assoc]
+=======
 example (a b c : ℝ) : c * b * a = b * (a * c) := by {
   rw[mul_comm c b]
   rw[mul_assoc b c a]
@@ -17,6 +24,7 @@ example (a b c : ℝ) : a * (b * c) = b * (a * c) := by {
   rw[mul_comm a b]
   rw[mul_assoc b a c]
 }
+>>>>>>> 5663d078bac59c03c939d9f752daffc49d7769a5
 
 -- An example.
 example (a b c : ℝ) : a * b * c = b * c * a := by
@@ -30,11 +38,16 @@ example (a b c : ℝ) : a * (b * c) = b * (c * a) := by {
   rw[← mul_assoc]
 }
 
+<<<<<<< HEAD
+example (a b c : ℝ) : a * (b * c) = b * (a * c) := by
+  ring
+=======
 example (a b c : ℝ) : a * (b * c) = b * (a * c) := by {
   rw[← mul_assoc a]
   rw[mul_comm a]
   rw[mul_assoc b]
 }
+>>>>>>> 5663d078bac59c03c939d9f752daffc49d7769a5
 
 -- Using facts from the local context.
 example (a b c d e f : ℝ) (h : a * b = c * d) (h' : e = f) : a * (b * e) = c * (d * f) := by

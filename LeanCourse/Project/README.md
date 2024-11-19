@@ -3,7 +3,7 @@
 Please fill out the following. Fill in the project topic once you have decided.
 ```
 First & last name: Nora Depenheuer
-Project topic:
+Project topic: Origami-Constructible Numbers
 Partner (optional): Joachim Roscher
 ```
 

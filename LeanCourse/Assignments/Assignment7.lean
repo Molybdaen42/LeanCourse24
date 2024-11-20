@@ -144,9 +144,17 @@ variable (p : ℕ) [hp : Fact p.Prime] (R : Type*) [CommRing R] [IsDomain R] [Ch
 open Nat Finset in
 lemma add_pow_eq_pow_add_pow (x y : R) : (x + y) ^ p = x ^ p + y ^ p := by {
   have hp' : p.Prime := hp.out
-  have range_eq_insert_Ioo : range p = insert 0 (Ioo 0 p)
-  · sorry
+  have range_eq_insert_Ioo : range p = insert 0 (Ioo 0 p) := by
+    /- Use induction over p.
+     (Here we don't need that p is prime, therefore we can use this
+     simple induction method.)-/
+    induction p with
+    | zero => trivial
+    | succ n hn => simp [range_add_one]
   have dvd_choose : ∀ i ∈ Ioo 0 p, p ∣ Nat.choose p i := by
+    intro i i_in_Ioo
+    -- Apply the suggested lemma
+    apply (CharP.cast_eq_zero_iff R p (Nat.choose p i)).mp
     sorry
   have h6 : ∑ i in Ioo 0 p, x ^ i * y ^ (p - i) * Nat.choose p i = 0 :=
   calc

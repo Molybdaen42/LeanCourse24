@@ -17,6 +17,11 @@ structure line where
  the linear combinations of these two points.-/
 def line.points (l: line) : Set ℂ:= {(t : ℂ) * l.z₁ + (1-t) * l.z₂ | (t : ℝ)}
 
+/-- A normalised direction vector of the line.-/
+--@[simp]
+noncomputable def line.vec (l : line) : ℂ := (l.z₁ - l.z₂) / (Complex.abs (l.z₁ - l.z₂))
+
+
 variable (l : line)
 
 
@@ -30,11 +35,47 @@ lemma line_not_eq_if' (l₁ l₂: line) (h: ∃ x, x ∈ l₂.points ∧ x ∉ l
   symm
   exact line_not_eq_if l₂ l₁ h
 
+/-- The direction vector is never zero.-/
+lemma vec_neq_zero (l : line) : l.vec ≠ 0 := by
+  unfold line.vec
+  simp
+  constructor
+  · apply sub_ne_zero_of_ne
+    exact l.z₁_neq_z₂
+  · exact l.z₁_neq_z₂
+
+
+-- **What does it mean for two lines to be parallel?**
+
 /-- Returns True if the lines are parallel and False otherwise.-/
-def Parallel (l₁ l₂ : line) : Prop := sorry
+def AreParallel (l₁ l₂ : line) : Prop := l₁.vec = l₂.vec ∨ l₁.vec = - l₂.vec
+
+/-- l₁ is parallel to l₂ iff l₂ is parallel to l₁.-/
+lemma Parallel_symm (l₁ l₂ : line) :  AreParallel l₁ l₂ ↔ AreParallel l₂ l₁ := by
+  unfold AreParallel
+  constructor
+  · intro h
+    obtain h1|h2 := h
+    · left; symm; assumption
+    · right; symm; exact neg_eq_iff_eq_neg.mpr h2
+  · intro h
+    obtain h1|h2 := h
+    · left; symm; assumption
+    · right; symm; exact neg_eq_iff_eq_neg.mpr h2
+-- Some other formulations of parallelity.
+lemma AreParallel_iff_disjoint (l₁ l₂ : line) : AreParallel l₁ l₂ ↔ Disjoint l₁.points l₂.points := by sorry
+lemma AreParallel_iff_forall (l₁ l₂ : line) :   AreParallel l₁ l₂ ↔ ∀ z ∈ l₁.points, z + l₂.vec ∈ l₁.points := by sorry
+lemma AreParallel_iff_forall' (l₁ l₂ : line) :  AreParallel l₁ l₂ ↔ ∀ z ∈ l₂.points, z + l₁.vec ∈ l₂.points := by sorry
+lemma AreParallel_iff_z₁ (l₁ l₂ : line) :       AreParallel l₁ l₂ ↔ l₁.z₁ + l₂.vec ∈ l₁.points := by sorry
+lemma AreParallel_iff_z₁' (l₁ l₂ : line) :      AreParallel l₁ l₂ ↔ l₂.z₁ + l₁.vec ∈ l₂.points := by sorry
+lemma AreParallel_iff_z₂ (l₁ l₂ : line) :       AreParallel l₁ l₂ ↔ l₁.z₂ + l₂.vec ∈ l₁.points := by sorry
+lemma AreParallel_iff_z₂' (l₁ l₂ : line) :      AreParallel l₁ l₂ ↔ l₂.z₂ + l₁.vec ∈ l₂.points := by sorry
+
+
+-- **intersection point of two lines**
 
 /-- Computes the intersection point of l₁ and l₂.-/
-def Isect (l₁ l₂ : line) (h : ¬Parallel l₁ l₂) : ℂ := sorry
+def Isect (l₁ l₂ : line) (h : ¬AreParallel l₁ l₂) : ℂ := sorry
 
 
 /-- This is the set of lines generated from points of the set M.-/
@@ -61,23 +102,58 @@ noncomputable def O2 (z₁ z₂ : ℂ) (h : z₁ ≠ z₂) : line where
     exact sub_ne_zero_of_ne (id (Ne.symm h))
 
 /-- Given two lines l₁ and l₂, we can fold l₁ onto l₂ (i.e. bisect the angle
-between them).-/
-def O3 (l₁ l₂ : line) : line := sorry
+between them). [Attention: There are two possibilities for the fold, the two of them being orthogonal to each other!]-/
+noncomputable def O3 (l₁ l₂ : line) [Decidable (AreParallel l₁ l₂)] : line := if h : AreParallel l₁ l₂ then {
+  z₁ := (l₁.z₁ + l₂.z₁)/2
+  z₂ := (l₁.z₁ + l₂.z₂)/2
+  z₁_neq_z₂ := by field_simp [l₂.z₁_neq_z₂]
+} else {
+  z₁ := Isect l₁ l₂ h
+  z₂ := Isect l₁ l₂ h + l₁.vec + l₂.vec -- Be attentive to the signs!
+  z₁_neq_z₂ := by
+    simp [add_assoc]
+    have : l₁.vec - (-l₂.vec) ≠ 0 := by
+      unfold AreParallel at h
+      push_neg at h
+      exact sub_ne_zero_of_ne h.2
+    simp [sub_eq_neg_add, add_comm] at this
+    assumption
+    -- TODO: Refactor this proof
+}
+
+/-- Given two lines l₁ and l₂, we can fold l₁ onto l₂ (i.e. bisect the angle
+between them). [Attention: There are two possibilities for the fold, the two of them being orthogonal to each other!]-/
+noncomputable def O3' (l₁ l₂ : line) [Decidable (AreParallel l₁ l₂)] : line := if h : AreParallel l₁ l₂ then {
+  z₁ := (l₁.z₁ + l₂.z₁)/2
+  z₂ := (l₁.z₁ + l₂.z₂)/2
+  z₁_neq_z₂ := by field_simp [l₂.z₁_neq_z₂]
+} else {
+  z₁ := Isect l₁ l₂ h
+  z₂ := Isect l₁ l₂ h + l₁.vec - l₂.vec -- Be attentive to the signs!
+  z₁_neq_z₂ := by
+    simp [add_sub_assoc]
+    unfold AreParallel at h
+    push_neg at h
+    exact sub_ne_zero_of_ne h.1
+}
 
 
 /-- Given a point z and a line l, we can fold a line perpendicular to l that
 goes through z.-/
-def O4 (z : ℂ) (l : line) : line := sorry
+noncomputable def O4 (z : ℂ) (l : line) : line where
+  z₁ := z
+  z₂ := z + Complex.I*l.vec
+  z₁_neq_z₂ := by simp; exact vec_neq_zero l
 
 
 /-- Given two points z1 and z2 and a line l, we can fold z1 onto l with a
 line that goes through z2.-/
-def O5 (z₁ z₂ : ℂ) (l : line) : line := sorry
+noncomputable def O5 (z₁ z₂ : ℂ) (l : line) : line := sorry
 
 
 /--Given two points z1 and z2 and two lines l1 and l2, we can fold z1 onto
 l1 and z2 onto l2 with a single line.-/
-def O6 (z₁ z₂ : ℂ) (l₁ l₂ : line) : line := sorry
+noncomputable def O6 (z₁ z₂ : ℂ) (l₁ l₂ : line) : line := sorry
 
 
 

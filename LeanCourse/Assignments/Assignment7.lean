@@ -208,8 +208,31 @@ lemma coproduct_unique {f : M₁ →ₗ[R] N} {g : M₂ →ₗ[R] N} {l : M₁ �
     l = coproduct f g ↔
     l.comp (LinearMap.inl R M₁ M₂) = f ∧
     l.comp (LinearMap.inr R M₁ M₂) = g := by {
-  sorry
+  constructor
+  · intro hl
+    rw [hl]
+    constructor
+    · -- left inverse
+      ext x
+      simp
+    · -- right inverse
+      ext x
+      simp
+  · intro ⟨h1,h2⟩
+    ext x
+    -- l x = f x.1 + g x.2
+    simp [coproduct_def f g x.1 x.2]
+    -- the maps in h1 (resp. h2) are equal on the point x.1 (resp. x.2)
+    have h1' : l.comp (LinearMap.inl R M₁ M₂) x.1 = f x.1 := by
+      exact congrFun (congrArg DFunLike.coe h1) x.1
+    have h2' : l.comp (LinearMap.inr R M₁ M₂) x.2 = g x.2 := by
+      exact congrFun (congrArg DFunLike.coe h2) x.2
+    simp at h1' h2'
+    -- plug it in the goal
+    rw [← h1', ← h2']
+    -- and we have left to show that l x = l (x.1, 0) + l (0, x.2)
+    -- this is trivial since l is linear
+    simp [← LinearMap.map_add]
   }
-
 
 end LinearMap

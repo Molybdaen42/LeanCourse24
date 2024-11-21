@@ -15,11 +15,12 @@ A normalised direction vector of the line is given in line.vec.-/
 structure line where
   (z₁ z₂ : ℂ) (z₁_neq_z₂ : z₁ ≠ z₂)
 
+-- ToDo: Delete
 def line.get_z₁ (l : line) : ℂ := l.z₁
 
 /-- The points of a line given by two different points z₁ and z₂ are
  the linear combinations of these two points.-/
-def line.points (l : line) : Set ℂ := {(t : ℂ) * l.z₁ + (1-t) * l.z₂ | (t : ℝ)}
+@[simp] def line.points (l : line) : Set ℂ := {(t : ℂ) * l.z₁ + (1-t) * l.z₂ | (t : ℝ)}
 
 /-- A normalised direction vector of the line.-/
 --@[simp]

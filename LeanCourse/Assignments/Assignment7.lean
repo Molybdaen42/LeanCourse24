@@ -159,11 +159,23 @@ lemma add_pow_eq_pow_add_pow (x y : R) : (x + y) ^ p = x ^ p + y ^ p := by {
   have h6 : ∑ i in Ioo 0 p, x ^ i * y ^ (p - i) * Nat.choose p i = 0 :=
   calc
     _ =  ∑ i in Ioo 0 p, x ^ i * y ^ (p - i) * 0 := by
+      have : ∀ i ∈ Ioo 0 p, ((Nat.choose p i) : R) = 0 ↔ p ∣ (Nat.choose p i) := by
+        intro i hi
+        exact (CharP.cast_eq_zero_iff R p (Nat.choose p i))
+      have : ∀ i ∈ Ioo 0 p, ((Nat.choose p i) : R) = 0 := by
+        intro i hi
+        apply (this i hi).mpr
+        exact dvd_choose i hi
+
+      --apply sum_eq_sum_iff_of_le
+      --ext i
       sorry
     _ = 0 := by sorry
   sorry
   }
-
+#check CharP.cast_eq_zero_iff
+#check Finset.sum_equiv
+#check Finset.sum_eq_sum_iff_of_le
 
 section LinearMap
 

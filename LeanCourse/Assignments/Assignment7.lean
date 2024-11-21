@@ -196,13 +196,13 @@ for modules over a ring, so feel free to think of `M₁`, `M₂`, `N` and `M'` a
 You might recognize this as the characterization of a *coproduct* in category theory. -/
 
 def coproduct (f : M₁ →ₗ[R] N) (g : M₂ →ₗ[R] N) : M₁ × M₂ →ₗ[R] N where
-  toFun x := sorry
-  map_add' x y := sorry
-  map_smul' r x := sorry
+  toFun x := f x.1 + g x.2
+  map_add' x y := by simp [add_comm, add_assoc, add_left_comm]
+  map_smul' r x := by simp
 
 -- this can be useful to have as a simp-lemma, and should be proven by `rfl`
 @[simp] lemma coproduct_def (f : M₁ →ₗ[R] N) (g : M₂ →ₗ[R] N) (x : M₁) (y : M₂) :
-  coproduct f g (x, y) = sorry := sorry
+  coproduct f g (x, y) = f x + g y := by rfl
 
 lemma coproduct_unique {f : M₁ →ₗ[R] N} {g : M₂ →ₗ[R] N} {l : M₁ × M₂ →ₗ[R] N} :
     l = coproduct f g ↔

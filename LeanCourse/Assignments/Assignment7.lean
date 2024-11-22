@@ -160,17 +160,16 @@ lemma add_pow_eq_pow_add_pow (x y : R) : (x + y) ^ p = x ^ p + y ^ p := by {
   have h6 : ∑ i in Ioo 0 p, x ^ i * y ^ (p - i) * Nat.choose p i = 0 :=
   calc
     _ =  ∑ i in Ioo 0 p, x ^ i * y ^ (p - i) * 0 := by
-      have h1 : ∀ i ∈ Ioo 0 p, ((Nat.choose p i) : R) = 0 ↔ p ∣ (Nat.choose p i) := by
-        intro i hi
-        exact (CharP.cast_eq_zero_iff R p (Nat.choose p i))
-      have h2 : ∀ i ∈ Ioo 0 p, ((Nat.choose p i) : R) = 0 := by
-        intro i hi
-        apply (h1 i hi).mpr
-        exact dvd_choose i hi
-
-      --apply sum_eq_sum_iff_of_le
-      --ext i
-      sorry
+      -- we'll show that for each i the terms are equal
+      apply sum_congr rfl
+      intro i hi
+      -- since the terms only differ by one subterm, we can throw the rest away
+      apply congrArg (HMul.hMul (x ^ i * y ^ (p - i)))
+      -- to show: Nat.choose p i = 0
+      -- it's equivalent to that p ∣ Nat.choose p i
+      apply (CharP.cast_eq_zero_iff R p (Nat.choose p i)).mpr
+      -- and this we have given
+      exact dvd_choose i hi
     _ = 0 := by simp
   -- Use the recommended lemma.
   rw [add_pow]

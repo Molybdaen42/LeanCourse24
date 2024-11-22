@@ -1,3 +1,11 @@
+/-
+
+Assignment 7
+ -----------------------------------
+Nora Depenheuer & Joachim Roscher
+
+-/
+
 import LeanCourse.Common
 import Mathlib.Data.Complex.Exponential
 import Mathlib.Data.Nat.Choose.Dvd
@@ -144,18 +152,56 @@ variable (p : ℕ) [hp : Fact p.Prime] (R : Type*) [CommRing R] [IsDomain R] [Ch
 open Nat Finset in
 lemma add_pow_eq_pow_add_pow (x y : R) : (x + y) ^ p = x ^ p + y ^ p := by {
   have hp' : p.Prime := hp.out
-  have range_eq_insert_Ioo : range p = insert 0 (Ioo 0 p)
-  · sorry
+  have range_eq_insert_Ioo : range p = insert 0 (Ioo 0 p) := by
+    /- Use induction over p.
+     (Here we don't need that p is prime, therefore we can use this
+     simple induction method.)-/
+    induction p with
+    | zero => trivial
+    | succ n hn => simp [range_add_one]
   have dvd_choose : ∀ i ∈ Ioo 0 p, p ∣ Nat.choose p i := by
-    sorry
+    intro i i_in_Ioo
+    -- since i ∈ Ioo 0 p, it is > 0 (but we'll just need ≠ 0) and < p
+    obtain ⟨zero_lt_i,i_lt_p⟩ := mem_Ioo.mp i_in_Ioo
+    -- from this follows that p | Nat.choose p i
+    apply Prime.dvd_choose_self hp' (Nat.ne_of_lt zero_lt_i).symm i_lt_p
   have h6 : ∑ i in Ioo 0 p, x ^ i * y ^ (p - i) * Nat.choose p i = 0 :=
   calc
     _ =  ∑ i in Ioo 0 p, x ^ i * y ^ (p - i) * 0 := by
-      sorry
-    _ = 0 := by sorry
-  sorry
-  }
+          -- we'll show that for each i the terms are equal
+          apply sum_congr rfl
+          intro i hi
+          -- since the terms only differ by one subterm, we can throw the rest away
+          apply congrArg (HMul.hMul (x ^ i * y ^ (p - i)))
+          -- to show: Nat.choose p i = 0
+          -- it's equivalent to that p ∣ Nat.choose p i
+          apply (CharP.cast_eq_zero_iff R p (Nat.choose p i)).mpr
+          -- and this we have given
+          exact dvd_choose i hi
+    _ = 0 := by
+          simp
+  -- Use the recommended lemma.
+  rw [add_pow]
 
+  -- take the p+1-th term out of the sum
+  rw [Finset.sum_eq_add_sum_diff_singleton (self_mem_range_succ p) (fun i ↦ x ^ i * y ^ (p - i) * Nat.choose p i)]
+  have : range (p+1) = insert p (range p) := by
+    exact range_add_one
+  have : range (p+1) \ {p} = range p := by
+    refine Disjoint.sdiff_eq_of_sup_eq ?hi (id (Eq.symm this))
+    simp
+  simp [this]
+
+  -- rewrite range p as insert 0 (Ioo 0 p)
+  rw [range_eq_insert_Ioo]
+
+  -- take the 0-th term out of the sum
+  rw [Finset.sum_eq_add_sum_diff_singleton (mem_insert_self 0 (Ioo 0 p)) (fun i ↦ x ^ i * y ^ (p - i) * Nat.choose p i)]
+  simp
+
+  -- now it's exactly h6
+  assumption
+  }
 
 section LinearMap
 
@@ -169,20 +215,43 @@ for modules over a ring, so feel free to think of `M₁`, `M₂`, `N` and `M'` a
 You might recognize this as the characterization of a *coproduct* in category theory. -/
 
 def coproduct (f : M₁ →ₗ[R] N) (g : M₂ →ₗ[R] N) : M₁ × M₂ →ₗ[R] N where
-  toFun x := sorry
-  map_add' x y := sorry
-  map_smul' r x := sorry
+  toFun x := f x.1 + g x.2
+  map_add' x y := by simp [add_comm, add_assoc, add_left_comm]
+  map_smul' r x := by simp
 
 -- this can be useful to have as a simp-lemma, and should be proven by `rfl`
 @[simp] lemma coproduct_def (f : M₁ →ₗ[R] N) (g : M₂ →ₗ[R] N) (x : M₁) (y : M₂) :
-  coproduct f g (x, y) = sorry := sorry
+  coproduct f g (x, y) = f x + g y := by rfl
 
 lemma coproduct_unique {f : M₁ →ₗ[R] N} {g : M₂ →ₗ[R] N} {l : M₁ × M₂ →ₗ[R] N} :
     l = coproduct f g ↔
     l.comp (LinearMap.inl R M₁ M₂) = f ∧
     l.comp (LinearMap.inr R M₁ M₂) = g := by {
-  sorry
+  constructor
+  · intro hl
+    rw [hl]
+    constructor
+    · -- left inverse
+      ext x
+      simp
+    · -- right inverse
+      ext x
+      simp
+  · intro ⟨h1,h2⟩
+    ext x
+    -- l x = f x.1 + g x.2
+    simp [coproduct_def f g x.1 x.2]
+    -- the maps in h1 (resp. h2) are equal on the point x.1 (resp. x.2)
+    have h1' : l.comp (LinearMap.inl R M₁ M₂) x.1 = f x.1 := by
+      exact congrFun (congrArg DFunLike.coe h1) x.1
+    have h2' : l.comp (LinearMap.inr R M₁ M₂) x.2 = g x.2 := by
+      exact congrFun (congrArg DFunLike.coe h2) x.2
+    simp at h1' h2'
+    -- plug it in the goal
+    rw [← h1', ← h2']
+    -- and we have left to show that l x = l (x.1, 0) + l (0, x.2)
+    -- this is trivial since l is linear
+    simp [← LinearMap.map_add]
   }
-
 
 end LinearMap

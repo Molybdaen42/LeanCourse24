@@ -10,4 +10,15 @@ noncomputable section
 
 /- Now write definitions and theorems. -/
 
--- Hello World!
+/-
+**Task definition**
+As an application of Galois theory:
+constructible numbers have already been done in Lean,
+*https://github.com/Louis-Le-Grand/Formalisation-of-constructable-numbers*,
+but there is a separate notion of constructible numbers with folding/origami.
+Define the numbers constructible via origami constructions
+and prove that it forms a field closed under square roots and cube roots.
+Stretch goal:
+classify exactly these numbers (i.e. a number is origami-constructible
+when there is a series of field extensions each with degree 2 or 3).
+-/

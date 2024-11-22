@@ -1,10 +1,13 @@
 /-
+
 Assignment 7
+ -----------------------------------
 Nora Depenheuer & Joachim Roscher
+
 -/
 
 import LeanCourse.Common
-import Mathlib
+import Mathlib.Data.Complex.Exponential
 import Mathlib.Data.Nat.Choose.Dvd
 noncomputable section
 open Function Ideal Polynomial Classical
@@ -175,7 +178,7 @@ lemma add_pow_eq_pow_add_pow (x y : R) : (x + y) ^ p = x ^ p + y ^ p := by {
           apply (CharP.cast_eq_zero_iff R p (Nat.choose p i)).mpr
           -- and this we have given
           exact dvd_choose i hi
-    _ = 0 := by 
+    _ = 0 := by
           simp
   -- Use the recommended lemma.
   rw [add_pow]
@@ -184,18 +187,18 @@ lemma add_pow_eq_pow_add_pow (x y : R) : (x + y) ^ p = x ^ p + y ^ p := by {
   rw [Finset.sum_eq_add_sum_diff_singleton (self_mem_range_succ p) (fun i ↦ x ^ i * y ^ (p - i) * Nat.choose p i)]
   have : range (p+1) = insert p (range p) := by
     exact range_add_one
-  have : range (p+1) \ {p} = range p := by 
+  have : range (p+1) \ {p} = range p := by
     refine Disjoint.sdiff_eq_of_sup_eq ?hi (id (Eq.symm this))
     simp
   simp [this]
-  
+
   -- rewrite range p as insert 0 (Ioo 0 p)
   rw [range_eq_insert_Ioo]
-  
+
   -- take the 0-th term out of the sum
   rw [Finset.sum_eq_add_sum_diff_singleton (mem_insert_self 0 (Ioo 0 p)) (fun i ↦ x ^ i * y ^ (p - i) * Nat.choose p i)]
   simp
-  
+
   -- now it's exactly h6
   assumption
   }

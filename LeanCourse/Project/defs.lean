@@ -2,6 +2,7 @@ import Mathlib.Data.Complex.Basic
 import Mathlib.Geometry.Euclidean.Sphere.Basic
 
 open ComplexConjugate
+open Classical
 
 /-
 In this file we will define the origami numbers and their axiomatic operations.
@@ -15,16 +16,13 @@ A normalised direction vector of the line is given in line.vec.-/
 structure line where
   (z₁ z₂ : ℂ) (z₁_neq_z₂ : z₁ ≠ z₂)
 
--- ToDo: Delete
-def line.get_z₁ (l : line) : ℂ := l.z₁
-
 /-- The points of a line given by two different points z₁ and z₂ are
  the linear combinations of these two points.-/
 @[simp] def line.points (l : line) : Set ℂ := {(t : ℂ) * l.z₁ + (1-t) * l.z₂ | (t : ℝ)}
 
 /-- A normalised direction vector of the line.-/
 --@[simp]
-noncomputable def line.vec (l : line) : ℂ := (l.z₁ - l.z₂) / (Complex.abs (l.z₁ - l.z₂))
+noncomputable def line.vec (l : line) : ℂ := (l.z₂ - l.z₁) / (Complex.abs (l.z₂ - l.z₁))
 
 
 variable (l : line)
@@ -46,8 +44,8 @@ lemma vec_neq_zero (l : line) : l.vec ≠ 0 := by
   simp
   constructor
   · apply sub_ne_zero_of_ne
-    exact l.z₁_neq_z₂
-  · exact l.z₁_neq_z₂
+    exact l.z₁_neq_z₂.symm
+  · exact l.z₁_neq_z₂.symm
 
 
 -- **What does it mean for two lines to be parallel?**
@@ -98,18 +96,6 @@ def Lines_gen_by (M : Set ℂ): Set line := {l : line | l.z₁ ∈ M ∧ l.z₂ 
 /-- Given two different points z₁ and z₂, we can fold a line that goed through both of them.-/
 def O1 (z₁ z₂ : ℂ) (h : z₁ ≠ z₂) : line := {z₁ := z₁, z₂ := z₂, z₁_neq_z₂ := h : line}
 
-example : (O1 0 1 zero_ne_one).points = (O1 1 0 zero_ne_one.symm).points := by
-  unfold line.points line.z₁ line.z₂
-  ext x
-  simp
-  constructor
-  · rintro ⟨t, ht⟩
-    use 1-t
-    simp [← ht]
-    sorry
-  · sorry
-    --Hmm, iwie will das noch nicht so richtig...
-
 /-- Given two different points z₁ and z₂, we can fold z₁ onto z₂
 (i.e. find the perpendicular bisector of segment z₁z₂).-/
 noncomputable def O2 (z₁ z₂ : ℂ) (h : z₁ ≠ z₂) : line where
@@ -122,7 +108,7 @@ noncomputable def O2 (z₁ z₂ : ℂ) (h : z₁ ≠ z₂) : line where
 
 /-- Given two lines l₁ and l₂, we can fold l₁ onto l₂ (i.e. bisect the angle
 between them). [Attention: There are two possibilities for the fold, the two of them being orthogonal to each other!]-/
-noncomputable def O3 (l₁ l₂ : line) [Decidable (AreParallel l₁ l₂)] : line := if h : AreParallel l₁ l₂ then {
+noncomputable def O3 (l₁ l₂ : line) : line := if h : AreParallel l₁ l₂ then {
   z₁ := (l₁.z₁ + l₂.z₁)/2
   z₂ := (l₁.z₁ + l₂.z₂)/2
   z₁_neq_z₂ := by field_simp [l₂.z₁_neq_z₂]
@@ -142,7 +128,7 @@ noncomputable def O3 (l₁ l₂ : line) [Decidable (AreParallel l₁ l₂)] : li
 
 /-- Given two lines l₁ and l₂, we can fold l₁ onto l₂ (i.e. bisect the angle
 between them). [Attention: There are two possibilities for the fold, the two of them being orthogonal to each other!]-/
-noncomputable def O3' (l₁ l₂ : line) [Decidable (AreParallel l₁ l₂)] : line := if h : AreParallel l₁ l₂ then {
+noncomputable def O3' (l₁ l₂ : line) : line := if h : AreParallel l₁ l₂ then {
   z₁ := (l₁.z₁ + l₂.z₁)/2
   z₂ := (l₁.z₁ + l₂.z₂)/2
   z₁_neq_z₂ := by field_simp [l₂.z₁_neq_z₂]
@@ -167,11 +153,11 @@ noncomputable def O4 (z : ℂ) (l : line) : line where
 
 /-- Given two points z1 and z2 and a line l, we can fold z1 onto l with a
 line that goes through z2. There are 0, 1 or 2 solutions possible.-/
-noncomputable def O5 (z₁ z₂ : ℂ) (l : line) : Set line := {{z₁ := z₂, z₂ := x, z₁_neq_z₂ := h} : line | x ≠ z₂ ∧ x ∈ l.points ∧ Complex.abs (x-z₂) = Complex.abs (z₁-z₂)}
+noncomputable def O5 (z₁ z₂ : ℂ) (h : z₁ ≠ z₂) (l : line) : Set line := {{z₁ := z₂, z₂ := x, z₁_neq_z₂ := h} : line | x ≠ z₂ ∧ x ∈ l.points ∧ Complex.abs (x-z₂) = Complex.abs (z₁-z₂)}
 
 /--Given two points z1 and z2 and two lines l1 and l2, we can fold z1 onto
 l1 and z2 onto l2 with a single line.-/
-noncomputable def O6 (z₁ z₂ : ℂ) (l₁ l₂ : line) : Set line := {{z₁ := x, z₂ := y, z₁_neq_z₂ := h} : line | x ≠ y ∧ sorry}
+noncomputable def O6 (z₁ z₂ : ℂ) (h : z₁ ≠ z₂) (l₁ l₂ : line) : Set line := {{z₁ := x, z₂ := y, z₁_neq_z₂ := h} : line | x ≠ y ∧ sorry}
 
 -- ToDo: Maybe add axiom O7? It's not necessary, I think, but surely nice to have...
 

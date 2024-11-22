@@ -1,5 +1,10 @@
+/-
+Assignment 7
+Nora Depenheuer & Joachim Roscher
+-/
+
 import LeanCourse.Common
-import Mathlib.Data.Complex.Exponential
+import Mathlib
 import Mathlib.Data.Nat.Choose.Dvd
 noncomputable section
 open Function Ideal Polynomial Classical
@@ -160,28 +165,40 @@ lemma add_pow_eq_pow_add_pow (x y : R) : (x + y) ^ p = x ^ p + y ^ p := by {
   have h6 : ∑ i in Ioo 0 p, x ^ i * y ^ (p - i) * Nat.choose p i = 0 :=
   calc
     _ =  ∑ i in Ioo 0 p, x ^ i * y ^ (p - i) * 0 := by
-      -- we'll show that for each i the terms are equal
-      apply sum_congr rfl
-      intro i hi
-      -- since the terms only differ by one subterm, we can throw the rest away
-      apply congrArg (HMul.hMul (x ^ i * y ^ (p - i)))
-      -- to show: Nat.choose p i = 0
-      -- it's equivalent to that p ∣ Nat.choose p i
-      apply (CharP.cast_eq_zero_iff R p (Nat.choose p i)).mpr
-      -- and this we have given
-      exact dvd_choose i hi
-    _ = 0 := by simp
+          -- we'll show that for each i the terms are equal
+          apply sum_congr rfl
+          intro i hi
+          -- since the terms only differ by one subterm, we can throw the rest away
+          apply congrArg (HMul.hMul (x ^ i * y ^ (p - i)))
+          -- to show: Nat.choose p i = 0
+          -- it's equivalent to that p ∣ Nat.choose p i
+          apply (CharP.cast_eq_zero_iff R p (Nat.choose p i)).mpr
+          -- and this we have given
+          exact dvd_choose i hi
+    _ = 0 := by 
+          simp
   -- Use the recommended lemma.
   rw [add_pow]
-  -- take the p+1-th term out of the sum (maybe per Finset.sum_eq_add_sum_diff_singleton?)
-  -- rw [range_eq_insert_Ioo]
+
+  -- take the p+1-th term out of the sum
+  rw [Finset.sum_eq_add_sum_diff_singleton (self_mem_range_succ p) (fun i ↦ x ^ i * y ^ (p - i) * Nat.choose p i)]
+  have : range (p+1) = insert p (range p) := by
+    exact range_add_one
+  have : range (p+1) \ {p} = range p := by 
+    refine Disjoint.sdiff_eq_of_sup_eq ?hi (id (Eq.symm this))
+    simp
+  simp [this]
+  
+  -- rewrite range p as insert 0 (Ioo 0 p)
+  rw [range_eq_insert_Ioo]
+  
   -- take the 0-th term out of the sum
-  sorry
+  rw [Finset.sum_eq_add_sum_diff_singleton (mem_insert_self 0 (Ioo 0 p)) (fun i ↦ x ^ i * y ^ (p - i) * Nat.choose p i)]
+  simp
+  
+  -- now it's exactly h6
+  assumption
   }
-#check Finset.sum_eq_add_sum_diff_singleton
-#check CharP.cast_eq_zero_iff
-#check Finset.sum_equiv
-#check Finset.sum_eq_sum_iff_of_le
 
 section LinearMap
 

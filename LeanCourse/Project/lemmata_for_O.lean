@@ -66,4 +66,24 @@ lemma E1 {z : ℂ} {l : line} (hz : z ∈ 𝕆) (hl : l ∈ 𝕆.lines) :
     simp [mul_div_assoc, sub_eq_add_neg, ← mul_assoc, ← neg_div, neg_sub]
     rfl
 
---ToDo: lemma E2
+/-- Given a point z and a line l, reflect z across l.-/
+lemma E2 {z : ℂ} {l : line} (hz : z ∈ 𝕆) (hl : l ∈ 𝕆.lines) :
+  sorry ∈ 𝕆 := by
+    -- l₁ := O4(z, l) is perpendicular to l and passes through z
+    let l₁ := O4 z l
+    -- pick z' on l that is not on l₁ (l.z₁ or l.z₂ will work)
+    have : ∃ z' ∈ l.points, z' ∉ l₁.points := by
+      by_cases h : l.z₁ ∈ l₁.points
+      · use l.z₂
+        constructor
+        · exact z₂_on_l l
+        · sorry
+      · use l.z₁
+        exact ⟨z₁_on_l l, h⟩
+    obtain ⟨z', hz'1, hz'2⟩ := this
+    -- Now we apply O5 to z, z' and l₁ to fold z over l
+    let L₂ := O5 z z' (by sorry) l₁
+    have : Nonempty L₂ := by sorry
+    obtain ⟨l₂,hl₂⟩ := this
+    -- We keep our plane folded. While folded, we can mark the line going through z and z'. This marks the point z'', which is the reflection of z across l.
+    sorry

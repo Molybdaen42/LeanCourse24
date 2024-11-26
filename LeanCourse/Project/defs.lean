@@ -38,6 +38,15 @@ lemma vec_ne_zero (l : line) : l.vec ≠ 0 := by
     exact l.z₁_neq_z₂.symm
   · exact l.z₁_neq_z₂.symm
 
+/-- The term z₂ - z₁ is never zero.-/
+lemma diff_ne_zero (l : line) : l.z₂ - l.z₁ ≠ 0 := by
+  exact sub_ne_zero_of_ne l.z₁_neq_z₂.symm
+/-- The term z₂ - z₁ is never zero.-/
+lemma diff_ne_zero' (l : line) : l.z₁ - l.z₂ ≠ 0 := by
+  exact sub_ne_zero_of_ne l.z₁_neq_z₂
+
+lemma z₁_on_l (l : line) : l.z₁ ∈ l.points := by use 1; simp
+lemma z₂_on_l (l : line) : l.z₂ ∈ l.points := by use 0; simp
 
 -- **Define an equivalence relation on line representing equality of lines**
 
@@ -82,18 +91,63 @@ lemma line_eq_if_switched_points (l : line) : l.eq ⟨l.z₂, l.z₁, l.z₁_neq
     use 1-t
     simp [← ht, add_comm]
 
-lemma line_eq_if_add_vec (l : line) {k : ℝ} (h : k ≠ 0) : l.eq ⟨l.z₁, l.z₁ + k*l.vec, (by simp [h, vec_ne_zero])⟩ := by
-  ext z
-  constructor
-  · rintro ⟨t,ht⟩
-    use (1-t) * Complex.abs (l.z₂-l.z₁) / k - 1
-    simp [← ht, line.vec]
-    field_simp
-    rw [← sub_add, add_comm_sub]
-    simp [add_comm, neg_sub]
-    sorry
-  · sorry
+/-- Two lines l₁ and l₂ are equal iff l₁.z₁ and l₁.z₂ lie in l₂.-/
+lemma line_eq_iff_both_points_lie_in_the_other (l₁ l₂ : line) : 
+  l₁.eq l₂ ↔ l₁.z₁ ∈ l₂.points ∧ l₁.z₂ ∈ l₂.points := by
+    unfold line.eq
+    constructor
+    · intro h
+      rw [← h]
+      constructor
+      · use 1; simp
+      · use 0; simp
+    · intro ⟨⟨t1,h1⟩,⟨t2,h2⟩⟩
+      ext z
+      constructor
+      · intro ⟨t3,h3⟩
+        use t3*t1 - t3*t2 + t2
+        simp [←h1,←h2,←h3]
+        ring
+      · intro ⟨t3,h3⟩
+        use (t3 - t2) / (t1 - t2)
+        simp [←h1,←h2,←h3]
+        have : (t1 - t2 : ℂ) ≠ 0 := by
+          -- to show: t1 ≠ t2
+          apply sub_ne_zero_of_ne
+          -- suppose they are equal
+          by_contra h
+          -- then l₁.z₁ = l₁.z₂
+          rw [← h, h1] at h2
+          -- but we assumed that they do not equal each other
+          have := l₁.z₁_neq_z₂
+          contradiction
+        calc
+          _ = ((t3 - t2)/(t1 - t2) * (t1-t2) + t2) * l₂.z₁ + (- (t3 - t2)/(t1 - t2) * (t1 - t2) + (1-t2)) * l₂.z₂ := by ring
+          _ = t3 * l₂.z₁ + (1 - t3) * l₂.z₂ := by simp [this]
+/-- Two lines l₁ and l₂ are equal iff l₂.z₁ and l₂.z₂ lie in l₁.-/
+lemma line_eq_iff_both_points_lie_in_the_other' (l₁ l₂ : line) : 
+  l₁.eq l₂ ↔ l₂.z₁ ∈ l₁.points ∧ l₂.z₂ ∈ l₁.points := by
+  rw [line.eq.symm]
+  exact line_eq_iff_both_points_lie_in_the_other l₂ l₁
 
+
+/-- Instead of z₂, we can use z₁ + k*vec for any k ≠ 0.-/
+lemma line_eq_if_add_vec (l : line) {k : ℝ} (h : k ≠ 0) : l.eq ⟨l.z₁, l.z₁ + k*l.vec, (by simp [h, vec_ne_zero])⟩ := by
+  -- first prove that |z₂ - z₁| ≠ 0
+  have : (Complex.abs (l.z₂ - l.z₁) : ℂ) ≠ 0 := by
+    exact Complex.ofReal_ne_zero.mpr ((AbsoluteValue.ne_zero_iff Complex.abs).mpr (diff_ne_zero l))
+  -- It's enough to show that l.z₁ and l.z₂ lie in the other line
+  apply (line_eq_iff_both_points_lie_in_the_other l ⟨l.z₁, l.z₁ + k*l.vec, (by simp [h, vec_ne_zero])⟩).mpr
+  -- Now it's pretty straightforward
+  constructor
+  · simp
+    use 1
+    simp
+  · simp
+    use 1 - (Complex.abs (l.z₂ - l.z₁)) / k 
+    simp [line.vec]
+    ring
+    simp [h, this]
 
 
 -- **What does it mean for two lines to be parallel?**
@@ -114,7 +168,13 @@ lemma Parallel_symm (l₁ l₂ : line) :  AreParallel l₁ l₂ ↔ AreParallel 
     · left; symm; assumption
     · right; symm; exact neg_eq_iff_eq_neg.mpr h2
 -- Some other formulations of parallelity.
-lemma AreParallel_iff_disjoint (l₁ l₂ : line) : AreParallel l₁ l₂ ↔ Disjoint l₁.points l₂.points := by sorry
+lemma AreParallel_if_disjoint (l₁ l₂ : line) : Disjoint l₁.points l₂.points → AreParallel l₁ l₂ := by 
+  unfold AreParallel Disjoint
+  intro h
+  by_contra hcontra
+  push_neg at hcontra
+  obtain ⟨h1,h2⟩ := hcontra
+  sorry
 lemma AreParallel_iff_forall (l₁ l₂ : line) :   AreParallel l₁ l₂ ↔ ∀ z ∈ l₁.points, z + l₂.vec ∈ l₁.points := by sorry
 lemma AreParallel_iff_forall' (l₁ l₂ : line) :  AreParallel l₁ l₂ ↔ ∀ z ∈ l₂.points, z + l₁.vec ∈ l₂.points := by sorry
 lemma AreParallel_iff_z₁ (l₁ l₂ : line) :       AreParallel l₁ l₂ ↔ l₁.z₁ + l₂.vec ∈ l₁.points := by sorry
@@ -201,8 +261,10 @@ noncomputable def O4 (z : ℂ) (l : line) : line where
 /-- Given two points z1 and z2 and a line l, we can fold z1 onto l with a
 line that goes through z2. There are 0, 1 or 2 solutions possible.-/
 noncomputable def O5 (z₁ z₂ : ℂ) (h : z₁ ≠ z₂) (l : line) : Set line :=
-  {{z₁ := z₂, z₂ := x, z₁_neq_z₂ := h} : line |
-  x ≠ z₂ ∧ x ∈ l.points ∧ Complex.abs (x-z₂) = Complex.abs (z₁-z₂)}
+  {{z₁ := z₂, z₂ := x, z₁_neq_z₂ := _} : line |
+  2*x-z₁ ∈ l.points ∧ Complex.abs (2*x-z₁-z₂) = Complex.abs (z₁-z₂)}
+
+-- ToDo: lemma O5_has_a_solution {z₁ z₂ : ℂ} (h : ...) : Nonempty O5 ... := by ...
 
 /--Given two points z1 and z2 and two lines l1 and l2, we can fold z1 onto
 l1 and z2 onto l2 with a single line.-/

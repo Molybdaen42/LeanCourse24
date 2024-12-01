@@ -207,7 +207,7 @@ lemma technical_filter_exercise {ι α : Type*} {p : ι → Prop} {q : Prop} {a 
     by_cases hq : q
     · -- case q is true
       simp [hq] at h1 h2
-      
+
       apply Filter.Eventually.mono h1
       intro i pi
       simp [pi]
@@ -216,7 +216,7 @@ lemma technical_filter_exercise {ι α : Type*} {p : ι → Prop} {q : Prop} {a 
 
     · -- case q is false
       simp [hq] at h1 h2
-      
+
       apply Filter.Eventually.mono h1
       intro i pi
       simp [pi]
@@ -229,7 +229,7 @@ lemma technical_filter_exercise {ι α : Type*} {p : ι → Prop} {q : Prop} {a 
       simp [hq] at h ⊢
 
       let P : α → Prop := fun y ↦ y ≠ b
-      have P_eventually: ∀ᶠ (y : α) in F, P y := by 
+      have P_eventually: ∀ᶠ (y : α) in F, P y := by
         simp [P]
         exact hbF
       -- this we can use on h
@@ -240,9 +240,9 @@ lemma technical_filter_exercise {ι α : Type*} {p : ι → Prop} {q : Prop} {a 
 
     · -- if q does not hold
       simp [hq] at h ⊢
-      
+
       let P : α → Prop := fun y ↦ y ≠ a
-      have P_eventually: ∀ᶠ (y : α) in G, P y := by 
+      have P_eventually: ∀ᶠ (y : α) in G, P y := by
         simp [P]
         exact haG
       -- this we can use on h
@@ -269,18 +269,18 @@ lemma tendsto_indicator_iff {ι : Type*} {L : Filter ι} {s : ι → Set ℝ} {t
   · intro h1
     -- getting rid of f - or do we?
     apply tendsto_pi_nhds.mpr
-    
+
     intro x
     --specialize h1 x
     --specialize ha x
-    
+
     simp [indicator_apply]
     rw [tendsto_iff_eventually]
     intro p h2
 
     filter_upwards [h1 x]
     intro i hi
-    
+
     rw [hi]
 
     simp [apply_ite] at h2 ⊢
@@ -291,8 +291,23 @@ lemma tendsto_indicator_iff {ι : Type*} {L : Filter ι} {s : ι → Set ℝ} {t
       simp [eventually_iff] at h2
       exact mem_of_mem_nhds h2
     · simp [hx_in_t] at h2 ⊢
-      sorry
-  · sorry
+      exact mem_of_mem_nhds h2
+  · intro h x
+    simp [tendsto_pi_nhds] at h
+    specialize h x
+    simp [indicator_apply, apply_ite 𝓝] at h
+
+    --(hbF : ∀ᶠ x in F, x ≠ b) (haG : ∀ᶠ x in G, x ≠ a) (haF : pure a ≤ F) (hbG : pure b ≤ G)
+    have hbF : ∀ᶠ y in 𝓝 (f x), y ≠ 0 := by
+      exact ContinuousAt.eventually_ne (fun ⦃U⦄ a ↦ a) (ha x)
+    have haG : ∀ᶠ y in 𝓝 0, y≠ f x := by
+      exact ContinuousAt.eventually_ne (fun ⦃U⦄ a ↦ a) fun a ↦ ha x (id (Eq.symm a))
+    have haF : pure (f x) ≤ 𝓝 (f x) := by
+      exact intervalIntegral.FTCFilter.pure_le
+    have hbG : pure (0:ℝ ) ≤ 𝓝 0 := by
+      exact intervalIntegral.FTCFilter.pure_le
+    simp [ technical_filter_exercise hbF haG haF hbG]
+    exact h
   }
 #check indicator_apply
 #check apply_ite

@@ -3,6 +3,10 @@ import LeanCourse.Project.lemmata_for_O
 open Classical
 open Construction
 
+-- An example for computing the distance between a point and a line.
+example : dist Complex.I ⟨2,2+Complex.I,by simp⟩ = 2 := by simp [dist, line.vec]
+
+
 def StartSet : Set ℂ := {0, 1}
 def l1 : line := ⟨0, 1, zero_ne_one⟩
 def l2 : line := O1 1 0 zero_ne_one.symm

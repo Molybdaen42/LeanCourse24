@@ -4,7 +4,7 @@ open Classical
 open Construction
 
 -- An example for computing the distance between a point and a line.
-example : dist Complex.I ⟨2,2+Complex.I,by simp⟩ = 2 := by simp [dist, line.vec]
+example : dist_point_line Complex.I ⟨2,2+Complex.I,by simp⟩ = 2 := by simp [dist_point_line, line.vec]
 
 
 def StartSet : Set ℂ := {0, 1}
@@ -126,7 +126,7 @@ lemma i_in_M₄ : Complex.I ∈ M₄ := by
   constructor; left; exact h3 -- imAxis ∈ L₃
   use l₂
   constructor; exact h5 -- l₂ ∈ L₃
-  constructor; exact h6 -- imAxis and l₂ are not parallel
+  use h6 -- imAxis and l₂ are not parallel
   simp [Isect, imAxis, O4, reAxis, O1, l₁, l₂, O4, line.vec, O3', AreParallel, I_ne_one_or_neg_one, Complex.abs, Complex.normSq]
 
 -- Does it also work in 𝕆?
@@ -194,5 +194,5 @@ lemma i_in_𝕆 : Complex.I ∈ 𝕆 := by
   constructor; left; exact h2 -- imAxis ∈ 𝕆₃
   use l₂
   constructor; exact h4 -- l₂ ∈ 𝕆₃
-  constructor; exact h5 -- imAxis and l₂ are not parallel
+  use h5 -- imAxis and l₂ are not parallel
   simp [Isect, imAxis, O4, reAxis, O1, l₁, l₂, line.vec, O3', AreParallel, I_ne_one_or_neg_one, Complex.abs, Complex.normSq]

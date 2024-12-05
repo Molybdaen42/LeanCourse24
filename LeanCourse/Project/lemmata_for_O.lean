@@ -125,13 +125,45 @@ theorem 𝕆_add {z₁ z₂ : ℂ} (hz₁ : z₁ ∈ 𝕆) (hz₂ : z₂ ∈ �
 
   have hl₃_l₄_not_parallel : ¬AreParallel l₃ l₄ := by sorry
 
+  -- Take the level of depth that l₃ and l₄ lie in 𝕆.points
+  have hl₃_copy := hl₃
+  have hl₄_copy := hl₄
+  simp [𝕆.lines] at hl₃_copy hl₄_copy
+  obtain ⟨N₁,hl₃N⟩ := hl₃_copy
+  obtain ⟨N₂,hl₄N⟩ := hl₄_copy
+  let N := max N₁ N₂
+
   -- Last step: take the intersectioon of l₃ and l₄.
   let z₃ := Isect l₃ l₄ hl₃_l₄_not_parallel
 
   -- tidying it up
-  use N+2
+  use N+1
   right
   simp [generate_points]
-
-
-  sorry
+  use l₃
+  constructor; apply 𝕆ₙ.lines_inc N₁ N (Nat.le_max_left N₁ N₂); exact hl₃N
+  use l₄
+  constructor; apply 𝕆ₙ.lines_inc N₂ N (Nat.le_max_right N₁ N₂); exact hl₄N
+  use hl₃_l₄_not_parallel
+  simp [Isect, line.vec, hl₃_def.1, hl₃_def.2, hl₄_def.1, hl₄_def.2, l₂, l₁, O1]
+  -- Ab hier beginnt die Raterei
+  field_simp
+  simp [← neg_mul, ← div_mul_div_comm, ← div_mul_div_comm, mul_div_assoc, div_self, mul_div_assoc, sub_eq_add_neg, ← mul_assoc, ← neg_div, neg_sub]
+  field_simp
+  ring
+  simp --[mul_comm]
+  symm
+  calc
+    -(z₁ * ↑z₂.re * ↑z₁.im * ↑(Complex.abs z₁) ^ 2 * ↑(Complex.abs z₂) *
+        (-(↑z₂.re * ↑z₁.im * ↑(Complex.abs z₁) ^ 2 * ↑(Complex.abs z₂)) +
+            ↑z₂.im * ↑z₁.re * ↑(Complex.abs z₁) ^ 2 * ↑(Complex.abs z₂))⁻¹) +
+    z₁ * ↑z₂.im * ↑z₁.re * ↑(Complex.abs z₁) ^ 2 * ↑(Complex.abs z₂) *
+      (-(↑z₂.re * ↑z₁.im * ↑(Complex.abs z₁) ^ 2 * ↑(Complex.abs z₂)) +
+          ↑z₂.im * ↑z₁.re * ↑(Complex.abs z₁) ^ 2 * ↑(Complex.abs z₂))⁻¹
+      = -(z₁ * ↑z₂.re * ↑z₁.im * ↑(Complex.abs z₂) *
+        (-(↑z₂.re * ↑z₁.im * ↑(Complex.abs z₂)) +
+            ↑z₂.im * ↑z₁.re * ↑(Complex.abs z₂))⁻¹) +
+    z₁ * ↑z₂.im * ↑z₁.re * ↑(Complex.abs z₁) ^ 2 * ↑(Complex.abs z₂) *
+      (-(↑z₂.re * ↑z₁.im * ↑(Complex.abs z₁) ^ 2 * ↑(Complex.abs z₂)) +
+          ↑z₂.im * ↑z₁.re * ↑(Complex.abs z₁) ^ 2 * ↑(Complex.abs z₂))⁻¹ := by sorry
+    _ = z₁ := by sorry

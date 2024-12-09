@@ -236,30 +236,65 @@ lemma change_of_variables_exercise (f : ℝ → ℝ) :
 
   -- Want to use the change of variables theorem. 
   -- First, we want to define the necessary sets and functions and prove their properties.
-  let s := [[0,π]]
-  let g := cos
-  let g' := -sin
-  have hs : MeasurableSet s := by exact measurableSet_uIcc
-  have hg' : ∀ x ∈ s, HasDerivWithinAt g (g' x) s x := by
+  let s := Ioc 0 π
+  --let g := cos
+  --let g' := -sin
+  have hs : MeasurableSet s := by exact measurableSet_Ioc
+  have hg' : ∀ x ∈ s, HasDerivWithinAt cos (-sin x) s x := by
     intro x hx
-    simp [g,g',s]
+    simp [s]
     apply HasDerivAt.hasDerivWithinAt
     exact hasDerivAt_cos x
-  have hg : InjOn g s := by
-    simp [g,s, uIcc_of_le pi_nonneg]
-    exact injOn_cos
+  have hg : InjOn cos s := by
+    simp [s]
+    have injOnIcc : InjOn cos (Icc 0 π) := by exact injOn_cos
+    simp [InjOn.mono Ioc_subset_Icc_self, injOnIcc]
   
   -- Use the change of variables theorem
   convert integral_image_eq_integral_abs_deriv_smul hs hg' hg f 
   
   -- tidying it up
-  · have : g '' s = [[-1, 1]] := by sorry
+  · -- rewrite cos(s) = [-1,0)
+    have : cos '' s = Ico (-1) 1 := by
+      simp [s]
+      have h1 : 0 ∉ Ioc 0 π := by simp
+      have h2 : cos 0 ∉ Ico (-1) 1 := by simp
+      refine BijOn.image_eq ?_
+      apply (BijOn.insert_iff h1 h2).mp
+      simp
+      have : insert 0 (Ioc 0 π) = Icc 0 π := by
+        ext x
+        constructor
+        · simp
+          rintro (⟨_,_⟩|h1)
+          · simp [pi_nonneg]
+          · exact ⟨le_of_lt h1.1, h1.2⟩
+        · simp
+          intro h1 h2
+          simp [h2]
+          exact Or.symm (LE.le.gt_or_eq h1)
+      simp [this]
+      exact bijOn_cos
     rw [this]
-    sorry
-  · simp [s, g, g']
-    have : ∀ x ∈ [[0,π]], |sin x| = sin x := by sorry
-    --simp [this]
-    sorry
+    simp [intervalIntegral.integral_of_le]
+    
+    -- Both remaining intervals are the same since their domains differ only on nullsets.
+    apply setIntegral_congr_set
+    exact EventuallyEq.symm Ico_ae_eq_Ioc
+    
+  · simp [s]
+    have : ∀ᵐ (x : ℝ) ∂volume, x ∈ Ι 0 π → sin x * f (cos x) = |sin x| * f (cos x) := by 
+      filter_upwards
+      intro x hx
+      simp [uIoc_of_le pi_nonneg] at hx
+      have hx : x ∈ Icc 0 π := by simp [le_of_lt hx.1, hx.2]
+      -- ignore the cosine
+      simp; left
+      -- if something is ≥ 0, it's equal to its absolute value
+      simp [abs_of_nonneg, sin_nonneg_of_mem_Icc, hx]
+
+    simp [← intervalIntegral.integral_of_le, pi_nonneg]
+    apply intervalIntegral.integral_congr_ae this
   }
 /-
 (hs : MeasurableSet s) (hg' : ∀ x ∈ s, HasDerivWithinAt g (g' x) s x) (hg : InjOn g s)

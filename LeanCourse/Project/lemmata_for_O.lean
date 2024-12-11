@@ -91,10 +91,83 @@ lemma E2 {z : ℂ} {l : line} (hz : z ∈ 𝕆) (hl : l ∈ 𝕆.lines) :
     -- We keep our plane folded. While folded, we can mark the line going through z and z'. This marks the point z'', which is the reflection of z across l.
     sorry
 
+noncomputable def reAxis : line := O1 0 1 zero_ne_one
+noncomputable def imAxis : line := O4 0 reAxis
+lemma reAxis_in_𝕆 : reAxis ∈ 𝕆.lines := by sorry -- take the code from i_in_𝕆
+lemma imAxis_in_𝕆 : imAxis ∈ 𝕆.lines := by sorry
+
+lemma i_in_𝕆 : Complex.I ∈ 𝕆 := by
+  -- first define all necessary lines and points
+  let reAxis : line := O1 0 1 (zero_ne_one)
+  let imAxis : line := O4 0 reAxis
+  let l₁ : line := O4 1 reAxis
+  let l₂ : line := O3' reAxis l₁
+  -- Complex.I = Isect imAxis l₂
+
+  /- Maybe the following code would work if it would be more efficient.
+  Now the time limiter stops the computation at simp [generate_lines].
+
+  simp [𝕆]
+  use 4
+  simp [generate_lines]
+  -/
+
+  -- then show that they lie in 𝕆₁ or 𝕆₂
+  have h1 : reAxis ∈ 𝕆ₙ.lines 1 := by
+    -- Want to use O1(0, 1)
+    -- simp does everything
+    simp [generate_lines, line.eq]
+  have h2 : imAxis ∈ 𝕆ₙ.lines 2 := by
+    simp at h1
+    -- Want to use O4(0, reAxis)
+    right; right; right; right; right; left -- O4
+    use 0; simp -- first argument
+    use reAxis; simp [h1] -- second argument
+  have h3 : l₁ ∈ 𝕆ₙ.lines 2 := by
+    -- Want to use O4(1, reAxis)
+    right; right; right; right; right; left -- O4
+    use 1; -- first argument
+    constructor; simp -- 1 lies in 𝕆₁
+    use reAxis -- second argument
+    constructor; exact h1 -- reAxis lies in 𝕆₁
+    simp
+  have h4 : l₂ ∈ 𝕆ₙ.lines 3 := by
+    -- Want to use O3'(reAxis, l₁)
+    right; right; right; right; left -- O3'
+    use reAxis -- first argument
+    constructor; left; exact h1 -- reAxis lies in 𝕆₂
+    use l₁ -- Second argument of O3'(reAxis, l₁)
+    constructor; exact h3 -- l₁ lies in 𝕆₂
+    simp
+  have I_ne_one_or_neg_one : ¬(1 = Complex.I ∨ 1 = -Complex.I) := by simp [Complex.ext_iff]
+  have h5 : ¬AreParallel imAxis l₂ := by
+    simp [AreParallel, line.vec, imAxis, O4, reAxis, O1, l₁, l₂, O3', Isect, I_ne_one_or_neg_one, Complex.abs, Complex.normSq]
+    ring_nf; field_simp
+    constructor
+    · simp [Complex.ext_iff]
+      intro h; exfalso
+      obtain h' := Ne.symm ((fun {x} ↦ Real.sqrt_ne_zero'.mpr) zero_lt_two)
+      contradiction
+    · simp [Complex.ext_iff]
+
+  -- Now put it all together
+  simp [𝕆]
+  use 4
+  -- Complex.I = Isect imAxis l₂
+  right;
+  use imAxis
+  constructor; left; exact h2 -- imAxis ∈ 𝕆₃
+  use l₂
+  constructor; exact h4 -- l₂ ∈ 𝕆₃
+  use h5 -- imAxis and l₂ are not parallel
+  simp [Isect, imAxis, O4, reAxis, O1, l₁, l₂, line.vec, O3', AreParallel, I_ne_one_or_neg_one, Complex.abs, Complex.normSq]
+
 
 -- **Field Operations**
 
 lemma 𝕆_real_mult {z : ℂ} {a : ℝ} (hz : z ∈ 𝕆) : a * z ∈ 𝕆 := by sorry
+
+lemma 𝕆_neg {z : ℂ} (hz : z ∈ 𝕆) : -z ∈ 𝕆 := by rw [neg_eq_neg_one_mul]; norm_cast; exact 𝕆_real_mult hz
 
 /--𝕆 is closed under addition.-/
 theorem 𝕆_add {z₁ z₂ : ℂ} (hz₁ : z₁ ∈ 𝕆) (hz₂ : z₂ ∈ 𝕆) : z₁ + z₂ ∈ 𝕆 := by
@@ -102,7 +175,9 @@ theorem 𝕆_add {z₁ z₂ : ℂ} (hz₁ : z₁ ∈ 𝕆) (hz₂ : z₂ ∈ �
   by_cases hz₁_ne_zero : z₁ = 0; simp [hz₁_ne_zero, hz₂]
   by_cases hz₂_ne_zero : z₂ = 0; simp [hz₂_ne_zero, hz₁]
   by_cases hz₁_ne_real_mult_z₂ : ∃ a : ℝ, z₁ = a * z₂
-  · obtain ⟨a,ha⟩ := hz₁_ne_real_mult_z₂
+  · -- ToDo: Want to do this without using the multiplication lemma
+    -- in order to use addition in there
+    obtain ⟨a,ha⟩ := hz₁_ne_real_mult_z₂
     simp [ha, ← add_one_mul]
     norm_cast
     exact 𝕆_real_mult hz₂

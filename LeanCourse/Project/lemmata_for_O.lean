@@ -91,14 +91,25 @@ lemma E2 {z : ℂ} {l : line} (hz : z ∈ 𝕆) (hl : l ∈ 𝕆.lines) :
     -- We keep our plane folded. While folded, we can mark the line going through z and z'. This marks the point z'', which is the reflection of z across l.
     sorry
 
+
 -- **Field Operations**
+
+lemma 𝕆_real_mult {z : ℂ} {a : ℝ} (hz : z ∈ 𝕆) : a * z ∈ 𝕆 := by sorry
 
 /--𝕆 is closed under addition.-/
 theorem 𝕆_add {z₁ z₂ : ℂ} (hz₁ : z₁ ∈ 𝕆) (hz₂ : z₂ ∈ 𝕆) : z₁ + z₂ ∈ 𝕆 := by
-  -- Wlog we can assume that z₁ and z₂ are not equal to 0
+  -- Wlog we can assume that z₁ and z₂ are not equal to 0 or to a multiple (by a real number) of each other
   by_cases hz₁_ne_zero : z₁ = 0; simp [hz₁_ne_zero, hz₂]
   by_cases hz₂_ne_zero : z₂ = 0; simp [hz₂_ne_zero, hz₁]
-  push_neg at hz₁_ne_zero hz₂_ne_zero
+  by_cases hz₁_ne_real_mult_z₂ : ∃ a : ℝ, z₁ = a * z₂
+  · obtain ⟨a,ha⟩ := hz₁_ne_real_mult_z₂
+    simp [ha, ← add_one_mul]
+    norm_cast
+    exact 𝕆_real_mult hz₂
+  push_neg at hz₁_ne_zero hz₂_ne_zero hz₁_ne_real_mult_z₂
+
+  -- ToDo: Wollen wir noch den folgenden Fall per oBdA annehmen?
+  --hz₁_ne_z₂_normalised : z₁/(Complex.abs z₁) ≠ z₂/(Complex.abs z₂)
 
   -- Take the level of depth that z₁ and z₂ lie in 𝕆
   have hz₁_copy := hz₁
@@ -112,8 +123,22 @@ theorem 𝕆_add {z₁ z₂ : ℂ} (hz₁ : z₁ ∈ 𝕆) (hz₂ : z₂ ∈ �
   let l₁ := O1 0 z₁ hz₁_ne_zero.symm
   let l₂ := O1 0 z₂ hz₂_ne_zero.symm
 
-  have hl₁_n : l₁ ∈ 𝕆ₙ.lines (N+1) := by sorry
-  have hl₂_n : l₂ ∈ 𝕆ₙ.lines (N+1) := by sorry
+  have hl₁_n : l₁ ∈ 𝕆ₙ.lines (N+1) := by
+    right; left -- O1
+    use 0 -- first argument
+    constructor; apply 𝕆ₙ.points_inc 0 N (Nat.zero_le N); simp
+    use z₁ -- second argument
+    constructor; apply 𝕆ₙ.points_inc N₁ N (Nat.le_max_left N₁ N₂); exact hz₁N
+    use hz₁_ne_zero.symm
+    simp [l₁]
+  have hl₂_n : l₂ ∈ 𝕆ₙ.lines (N+1) := by
+    right; left -- O1
+    use 0 -- first argument
+    constructor; apply 𝕆ₙ.points_inc 0 N (Nat.zero_le N); simp
+    use z₂ -- second argument
+    constructor; apply 𝕆ₙ.points_inc N₂ N (Nat.le_max_right N₁ N₂); exact hz₂N
+    use hz₂_ne_zero.symm
+    simp [l₂]
 
   have hl₁ : l₁ ∈ 𝕆.lines := by simp [𝕆.lines]; use (N+1); exact hl₁_n
   have hl₂ : l₂ ∈ 𝕆.lines := by simp [𝕆.lines]; use (N+1); exact hl₂_n
@@ -123,7 +148,23 @@ theorem 𝕆_add {z₁ z₂ : ℂ} (hz₁ : z₁ ∈ 𝕆) (hz₂ : z₂ ∈ �
   let ⟨l₃,hl₃,hl₃_def⟩ := E1 z₂ l₁ hz₂ hl₁
   let ⟨l₄,hl₄,hl₄_def⟩ := E1 z₁ l₂ hz₁ hl₂
 
-  have hl₃_l₄_not_parallel : ¬AreParallel l₃ l₄ := by sorry
+  have hl₃_l₄_not_parallel : ¬AreParallel l₃ l₄ := by
+    simp [AreParallel, line.vec, hl₃_def, hl₄_def, l₁, l₂, O1, div_self, hz₁_ne_zero, hz₂_ne_zero]
+    constructor
+    · specialize hz₁_ne_real_mult_z₂ (Complex.abs z₁ / Complex.abs z₂)
+      push_cast at hz₁_ne_real_mult_z₂
+      simp [div_mul_comm] at hz₁_ne_real_mult_z₂
+      calc
+        z₁ / (Complex.abs z₁) ≠ z₂ / (Complex.abs z₂) * (Complex.abs z₁) / (Complex.abs z₁) := by
+          sorry
+        _ = z₂ / (Complex.abs z₂) := by simp [div_self, hz₁_ne_zero]
+    · specialize hz₁_ne_real_mult_z₂ (-(Complex.abs z₁) / (Complex.abs z₂))
+      push_cast at hz₁_ne_real_mult_z₂
+      simp [div_mul_comm] at hz₁_ne_real_mult_z₂
+      calc
+        -(z₁ / (Complex.abs z₁)) ≠ z₂ / (Complex.abs z₂) * (Complex.abs z₁) / (Complex.abs z₁) := by
+          sorry
+        _ = z₂ / (Complex.abs z₂) := by simp [div_self, hz₁_ne_zero]
 
   -- Take the level of depth that l₃ and l₄ lie in 𝕆.points
   have hl₃_copy := hl₃
@@ -146,24 +187,26 @@ theorem 𝕆_add {z₁ z₂ : ℂ} (hz₁ : z₁ ∈ 𝕆) (hz₂ : z₂ ∈ �
   constructor; apply 𝕆ₙ.lines_inc N₂ N (Nat.le_max_right N₁ N₂); exact hl₄N
   use hl₃_l₄_not_parallel
   simp [Isect, line.vec, hl₃_def.1, hl₃_def.2, hl₄_def.1, hl₄_def.2, l₂, l₁, O1]
-  -- Ab hier beginnt die Raterei
+  -- Very ugly, but whatever...
   field_simp
   simp [← neg_mul, ← div_mul_div_comm, ← div_mul_div_comm, mul_div_assoc, div_self, mul_div_assoc, sub_eq_add_neg, ← mul_assoc, ← neg_div, neg_sub]
   field_simp
-  ring
+  ring_nf
   simp --[mul_comm]
   symm
+  have : -((z₂.re : ℂ) * (z₁.im : ℂ)) + (z₂.im : ℂ) * (z₁.re : ℂ) ≠ 0 := by
+    norm_cast
+    -- Why is it important for z₁ and z₂ to be non-orthogonal?
+    sorry
   calc
-    -(z₁ * ↑z₂.re * ↑z₁.im * ↑(Complex.abs z₁) ^ 2 * ↑(Complex.abs z₂) *
-        (-(↑z₂.re * ↑z₁.im * ↑(Complex.abs z₁) ^ 2 * ↑(Complex.abs z₂)) +
-            ↑z₂.im * ↑z₁.re * ↑(Complex.abs z₁) ^ 2 * ↑(Complex.abs z₂))⁻¹) +
-    z₁ * ↑z₂.im * ↑z₁.re * ↑(Complex.abs z₁) ^ 2 * ↑(Complex.abs z₂) *
-      (-(↑z₂.re * ↑z₁.im * ↑(Complex.abs z₁) ^ 2 * ↑(Complex.abs z₂)) +
-          ↑z₂.im * ↑z₁.re * ↑(Complex.abs z₁) ^ 2 * ↑(Complex.abs z₂))⁻¹
-      = -(z₁ * ↑z₂.re * ↑z₁.im * ↑(Complex.abs z₂) *
-        (-(↑z₂.re * ↑z₁.im * ↑(Complex.abs z₂)) +
-            ↑z₂.im * ↑z₁.re * ↑(Complex.abs z₂))⁻¹) +
-    z₁ * ↑z₂.im * ↑z₁.re * ↑(Complex.abs z₁) ^ 2 * ↑(Complex.abs z₂) *
-      (-(↑z₂.re * ↑z₁.im * ↑(Complex.abs z₁) ^ 2 * ↑(Complex.abs z₂)) +
-          ↑z₂.im * ↑z₁.re * ↑(Complex.abs z₁) ^ 2 * ↑(Complex.abs z₂))⁻¹ := by sorry
-    _ = z₁ := by sorry
+    _ = z₁ * (-(↑z₂.re * ↑z₁.im) + ↑z₂.im * ↑z₁.re)
+        * ↑(Complex.abs z₂) * ↑(Complex.abs z₁) ^ 2 / (↑(Complex.abs z₁) ^ 2 * ↑(Complex.abs z₂) *
+        (-(↑z₂.re * ↑z₁.im) + ↑z₂.im * ↑z₁.re)) := by ring
+    _ = z₁ * (-(↑z₂.re * ↑z₁.im) + ↑z₂.im * ↑z₁.re)
+        * ↑(Complex.abs z₂) * ↑(Complex.abs z₁) ^ 2 / ↑(Complex.abs z₁) ^ 2 / ↑(Complex.abs z₂)
+        / (-(↑z₂.re * ↑z₁.im) + ↑z₂.im * ↑z₁.re) := by simp [← div_div]
+    _ = z₁ * ((-(↑z₂.re * ↑z₁.im) + ↑z₂.im * ↑z₁.re)
+        * (↑(Complex.abs z₁) ^ 2 / ↑(Complex.abs z₁) ^ 2) * (↑(Complex.abs z₂) / ↑(Complex.abs z₂))
+        / (-(↑z₂.re * ↑z₁.im) + ↑z₂.im * ↑z₁.re)) := by ring
+    _ = z₁ := by
+          simp [div_self, hz₁_ne_zero, hz₂_ne_zero, this]

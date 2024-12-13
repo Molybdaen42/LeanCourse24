@@ -1,6 +1,7 @@
 import LeanCourse.Project.defs
 open Classical
 open Construction
+open ComplexConjugate
 
 /- **Some Lemmata for 𝕆** -/
 
@@ -32,6 +33,23 @@ lemma 𝕆ₙ.lines_inc (n m : ℕ) (h: n ≤ m) : 𝕆ₙ.lines n ⊆ 𝕆ₙ.l
       left; exact im h' hl
     · have : n = m + 1 := by linarith
       rw [this]
+
+lemma O4_not_parallel {l : line} {z : ℂ} :
+  ¬AreParallel l (O4 z l) := by
+    simp [AreParallel, O4, line.vec, div_self vec_well_defined]
+    constructor
+    · --#check mul_ne_mul_left (Complex.abs (l.z₂ - l.z₁))
+      rw [← one_mul ((l.z₂ - l.z₁) / (Complex.abs (l.z₂ - l.z₁))), ← mul_assoc]
+      have h1: IsRightCancelMul ℂ := by sorry
+      have h2 : 1 ≠ Complex.I * 1 := by simp [Complex.ext_iff]
+      --mul_ne_mul_left
+      sorry
+    ring
+    sorry
+lemma O4_perpendicular {l : line} {z : ℂ} :
+  (l.vec * conj (O4 z l).vec).re = 0 := by
+    simp [O4, line.vec, div_self vec_well_defined]
+    ring
 
 /-- Given a point z and a line l, fold a line parallel to l that goes through z.-/
 lemma E1 (z : ℂ) (l : line) (hz : z ∈ 𝕆) (hl : l ∈ 𝕆.lines) :
@@ -70,30 +88,42 @@ lemma E1 (z : ℂ) (l : line) (hz : z ∈ 𝕆) (hl : l ∈ 𝕆.lines) :
     rfl
 
 /-- Given a point z and a line l, reflect z across l.-/
-lemma E2 {z : ℂ} {l : line} (hz : z ∈ 𝕆) (hl : l ∈ 𝕆.lines) :
-  sorry ∈ 𝕆 := by
+-- 2 * (l.z₁ + ⟨z-l.z₁,l.vect) * l.vec) - z
+-- = 2 * (l.z₁ + ((z-l.z₁)*conj l.vec) * l.vec) - z
+-- = 2 * (l.z₁ + (z-l.z₁) * l.vec.normSq(?) - z (ToDo: Would it be better to use this line?)
+lemma E2 (z : ℂ) (l : line) (hz : z ∈ 𝕆) (hl : l ∈ 𝕆.lines) :
+  2 * (l.z₁ + (z-l.z₁) * conj l.vec * l.vec) - z ∈ 𝕆 := by
     -- l₁ := O4(z, l) is perpendicular to l and passes through z
     let l₁ := O4 z l
-    -- pick z' on l that is not on l₁ (l.z₁ or l.z₂ will work)
+    -- pick z' on l that is not on l₁ (at least one of l.z₁ and l.z₂ will work)
+    -- let z' := z + k * l.vec for some k
     have : ∃ z' ∈ l.points, z' ∉ l₁.points := by
       by_cases h : l.z₁ ∈ l₁.points
       · use l.z₂
         constructor
         · exact z₂_on_l l
-        · sorry
+        · simp [l₁, O4] at h ⊢
+          intro t
+          obtain ⟨t_h,h⟩ := h
+
+          sorry
       · use l.z₁
         exact ⟨z₁_on_l l, h⟩
     obtain ⟨z', hz'1, hz'2⟩ := this
+    have z_ne_z' : z ≠ z' := by sorry
     -- Now we apply O5 to z, z' and l₁ to fold z over l
-    let L₂ := O5 z z' (by sorry) l₁
+    let L₂ := O5 z z' z_ne_z' l₁
     have : Nonempty L₂ := by sorry
     obtain ⟨l₂,hl₂⟩ := this
-    -- We keep our plane folded. While folded, we can mark the line going through z and z'. This marks the point z'', which is the reflection of z across l.
+    /- We keep our plane folded. While folded, we can mark the line going through z and z'.
+       This marks the point z'', which is the reflection of z across l.-/
+
     sorry
 
 
--- **Lemmata for the axioms being in 𝕆 if used on elements of 𝕆**
+/- **Lemmata for the axioms being in 𝕆 if used on elements of 𝕆** -/
 
+/-- The result of O1 is in 𝕆 if the arguments are in 𝕆.-/
 lemma O1_in_𝕆 {z₁ z₂ : ℂ} {h : z₁ ≠ z₂} (hz₁ : z₁ ∈ 𝕆) (hz₂ : z₂ ∈ 𝕆) : O1 z₁ z₂ h ∈ 𝕆.lines := by
   simp [𝕆, 𝕆.lines] at *
   obtain ⟨N₁,hz₁N⟩ := hz₁
@@ -109,6 +139,7 @@ lemma O1_in_𝕆 {z₁ z₂ : ℂ} {h : z₁ ≠ z₂} (hz₁ : z₁ ∈ 𝕆) (
   use h
   simp
 
+/-- The result of O2 is in 𝕆 if the arguments are in 𝕆.-/
 lemma O2_in_𝕆 {z₁ z₂ : ℂ} {h : z₁ ≠ z₂} (hz₁ : z₁ ∈ 𝕆) (hz₂ : z₂ ∈ 𝕆) : O2 z₁ z₂ h ∈ 𝕆.lines := by
   simp [𝕆, 𝕆.lines] at *
   obtain ⟨N₁,hz₁N⟩ := hz₁
@@ -124,6 +155,7 @@ lemma O2_in_𝕆 {z₁ z₂ : ℂ} {h : z₁ ≠ z₂} (hz₁ : z₁ ∈ 𝕆) (
   use h
   simp
 
+/-- The result of O3 is in 𝕆 if the arguments are in 𝕆.-/
 lemma O3_in_𝕆 {l₁ l₂ : line} (hl₁ : l₁ ∈ 𝕆.lines) (hl₂ : l₂ ∈ 𝕆.lines) : O3 l₁ l₂ ∈ 𝕆.lines := by
   simp [𝕆.lines] at *
   obtain ⟨N₁,hl₁N⟩ := hl₁
@@ -138,6 +170,7 @@ lemma O3_in_𝕆 {l₁ l₂ : line} (hl₁ : l₁ ∈ 𝕆.lines) (hl₂ : l₂ 
   constructor; apply 𝕆ₙ.lines_inc N₂ N (le_max_right N₁ N₂); exact hl₂N
   simp
 
+/-- The result of O3' is in 𝕆 if the arguments are in 𝕆.-/
 lemma O3'_in_𝕆 {l₁ l₂ : line} (hl₁ : l₁ ∈ 𝕆.lines) (hl₂ : l₂ ∈ 𝕆.lines) : O3' l₁ l₂ ∈ 𝕆.lines := by
   simp [𝕆.lines] at *
   obtain ⟨N₁,hl₁N⟩ := hl₁
@@ -152,6 +185,7 @@ lemma O3'_in_𝕆 {l₁ l₂ : line} (hl₁ : l₁ ∈ 𝕆.lines) (hl₂ : l₂
   constructor; apply 𝕆ₙ.lines_inc N₂ N (le_max_right N₁ N₂); exact hl₂N
   simp
 
+/-- The result of O4 is in 𝕆 if the arguments are in 𝕆.-/
 lemma O4_in_𝕆 {z : ℂ} {l : line} (hz : z ∈ 𝕆) (hl : l ∈ 𝕆.lines) : O4 z l ∈ 𝕆.lines := by
   simp [𝕆,𝕆.lines] at *
   obtain ⟨N₁,hzN⟩ := hz
@@ -166,6 +200,7 @@ lemma O4_in_𝕆 {z : ℂ} {l : line} (hz : z ∈ 𝕆) (hl : l ∈ 𝕆.lines) 
   constructor; apply 𝕆ₙ.lines_inc N₂ N (le_max_right N₁ N₂); exact hlN
   simp
 
+/-- The result of O5 is in 𝕆 if the arguments are in 𝕆.-/
 lemma O5_in_𝕆 {z₁ z₂ : ℂ} {h : z₁ ≠ z₂} {l : line} (hz₁ : z₁ ∈ 𝕆) (hz₂ : z₂ ∈ 𝕆) (hl : l ∈ 𝕆.lines) : O5 z₁ z₂ h l ⊆ 𝕆.lines := by
   simp [𝕆,𝕆.lines] at *
   obtain ⟨N₁,hz₁N⟩ := hz₁
@@ -187,6 +222,7 @@ lemma O5_in_𝕆 {z₁ z₂ : ℂ} {h : z₁ ≠ z₂} {l : line} (hz₁ : z₁ 
   use element
   simp [h_element]
 
+/-- The result of O6 is in 𝕆 if the arguments are in 𝕆.-/
 lemma O6_in_𝕆 {z₁ z₂ : ℂ} {h : z₁ ≠ z₂} {l₁ l₂ : line} (hz₁ : z₁ ∈ 𝕆) (hz₂ : z₂ ∈ 𝕆) (hl₁ : l₁ ∈ 𝕆.lines) (hl₂ : l₂ ∈ 𝕆.lines) : O6 z₁ z₂ h l₁ l₂ ⊆ 𝕆.lines := by
   simp [𝕆,𝕆.lines] at *
   obtain ⟨N₁,hz₁N⟩ := hz₁
@@ -211,6 +247,7 @@ lemma O6_in_𝕆 {z₁ z₂ : ℂ} {h : z₁ ≠ z₂} {l₁ l₂ : line} (hz₁
   use element
   simp [h_element]
 
+/-- The intersection of two non-parallel lines out of 𝕆 lies in 𝕆.-/
 lemma Isect_in_𝕆 {l₁ l₂ : line} {h : ¬AreParallel l₁ l₂} (hl₁ : l₁ ∈ 𝕆.lines) (hl₂ : l₂ ∈ 𝕆.lines) : Isect l₁ l₂ h ∈ 𝕆 := by
   simp [𝕆,𝕆.lines] at *
   obtain ⟨N₁,hl₁N⟩ := hl₁
@@ -265,9 +302,28 @@ lemma i_in_𝕆 : Complex.I ∈ 𝕆 := by
   rw [i_eq_isect]
   apply Isect_in_𝕆 imAxis_in_𝕆 h₂
 
+lemma conj_in_𝕆 {z : ℂ} (hz : z ∈ 𝕆) : conj z ∈ 𝕆 := by
+  -- Use E2 on the real axis
+  sorry
 
--- **Field Operations**
-lemma 𝕆_double {z : ℂ} (hz : z ∈ 𝕆) : 2 * z ∈ 𝕆 := by sorry
+
+/- **Field Operations** -/
+
+lemma 𝕆_double {z : ℂ} (hz : z ∈ 𝕆) : 2 * z ∈ 𝕆 := by
+  -- W.l.o.g. z ≠ 0
+  by_cases hz_ne_zero : z = 0; simp [hz_ne_zero]; exact zero_in_𝕆
+
+  -- Define the line through 0 and z.
+  let l₁ := O1 z 0 hz_ne_zero
+  have : l₁ ∈ 𝕆.lines := O1_in_𝕆 hz zero_in_𝕆
+  -- Now define the line perpendicular to l₁ which goes through z.
+  let l₂ := O4 z l₁
+  have : l₂ ∈ 𝕆.lines := O4_in_𝕆 hz this
+  -- After that, we mirror 0 across l₂ and get 2 * z.
+  --have : h_two_z_in_𝕆 := E2 0 l₂ zero_in_𝕆 this
+
+  -- Now is just left to show that the output of E2 equals 2 * z.
+  sorry
 
 /-- This is the main part of the proof of 𝕆_add_multiples. Here we suppose w.l.o.g. that |z₁| < |z₂|.-/
 lemma _𝕆_add_multiples {z₁ z₂ : ℂ} (hz₁ : z₁ ∈ 𝕆) (hz₂ : z₂ ∈ 𝕆) (h_multiple : ∃ a : ℝ, z₁ = a * z₂) (h_abs_ne : Complex.abs z₁ < Complex.abs z₂) : z₁ + z₂ ∈ 𝕆 := by
@@ -289,7 +345,10 @@ lemma 𝕆_add_multiples {z₁ z₂ : ℂ} (hz₁ : z₁ ∈ 𝕆) (hz₂ : z₂
   by_cases h_cases : Complex.abs z₁ < Complex.abs z₂
   · exact _𝕆_add_multiples hz₁ hz₂ h_multiple h_cases
   · simp at h_cases
-    by_cases h_abs_ne : Complex.abs z₁ = Complex.abs z₂; sorry
+    by_cases h_abs_ne : Complex.abs z₁ = Complex.abs z₂;
+    · -- The case that |z₁| = |z₂|. By h_multiple, we know that z₁ = ±z₂,
+      -- therefore their sum equals 0 or 2 * z₁. Apply zero_in_𝕆 or 𝕆_double.
+      sorry
     have h_cases : Complex.abs z₂ < Complex.abs z₁ := by
       exact lt_of_le_of_ne h_cases (fun a ↦ h_abs_ne (a.symm))
     rw [add_comm]
@@ -324,30 +383,10 @@ theorem 𝕆_add {z₁ z₂ : ℂ} (hz₁ : z₁ ∈ 𝕆) (hz₂ : z₂ ∈ �
   let l₁ := O1 0 z₁ hz₁_ne_zero.symm
   let l₂ := O1 0 z₂ hz₂_ne_zero.symm
 
-  have hl₁_n : l₁ ∈ 𝕆ₙ.lines (N+1) := by
-    right; left -- O1
-    use 0 -- first argument
-    constructor; apply 𝕆ₙ.points_inc 0 N (Nat.zero_le N); simp
-    use z₁ -- second argument
-    constructor; apply 𝕆ₙ.points_inc N₁ N (Nat.le_max_left N₁ N₂); exact hz₁N
-    use hz₁_ne_zero.symm
-    simp [l₁]
-  have hl₂_n : l₂ ∈ 𝕆ₙ.lines (N+1) := by
-    right; left -- O1
-    use 0 -- first argument
-    constructor; apply 𝕆ₙ.points_inc 0 N (Nat.zero_le N); simp
-    use z₂ -- second argument
-    constructor; apply 𝕆ₙ.points_inc N₂ N (Nat.le_max_right N₁ N₂); exact hz₂N
-    use hz₂_ne_zero.symm
-    simp [l₂]
-
-  have hl₁ : l₁ ∈ 𝕆.lines := by simp [𝕆.lines]; use (N+1); exact hl₁_n
-  have hl₂ : l₂ ∈ 𝕆.lines := by simp [𝕆.lines]; use (N+1); exact hl₂_n
-
   -- Second step: fold a line parallel to l₁ that goes through z₂
   -- and a line parallel to l₂ that goes through z₁.
-  let ⟨l₃,hl₃,hl₃_def⟩ := E1 z₂ l₁ hz₂ hl₁
-  let ⟨l₄,hl₄,hl₄_def⟩ := E1 z₁ l₂ hz₁ hl₂
+  let ⟨l₃,hl₃,hl₃_def⟩ := E1 z₂ l₁ hz₂ (O1_in_𝕆 zero_in_𝕆 hz₁)
+  let ⟨l₄,hl₄,hl₄_def⟩ := E1 z₁ l₂ hz₁ (O1_in_𝕆 zero_in_𝕆 hz₂)
 
   have hl₃_l₄_not_parallel : ¬AreParallel l₃ l₄ := by
     simp [AreParallel, line.vec, hl₃_def, hl₄_def, l₁, l₂, O1, div_self, hz₁_ne_zero, hz₂_ne_zero]
@@ -357,6 +396,7 @@ theorem 𝕆_add {z₁ z₂ : ℂ} (hz₁ : z₁ ∈ 𝕆) (hz₂ : z₂ ∈ �
       simp [div_mul_comm] at hz₁_ne_real_mult_z₂
       calc
         z₁ / (Complex.abs z₁) ≠ z₂ / (Complex.abs z₂) * (Complex.abs z₁) / (Complex.abs z₁) := by
+
           sorry
         _ = z₂ / (Complex.abs z₂) := by simp [div_self, hz₁_ne_zero]
     · specialize hz₁_ne_real_mult_z₂ (-(Complex.abs z₁) / (Complex.abs z₂))

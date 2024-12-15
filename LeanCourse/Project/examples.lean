@@ -1,5 +1,6 @@
 import LeanCourse.Project.defs
 import LeanCourse.Project.lemmata_for_O
+import LeanCourse.Project.field_operations
 open Classical
 open Construction
 

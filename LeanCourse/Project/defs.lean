@@ -42,6 +42,10 @@ lemma vec_ne_zero (l : line) : l.vec ≠ 0 := by
     exact l.z₁_neq_z₂.symm
   · exact l.z₁_neq_z₂.symm
 
+/-- The direction vector is of length one.-/
+lemma vec_abs_one (l : line) : Complex.abs l.vec = 1 := by
+  field_simp [line.vec, vec_well_defined]
+
 /-- The term z₂ - z₁ is never zero.-/
 lemma diff_ne_zero (l : line) : l.z₂ - l.z₁ ≠ 0 := by
   exact sub_ne_zero_of_ne l.z₁_neq_z₂.symm

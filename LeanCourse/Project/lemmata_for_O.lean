@@ -37,15 +37,14 @@ lemma 𝕆ₙ.lines_inc (n m : ℕ) (h: n ≤ m) : 𝕆ₙ.lines n ⊆ 𝕆ₙ.l
 lemma O4_not_parallel {l : line} {z : ℂ} :
   ¬AreParallel l (O4 z l) := by
     simp [AreParallel, O4, line.vec, div_self vec_well_defined]
+    have : IsRightCancelMul ℂ := by sorry
     constructor
-    · --#check mul_ne_mul_left (Complex.abs (l.z₂ - l.z₁))
-      rw [← one_mul ((l.z₂ - l.z₁) / (Complex.abs (l.z₂ - l.z₁))), ← mul_assoc]
-      have h1: IsRightCancelMul ℂ := by sorry
-      have h2 : 1 ≠ Complex.I * 1 := by simp [Complex.ext_iff]
-      --mul_ne_mul_left
-      sorry
-    ring
-    sorry
+    · rw [← one_mul ((l.z₂ - l.z₁) / (Complex.abs (l.z₂ - l.z₁))), ← mul_assoc, mul_one]
+      apply (mul_ne_mul_left ((l.z₂ - l.z₁) / (Complex.abs (l.z₂ - l.z₁)))).mpr
+      simp [Complex.ext_iff]
+    · rw [← one_mul ((l.z₂ - l.z₁) / (Complex.abs (l.z₂ - l.z₁))), ← mul_assoc, mul_one, ← neg_mul]
+      apply (mul_ne_mul_left ((l.z₂ - l.z₁) / (Complex.abs (l.z₂ - l.z₁)))).mpr
+      simp [Complex.ext_iff]
 lemma O4_perpendicular {l : line} {z : ℂ} :
   (l.vec * conj (O4 z l).vec).re = 0 := by
     simp [O4, line.vec, div_self vec_well_defined]
@@ -234,23 +233,56 @@ lemma E1 (z : ℂ) (l : line) (hz : z ∈ 𝕆) (hl : l ∈ 𝕆.lines) :
     rfl
 
 /-- Given a point z and a line l, reflect z across l.-/
--- 2 * (l.z₁ + ⟨z-l.z₁,l.vect) * l.vec) - z
--- = 2 * (l.z₁ + ((z-l.z₁)*conj l.vec) * l.vec) - z
--- = 2 * (l.z₁ + (z-l.z₁) * l.vec.normSq(?) - z (ToDo: Would it be better to use this line?)
+-- 2 * (l.z₁ + ⟨z-l.z₁,l.vect⟩ * l.vec) - z
+-- = 2 * (l.z₁ + ((z-l.z₁)*conj l.vec).re * l.vec) - z
 lemma E2 (z : ℂ) (l : line) (hz : z ∈ 𝕆) (hl : l ∈ 𝕆.lines) :
-  2 * (l.z₁ + (z-l.z₁) * conj l.vec * l.vec) - z ∈ 𝕆 := by
+  2 * (l.z₁ + ((z-l.z₁) * conj l.vec).re * l.vec) - z ∈ 𝕆 := by
     -- l₁ is perpendicular to l and passes through z.
     let l₁ := O4 z l
     have hl₁ : l₁ ∈ 𝕆.lines := O4_in_𝕆 hz hl
 
     -- l₂ is parallel to l and passes through z.
     let ⟨l₂,hl₂,hl₂_def1,hl₂_def2⟩ := E1 z l hz hl
-    have hl₁_l₂_not_parallel : ¬AreParallel l₁ l₂ := by sorry
+    have hl₁_l₂_not_parallel : ¬AreParallel l₁ l₂ := by 
+      simp [AreParallel, line.vec]
+      simp [l₁, O4, hl₂_def1, hl₂_def2]
+      constructor
+      · rw [← one_mul (-l.vec / (Complex.abs l.vec)),neg_div, mul_neg, ← neg_mul, mul_div_assoc]
+        by_contra h
+        have := mul_eq_mul_right_iff.mp h
+        simp [vec_ne_zero] at this
+        simp [Complex.ext_iff] at this
+      · rw [← one_mul (-l.vec / (Complex.abs l.vec)),neg_div, mul_neg, neg_neg, mul_div_assoc]
+        by_contra h
+        have := mul_eq_mul_right_iff.mp h
+        simp [vec_ne_zero] at this
+        simp [Complex.ext_iff] at this
 
     -- l₃ bisects the angle between l₁ and l₂. The three of them intersect in z.
     let l₃ := O3 l₁ l₂
     have hl₃ : l₃ ∈ 𝕆.lines := O3_in_𝕆 hl₁ hl₂
-    have hl_l₃_not_parallel : ¬AreParallel l l₃ := by sorry
+    have hl₃_z₁ : l₃.z₁ = z := by
+      simp [l₃, O3, hl₁_l₂_not_parallel, Isect, l₁]
+      simp [O4, line.vec, div_self vec_well_defined, hl₂_def1]
+    have hl₃_z₂ : l₃.z₂ = z + Complex.I * l.vec - l.vec := by
+      simp [l₃, O3, hl₁_l₂_not_parallel, Isect, l₁]
+      simp [O4, line.vec, div_self vec_well_defined]
+      simp [hl₂_def1, hl₂_def2, vec_abs_one]
+      rfl
+    have hl_l₃_not_parallel : ¬AreParallel l l₃ := by 
+      simp [AreParallel]
+      rw [line.vec, line.vec, hl₃_z₁, hl₃_z₂, ← line.vec]
+      ring; field_simp
+      constructor
+      · intro h
+        have h : l.vec * Complex.abs (Complex.I * l.vec - l.vec) =
+  Complex.I * l.vec / ↑(Complex.abs (Complex.I * l.vec - l.vec)) - l.vec / ↑(Complex.abs (Complex.I * l.vec - l.vec)) * Complex.abs (Complex.I * l.vec - l.vec) := by 
+          sorry
+        field_simp [vec_ne_zero] at h
+        --have := mul_eq_mul_right_iff.mpr this
+        --apply mul_eq_mul_right_iff.mpr (Complex.abs (Complex.I * l.vec - l.vec)) at h
+        sorry
+      · sorry
 
     -- z₁ is the intersection of l and l₃.
     let z₁ := Isect l l₃ hl_l₃_not_parallel
@@ -263,14 +295,7 @@ lemma E2 (z : ℂ) (l : line) (hz : z ∈ 𝕆) (hl : l ∈ 𝕆.lines) :
 
     -- The result is the intersection of l₁ and l₄.
     -- But first, let's compute some stuff
-    have hl₃_z₁ : l₃.z₁ = z := by
-      simp [l₃, O3, hl₁_l₂_not_parallel, Isect, l₁]
-      simp [O4, line.vec, div_self vec_well_defined, hl₂_def1]
-    have hl₃_z₂ : l₃.z₂ = z + Complex.I * l.vec + -l.vec := by
-      simp [l₃, O3, hl₁_l₂_not_parallel, Isect, l₁]
-      simp [O4, line.vec, div_self vec_well_defined]
-      simp [hl₂_def1, hl₂_def2, vec_abs_one]
-      rfl
+    
     -- Is there a neat formula for z₁? If yes, write is as above.
     have h : z₁ = Isect l l₃ hl_l₃_not_parallel := by rfl
     simp [Isect, line.vec, hl₃_z₁, hl₃_z₂] at h
@@ -298,6 +323,26 @@ lemma E2 (z : ℂ) (l : line) (hz : z ∈ 𝕆) (hl : l ∈ 𝕆.lines) :
     -- Again: The result is the intersection of l₁ and l₄.
     rw [this]
     exact Isect_in_𝕆 hl₁ hl₄
+
+lemma E2' (z : ℂ) (l : line) (hz : z ∈ 𝕆) (hl : l ∈ 𝕆.lines) :
+  ∃ z' ∈ 𝕆, ∃ (h : z ≠ z'), (O2 z z' h).eq l := by
+    let z' := 2 * (l.z₁ + ((z-l.z₁) * conj l.vec).re * l.vec) - z
+    have z'_ne_z : z' ≠ z := by 
+      simp_rw [z', line.vec]
+      ring
+      sorry
+    use z';
+    constructor; exact E2 z l hz hl
+    use z'_ne_z.symm;
+    apply (line_eq_symm (O2 z z' z'_ne_z.symm) l).mpr
+    apply (line_eq_iff_both_points_lie_in_the_other' l (O2 z z' z'_ne_z.symm)).mpr
+    simp [O2, z']
+    constructor
+    · ring
+      
+      sorry
+    · sorry
+
 
 
 -- **The most fundamental lines and points in 𝕆**

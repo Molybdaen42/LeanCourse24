@@ -149,7 +149,7 @@ theorem 𝕆_add {z₁ z₂ : ℂ} (hz₁ : z₁ ∈ 𝕆) (hz₂ : z₂ ∈ �
     _ = z₁ := by
           simp [div_self, hz₁_ne_zero, hz₂_ne_zero, this]
 
-lemma 𝕆_real_mult {z : ℂ} {a : ℝ} (hz : z ∈ 𝕆) : a * z ∈ 𝕆 := by sorry
-lemma 𝕆_i_mult {z : ℂ} (hz : z ∈ 𝕆) : Complex.I * z ∈ 𝕆 := by sorry
+lemma 𝕆_real_mul {z : ℂ} {a : ℝ} (hz : z ∈ 𝕆) : a * z ∈ 𝕆 := by sorry
+lemma 𝕆_i_mul {z : ℂ} (hz : z ∈ 𝕆) : Complex.I * z ∈ 𝕆 := by sorry
 
 lemma 𝕆_neg {z : ℂ} (hz : z ∈ 𝕆) : -z ∈ 𝕆 := by rw [neg_eq_neg_one_mul]; norm_cast; exact 𝕆_real_mult hz

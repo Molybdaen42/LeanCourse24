@@ -1,4 +1,3 @@
-lean-toolchain
 ## macOS
 .DS_Store
 ## Lake
@@ -43,3 +42,4 @@ docs/_includes/sorries.md
 *.synctex.gz
 *.synctex.gz(busy)
 *.pdfsync
+lean-toolchain

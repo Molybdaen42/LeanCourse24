@@ -70,11 +70,11 @@ noncomputable def dist_point_line (z : ℂ) (l : line) : ℝ :=
   Using the first one will satisfy our needs while the other one requires equal generationg points z₁ and z₂.-/
 def line.eq (l₁ l₂ : line) := l₁.points = l₂.points
 
-@[symm] lemma line.eq.symm (l₁ l₂ : line) : l₁.eq l₂ ↔ l₂.eq l₁ := by rw [line.eq, line.eq]; tauto
-@[symm] lemma line.eq.symm' (l₁ l₂ : line) : ¬l₁.eq l₂ ↔ ¬l₂.eq l₁ := by rw [not_iff_not]; exact symm l₁ l₂
+@[symm] lemma line_eq_symm (l₁ l₂ : line) : l₁.eq l₂ ↔ l₂.eq l₁ := by rw [line.eq, line.eq]; tauto
+@[symm] lemma line_eq_symm' (l₁ l₂ : line) : ¬l₁.eq l₂ ↔ ¬l₂.eq l₁ := by rw [not_iff_not]; exact line_eq_symm l₁ l₂
 
 -- show that line.eq is in fact an equivalence relation
-lemma eq_is_equivalence_relation : Equivalence line.eq := by
+lemma line_eq_is_equivalence_relation : Equivalence line.eq := by
   unfold line.eq
   constructor
   · -- to show: reflexive
@@ -87,16 +87,18 @@ lemma eq_is_equivalence_relation : Equivalence line.eq := by
     assumption
 
 @[simp] lemma line_eq_self (l : line) : l.eq l := by
-  simp [eq_is_equivalence_relation.refl]
+  simp [line_eq_is_equivalence_relation.refl]
 
 /-- Two lines are different if there is a point lying in one but not the other.-/
-lemma line_not_eq_if (l₁ l₂ : line) (h: ∃ x, x ∈ l₁.points ∧ x ∉ l₂.points) :  ¬l₁.eq l₂ := by
-  obtain ⟨x, hx₁, hx₂⟩ := h
-  exact ne_of_mem_of_not_mem' hx₁ hx₂
+lemma line_ne_iff {l₁ l₂ : line} ∃ x, x ∈ l₁.points ∧ x ∉ l₂.points ↔ ¬l₁.eq l₂ := by
+  constructor
+  · rintro ⟨x, hx₁, hx₂⟩
+    exact ne_of_mem_of_not_mem' hx₁ hx₂
+  · sorry
 
 /-- Two lines are different if there is a point lying in one but not the other.-/
-lemma line_not_eq_if' (l₁ l₂ : line) (h: ∃ x, x ∈ l₂.points ∧ x ∉ l₁.points) :  ¬l₁.eq l₂ := by
-  rw [line.eq.symm]
+lemma line_ne_iff' {l₁ l₂ : line} ∃ x, x ∈ l₂.points ∧ x ∉ l₁.points ↔ ¬l₁.eq l₂ := by
+  rw [line_eq_symm]
   exact (line_not_eq_if l₂ l₁ h)
 
 lemma line_eq_if_switched_points (l : line) : l.eq ⟨l.z₂, l.z₁, l.z₁_neq_z₂.symm⟩ := by
@@ -145,7 +147,7 @@ lemma line_eq_iff_both_points_lie_in_the_other (l₁ l₂ : line) :
 /-- Two lines l₁ and l₂ are equal iff l₂.z₁ and l₂.z₂ lie in l₁.-/
 lemma line_eq_iff_both_points_lie_in_the_other' (l₁ l₂ : line) :
   l₁.eq l₂ ↔ l₂.z₁ ∈ l₁.points ∧ l₂.z₂ ∈ l₁.points := by
-  rw [line.eq.symm]
+  rw [line_eq_symm]
   exact line_eq_iff_both_points_lie_in_the_other l₂ l₁
 
 
@@ -195,10 +197,6 @@ lemma AreParallel_if_disjoint (l₁ l₂ : line) : Disjoint l₁.points l₂.poi
   sorry
 lemma AreParallel_iff_forall (l₁ l₂ : line) :   AreParallel l₁ l₂ ↔ ∀ z ∈ l₁.points, z + l₂.vec ∈ l₁.points := by sorry
 lemma AreParallel_iff_forall' (l₁ l₂ : line) :  AreParallel l₁ l₂ ↔ ∀ z ∈ l₂.points, z + l₁.vec ∈ l₂.points := by sorry
-lemma AreParallel_iff_z₁ (l₁ l₂ : line) :       AreParallel l₁ l₂ ↔ l₁.z₁ + l₂.vec ∈ l₁.points := by sorry
-lemma AreParallel_iff_z₁' (l₁ l₂ : line) :      AreParallel l₁ l₂ ↔ l₂.z₁ + l₁.vec ∈ l₂.points := by sorry
-lemma AreParallel_iff_z₂ (l₁ l₂ : line) :       AreParallel l₁ l₂ ↔ l₁.z₂ + l₂.vec ∈ l₁.points := by sorry
-lemma AreParallel_iff_z₂' (l₁ l₂ : line) :      AreParallel l₁ l₂ ↔ l₂.z₂ + l₁.vec ∈ l₂.points := by sorry
 
 
 -- **intersection point of two lines**

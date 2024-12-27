@@ -126,7 +126,7 @@ lemma O4_on_z₁_and_l₄ (hz : z ∈ 𝕆) (hl : l ∈ 𝕆.lines) :
     simp [neg_add_eq_sub, Complex.ext_iff, ← neg_div, neg_add_eq_sub]
 
 lemma E2_in_𝕆 (hz : z ∈ 𝕆) (hl : l ∈ 𝕆.lines) :
-  2 * (l.z₁ + ((z-l.z₁) * conj l.vec).re * l.vec) - z ∈ 𝕆 := by
+  E2 z l hz hl ∈ 𝕆 := by
     -- l₁ is perpendicular to l and passes through z.
     let l₁ := O4 z l
     have hl₁ : l₁ ∈ 𝕆.lines := O4_in_𝕆 hz hl
@@ -161,8 +161,8 @@ lemma E2_in_𝕆 (hz : z ∈ 𝕆) (hl : l ∈ 𝕆.lines) :
     let z₂ := Isect l₁ l₄ hl₁_l₄_not_parallel
     have hz₂ : z₂ ∈ 𝕆 := Isect_in_𝕆 hl₁ hl₄
 
-    have : 2 * (l.z₁ + ((z-l.z₁) * conj l.vec).re * l.vec) - z = z₂ := by
-      simp_rw [z₂, Isect, hl₄_vec, l₄, O4, z₁, Isect, hl₃_vec, hl₃_z₁, hl₁_vec, l₁, O4]
+    have : E2 z l hz hl = z₂ := by
+      simp_rw [E2, z₂, Isect, hl₄_vec, l₄, O4, z₁, Isect, hl₃_vec, hl₃_z₁, hl₁_vec, l₁, O4]
       norm_cast
       simp [div_mul_eq_mul_div, div_div_eq_mul_div, div_div, neg_div']
       simp_rw [← neg_mul, neg_add, neg_sub, sub_neg_eq_add, neg_neg, ← sub_eq_add_neg]
@@ -200,29 +200,25 @@ lemma E2_ne_z {z : ℂ} {l : line} {hz : z ∈ 𝕆} {hl : l ∈ 𝕆.lines} (h 
   have h' : z = 2 * (l.z₁ + k * l.vec) - z := by simp [k]; exact h'
   simp [sub_eq_add_neg] at h'
   have h' := add_eq_of_eq_add_neg h'
-  have h' : z = l.z₁ + k * l.vec := by
-    simp [add_self_div_two] at h'
-    sorry
-  have h' : 2 * z = 2 * (l.z₁ + k * l.vec) := by simp [add_eq_of_eq_add_neg, h']
-  sorry
+  simp [← two_mul] at h'
+  by_cases hk : k ≠ 0
+  · have := line_eq_if_add_vec l hk
+    simp_rw [← h', line_eq_iff_both_points_lie_in_the_other'] at this
+    have := this.2
+    contradiction
+  · simp at hk
+    simp [hk] at h'
+    rw [h'] at h
+    have := z₁_on_l l
+    contradiction
 
-lemma O2_on_E2' (z : ℂ) (l : line) (hz : z ∈ 𝕆) (hl : l ∈ 𝕆.lines) :
-  (O2 z (E2 z l hz hl) E2_ne_z).eq l := by
-    let z' := 2 * (l.z₁ + ((z-l.z₁) * conj l.vec).re * l.vec) - z
-    have z'_ne_z : z' ≠ z := by
-      simp_rw [z', line.vec]
-      ring
-      sorry
-    use z';
-    constructor; exact E2 z l hz hl
-    use z'_ne_z.symm;
-    apply (line_eq_symm (O2 z z' z'_ne_z.symm) l).mpr
-    apply (line_eq_iff_both_points_lie_in_the_other' l (O2 z z' z'_ne_z.symm)).mpr
-    simp [O2, z']
+/-lemma O2_on_E2' (z : ℂ) (l : line) (hz : z ∈ 𝕆) (hl : l ∈ 𝕆.lines) (h : z ∉ l.points) :
+  (O2 z (E2 z l hz hl) (E2_ne_z h)).eq l := by
+    simp_rw [line_eq_iff_both_points_lie_in_the_other']
+    simp [E2, O2]
     constructor
-    · ring
-
+    · use 1 - (l.z₁-(l.z₁+((z.re-l.z₁.re)*l.vec.re+(z.im-l.z₁.im)*l.vec.im)*l.vec)) / (Complex.I*(2*(l.z₁+((z.re-l.z₁.re)*l.vec.re+(z.im-l.z₁.im)*l.vec.im)*l.vec)-2*z))
       sorry
     · sorry
-
+-/
 end E2

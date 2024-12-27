@@ -28,9 +28,6 @@ noncomputable def line.vec (l : line) : ℂ := (l.z₂ - l.z₁) / (Complex.abs 
 /-- The denominator of line.vec is ≠ 0. Maybe not necessary per definition of Complex.inv... -/
 @[simp] lemma vec_well_defined {l : line} : Complex.abs (l.z₂ - l.z₁) ≠ 0 := by simp [l.z₁_neq_z₂.symm]
 
-#check norm_ne_zero_iff
-#check Complex.inv_def
-
 variable (l : line)
 
 /-- The direction vector is never zero.-/
@@ -154,7 +151,7 @@ lemma line_eq_if_add_vec (l : line) {k : ℝ} (h : k ≠ 0) : l.eq ⟨l.z₁, l.
   · simp
     use 1 - (Complex.abs (l.z₂ - l.z₁)) / k
     simp [line.vec]
-    ring
+    ring_nf
     simp [h, this]
 
 /-- Two lines are different if there is a point lying in one but not the other.-/
@@ -209,11 +206,20 @@ lemma AreParallel_if_disjoint (l₁ l₂ : line) : Disjoint l₁.points l₂.poi
   push_neg at hcontra
   obtain ⟨h1,h2⟩ := hcontra
   sorry
-lemma AreParallel_iff_forall (l₁ l₂ : line) :   AreParallel l₁ l₂ ↔ ∀ z ∈ l₁.points, z + l₂.vec ∈ l₁.points := by sorry
-lemma AreParallel_iff_forall' (l₁ l₂ : line) :  AreParallel l₁ l₂ ↔ ∀ z ∈ l₂.points, z + l₁.vec ∈ l₂.points := by sorry
+lemma AreParallel_iff_forall (l₁ l₂ : line) :
+  AreParallel l₁ l₂ ↔ ∀ z ∈ l₁.points, z + l₂.vec ∈ l₁.points := by
+    sorry
+lemma AreParallel_iff_forall' (l₁ l₂ : line) :
+  AreParallel l₁ l₂ ↔ ∀ z ∈ l₂.points, z + l₁.vec ∈ l₂.points := by
+    sorry
 
 
 -- **intersection point of two lines**
+
+--ToDo: necessary?
+--def sProd : ℂ × ℂ → ℂ := fun (z₁, z₂) ↦ (z₁ * conj z₂).re
+--def orth_sProd : ℂ × ℂ → ℂ := fun (z₁, z₂) ↦ (z₁ * conj z₂).im
+
 
 /-- Computes the intersection point of l₁ and l₂.-/
 -- The dot product of vectors v^⊥ and u is

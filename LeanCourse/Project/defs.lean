@@ -89,18 +89,6 @@ lemma line_eq_is_equivalence_relation : Equivalence line.eq := by
 @[simp] lemma line_eq_self (l : line) : l.eq l := by
   simp [line_eq_is_equivalence_relation.refl]
 
-/-- Two lines are different if there is a point lying in one but not the other.-/
-lemma line_ne_iff {l₁ l₂ : line} ∃ x, x ∈ l₁.points ∧ x ∉ l₂.points ↔ ¬l₁.eq l₂ := by
-  constructor
-  · rintro ⟨x, hx₁, hx₂⟩
-    exact ne_of_mem_of_not_mem' hx₁ hx₂
-  · sorry
-
-/-- Two lines are different if there is a point lying in one but not the other.-/
-lemma line_ne_iff' {l₁ l₂ : line} ∃ x, x ∈ l₂.points ∧ x ∉ l₁.points ↔ ¬l₁.eq l₂ := by
-  rw [line_eq_symm]
-  exact (line_not_eq_if l₂ l₁ h)
-
 lemma line_eq_if_switched_points (l : line) : l.eq ⟨l.z₂, l.z₁, l.z₁_neq_z₂.symm⟩ := by
   ext z
   constructor
@@ -168,6 +156,32 @@ lemma line_eq_if_add_vec (l : line) {k : ℝ} (h : k ≠ 0) : l.eq ⟨l.z₁, l.
     simp [line.vec]
     ring
     simp [h, this]
+
+/-- Two lines are different if there is a point lying in one but not the other.-/
+lemma line_ne_iff {l₁ l₂ : line} : (∃ x, x ∈ l₁.points ∧ x ∉ l₂.points) ↔ ¬l₁.eq l₂ := by
+  constructor
+  · rintro ⟨x, hx₁, hx₂⟩
+    exact ne_of_mem_of_not_mem' hx₁ hx₂
+  · intro h
+    by_cases hz₁ : l₁.z₁ ∈ l₂.points
+    · use l₁.z₂
+      -- l₁.z₂ ∈ l₁.points
+      constructor; exact z₂_on_l l₁
+      -- Left to show: l₁.z₂ ∉ l₂.points
+      -- Assume l₁.z₂ ∈ l₂.points
+      by_contra hz₂
+      -- Then ¬l₁.eq l₂ cannot be the case.
+      rw [line_eq_iff_both_points_lie_in_the_other l₁ l₂, not_and] at h
+      simp_rw [hz₁,hz₂] at h
+      contradiction
+    · -- Suppose l₁.z₁ ∉ l₂.points. Then take it.
+      use l₁.z₁
+      exact ⟨z₁_on_l l₁, hz₁⟩
+
+/-- Two lines are different if there is a point lying in one but not the other.-/
+lemma line_ne_iff' {l₁ l₂ : line} : (∃ x, x ∈ l₂.points ∧ x ∉ l₁.points) ↔ ¬l₁.eq l₂ := by
+  rw [line_eq_symm]
+  exact line_ne_iff
 
 
 -- **What does it mean for two lines to be parallel?**

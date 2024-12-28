@@ -152,38 +152,101 @@ theorem 𝕆_add {z₁ z₂ : ℂ} (hz₁ : z₁ ∈ 𝕆) (hz₂ : z₂ ∈ �
   apply in_𝕆_if_eq (Isect l₃ l₄ hl₃_l₄_not_parallel)
   · exact Isect_in_𝕆 hl₃ hl₄
   · -- to show: this intersection really is the searched sum
-    simp [Isect, line.vec, l₃, l₄, E1, l₂, l₁, O1]
-    -- Very ugly, but whatever...
+    simp [Isect, line.vec, hl₃_z₁, hl₃_z₂, hl₄_z₁, hl₄_z₂, div_self, hz₁_ne_zero, hz₂_ne_zero]
     field_simp
-    simp [← neg_mul, ← div_mul_div_comm, ← div_mul_div_comm, mul_div_assoc, div_self, mul_div_assoc, sub_eq_add_neg, ← mul_assoc, ← neg_div, neg_sub]
-    field_simp
+    have h1 : (Complex.abs z₁ : ℂ) ≠ 0 := by norm_cast; exact (AbsoluteValue.ne_zero_iff Complex.abs).mpr hz₁_ne_zero
+    have h2 : (Complex.abs z₂ : ℂ) ≠ 0 := by norm_cast; exact (AbsoluteValue.ne_zero_iff Complex.abs).mpr hz₂_ne_zero
+    rw [mul_assoc (Complex.abs z₂ : ℂ), mul_comm ((-((z₂.re : ℂ) * z₁.im) + (z₂.im : ℂ) * z₁.re))]
+    rw [mul_comm (Complex.abs z₂ : ℂ),  ← mul_assoc (Complex.abs z₂ : ℂ), ← mul_assoc, mul_comm, mul_div_assoc, ← div_div, ← div_div, mul_div_assoc, div_self h2, mul_one]
+    rw [mul_div_assoc, div_self h1, mul_one]
     ring_nf
     simp
     symm
-    have : -((z₂.re : ℂ) * (z₁.im : ℂ)) + (z₂.im : ℂ) * (z₁.re : ℂ) ≠ 0 := by
+    field_simp
+    have : (z₂.im : ℂ) * (z₁.re : ℂ) - (z₂.re : ℂ) * (z₁.im : ℂ) ≠ 0 := by
       norm_cast
+      push_neg
       -- Why is it important for z₁ and z₂ to be non-orthogonal?
       sorry
     calc
-      _ = z₁ * (-(↑z₂.re * ↑z₁.im) + ↑z₂.im * ↑z₁.re)
-          * ↑(Complex.abs z₂) * ↑(Complex.abs z₁) ^ 2 / (↑(Complex.abs z₁) ^ 2 * ↑(Complex.abs z₂) *
-          (-(↑z₂.re * ↑z₁.im) + ↑z₂.im * ↑z₁.re)) := by ring
-      _ = z₁ * (-(↑z₂.re * ↑z₁.im) + ↑z₂.im * ↑z₁.re)
-          * ↑(Complex.abs z₂) * ↑(Complex.abs z₁) ^ 2 / ↑(Complex.abs z₁) ^ 2 / ↑(Complex.abs z₂)
-          / (-(↑z₂.re * ↑z₁.im) + ↑z₂.im * ↑z₁.re) := by simp [← div_div]
-      _ = z₁ * ((-(↑z₂.re * ↑z₁.im) + ↑z₂.im * ↑z₁.re)
-          * (↑(Complex.abs z₁) ^ 2 / ↑(Complex.abs z₁) ^ 2) * (↑(Complex.abs z₂) / ↑(Complex.abs z₂))
-          / (-(↑z₂.re * ↑z₁.im) + ↑z₂.im * ↑z₁.re)) := by ring
-      _ = z₁ := by
-            simp [div_self, hz₁_ne_zero, hz₂_ne_zero, this]
+      _ = z₁ * ((↑z₂.im * ↑z₁.re - ↑z₂.re * ↑z₁.im) / (↑z₂.im * ↑z₁.re - ↑z₂.re * ↑z₁.im) )
+             := by ring
+      _ = z₁ := by simp [div_self this]
+
+/-
+  let l₃ := O4 z₁ l₁
+  let l₄ := O4 z₂ l₂
+  have hl₃ : l₃ ∈ 𝕆.lines := O4_in_𝕆 hz₁ hl₁
+  have hl₄ : l₄ ∈ 𝕆.lines := O4_in_𝕆 hz₂ hl₂
+  have hl₃_z₁ : l₃.z₁ = z₁                       := by simp [l₃, O4]
+  have hl₃_z₂ : l₃.z₂ = z₁ + Complex.I * (z₁ / Complex.abs z₁) := by simp [l₃, O4, l₁, O1, line.vec]
+  have hl₄_z₁ : l₄.z₁ = z₂                       := by simp [l₄, O4]
+  have hl₄_z₂ : l₄.z₂ = z₂ + Complex.I * (z₂ / Complex.abs z₂) := by simp [l₄, O4, l₂, O1, line.vec]
+
+  have hl₃_l₄_not_parallel : ¬AreParallel l₃ l₄ := by
+    simp_rw [AreParallel, line.vec, hl₃_z₁, hl₃_z₂, hl₄_z₁, hl₄_z₂]
+    simp [div_self, hz₁_ne_zero, hz₂_ne_zero]
+    constructor
+    · specialize hz₁_ne_real_mult_z₂ ((Complex.abs z₁)/Complex.abs z₂)
+      by_contra h
+      simp [div_mul_comm, ← h, div_mul, div_self, hz₁_ne_zero] at hz₁_ne_real_mult_z₂
+    · specialize hz₁_ne_real_mult_z₂ (-(Complex.abs z₁)/Complex.abs z₂)
+      by_contra h
+      rw [neg_mul_eq_mul_neg] at h
+      apply mul_left_cancel₀ Complex.I_ne_zero at h
+      rw [← neg_eq_iff_eq_neg] at h
+      simp [div_mul_comm, ← h, div_mul, div_self, hz₁_ne_zero] at hz₁_ne_real_mult_z₂
+
+  -- Last step: take the intersectioon of l₃ and l₄.
+  apply in_𝕆_if_eq (Isect l₃ l₄ hl₃_l₄_not_parallel)
+  · exact Isect_in_𝕆 hl₃ hl₄
+  · -- to show: this intersection really is the searched sum
+    simp [Isect, line.vec, hl₃_z₁, hl₃_z₂, hl₄_z₁, hl₄_z₂, div_self, hz₁_ne_zero, hz₂_ne_zero]
+    field_simp
+    have h1 : (Complex.abs z₁ : ℂ) ≠ 0 := by norm_cast; exact (AbsoluteValue.ne_zero_iff Complex.abs).mpr hz₁_ne_zero
+    have h2 : (Complex.abs z₂ : ℂ) ≠ 0 := by norm_cast; exact (AbsoluteValue.ne_zero_iff Complex.abs).mpr hz₂_ne_zero
+    rw [mul_assoc (Complex.abs z₂ : ℂ), mul_comm ((-((z₂.re : ℂ) * z₁.im) + (z₂.im : ℂ) * z₁.re))]
+    rw [mul_comm, mul_comm (Complex.abs z₂ : ℂ), ← mul_assoc (Complex.abs z₂ : ℂ), ← mul_assoc, mul_div_assoc, ← div_div, ← div_div, mul_div_assoc, div_self h2, mul_one]
+    rw [← mul_div_assoc, div_self h1, mul_one]
+    simp [sub_eq_add_neg]
+    field_simp
+    ring_nf
+    field_simp
+    symm
+    have : (z₂.im : ℂ) * (z₁.re : ℂ) - (z₂.re : ℂ) * (z₁.im : ℂ) ≠ 0 := by
+      norm_cast
+      push_neg
+      -- Why is it important for z₁ and z₂ to be non-orthogonal?
+      sorry
+    calc
+      _ = z₁ * ((↑z₂.im * ↑z₁.re - ↑z₂.re * ↑z₁.im) / (↑z₂.im * ↑z₁.re - ↑z₂.re * ↑z₁.im) )
+             := by ring
+      _ = z₁ := by simp [div_self this]
+-/
 
 end add
 section mul
 
 theorem 𝕆_inv {z : ℂ} (hz : z ∈ 𝕆) : z⁻¹ ∈ 𝕆 := by sorry
-lemma 𝕆_real_mul {z : ℂ} {a : ℝ} (hz : z ∈ 𝕆) : a * z ∈ 𝕆 := by sorry
+
+lemma 𝕆_real_mul_cmpl {z : ℂ} {a : ℝ} (hz_not_real : z.im ≠ 0) (hz : z ∈ 𝕆) : a * z ∈ 𝕆 := by sorry
+
+lemma 𝕆_real_mul_real {a z : ℝ} (hz : (z : ℂ) ∈ 𝕆) : (a * z : ℂ) ∈ 𝕆 := by sorry
+
+lemma 𝕆_real {a : ℝ} : (a : ℂ) ∈ 𝕆 := by
+  rw [← mul_one a]
+  push_cast
+  apply 𝕆_real_mul_real one_in_𝕆
+
 lemma 𝕆_i_mul {z : ℂ} (hz : z ∈ 𝕆) : Complex.I * z ∈ 𝕆 := by sorry
-theorem 𝕆_mul {z₁ z₂ : ℂ} (hz₁ : z₁ ∈ 𝕆) (hz₂ : z₂ ∈ 𝕆) : z₁ * z₂ ∈ 𝕆 := by sorry
+
+theorem 𝕆_mul {z₁ z₂ : ℂ} (hz₁ : z₁ ∈ 𝕆) (hz₂ : z₂ ∈ 𝕆) : z₁ * z₂ ∈ 𝕆 := by
+  -- We can write
+  have : z₁ * z₂ = z₁.re * z₂.re - z₁.im * z₂.im + Complex.I * (z₁.re * z₂.im + z₁.im * z₂.re) := by simp [Complex.ext_iff]
+  rw [this]
+  -- Now, this is just a concatination of previous lemmata
+  norm_cast
+  apply 𝕆_add 𝕆_real (𝕆_i_mul 𝕆_real)
 
 end mul
 

@@ -6,21 +6,20 @@ open ComplexConjugate
 
 -- **Two Folding Lemmata**
 
-noncomputable def E1 (z : ℂ) (l : line) (hz : z ∈ 𝕆) (hl : l ∈ 𝕆.lines) : line :=
+noncomputable def E1 (z : ℂ) (l : line) : line :=
   ⟨z,z - l.vec,(by simp [sub_eq_neg_add, vec_ne_zero l])⟩
 
 /-- Given a point z and a line l, fold a line parallel to l that goes through z.-/
 lemma E1_in_𝕆 (z : ℂ) (l : line) (hz : z ∈ 𝕆) (hl : l ∈ 𝕆.lines) :
-  E1 z l hz hl ∈ 𝕆.lines := by
+  E1 z l ∈ 𝕆.lines := by
     unfold E1
-    -- show that the built line is equal to O4 z (O4 z l)
-    have lines_are_equal: (O4 z (O4 z l)) = ⟨z,z - l.vec,(by simp [sub_eq_neg_add, vec_ne_zero l])⟩ := by
+    apply in_𝕆_lines_if_eqq (O4 z (O4 z l))
+    · exact O4_in_𝕆 hz (O4_in_𝕆 hz hl)
+    · -- show that the built line is equal to O4 z (O4 z l)
       simp [O4, line.vec]
       field_simp
       simp [mul_div_assoc, sub_eq_add_neg, ← mul_assoc, ← neg_div, neg_sub]
       rfl
-    rw [← lines_are_equal]
-    exact O4_in_𝕆 hz (O4_in_𝕆 hz hl)
 
 /-- Given a point z and a line l, fold a line parallel to l that goes through z.-/
 lemma E1_in_𝕆' (z : ℂ) (l : line) (hz : z ∈ 𝕆) (hl : l ∈ 𝕆.lines) :
@@ -36,11 +35,11 @@ variable (z : ℂ) (l : line)
 /-- Given a point z and a line l, reflect z across l.-/
 -- 2 * (l.z₁ + ⟨z-l.z₁,l.vect⟩ * l.vec) - z
 -- = 2 * (l.z₁ + ((z-l.z₁)*conj l.vec).re * l.vec) - z
-noncomputable def E2 (hz : z ∈ 𝕆) (hl : l ∈ 𝕆.lines) : ℂ :=
+noncomputable def E2 : ℂ :=
   2 * (l.z₁ + ((z-l.z₁) * conj l.vec).re * l.vec) - z
 
-lemma O4_not_parallel_to_E1 (hz : z ∈ 𝕆) (hl : l ∈ 𝕆.lines) :
-  ¬AreParallel (O4 z l) (E1 z l hz hl) := by
+lemma O4_not_parallel_to_E1 :
+  ¬AreParallel (O4 z l) (E1 z l) := by
     simp [AreParallel, line.vec]
     simp [E1, O4]
     constructor
@@ -55,26 +54,26 @@ lemma O4_not_parallel_to_E1 (hz : z ∈ 𝕆) (hl : l ∈ 𝕆.lines) :
       simp [vec_ne_zero] at this
       simp [Complex.ext_iff] at this
 
-lemma O3_on_O4_and_E1 (hz : z ∈ 𝕆) (hl : l ∈ 𝕆.lines) :
-  (O3 (O4 z l) (E1 z l hz hl)).z₁ = z ∧
-  (O3 (O4 z l) (E1 z l hz hl)).z₂ = z + Complex.I * l.vec - l.vec ∧
-  (O3 (O4 z l) (E1 z l hz hl)).vec = (Complex.I - 1) * l.vec / Complex.abs (Complex.I - 1) := by
+lemma O3_on_O4_and_E1 :
+  (O3 (O4 z l) (E1 z l)).z₁ = z ∧
+  (O3 (O4 z l) (E1 z l)).z₂ = z + Complex.I * l.vec - l.vec ∧
+  (O3 (O4 z l) (E1 z l)).vec = (Complex.I - 1) * l.vec / Complex.abs (Complex.I - 1) := by
     rw [← and_assoc]
     constructor
-    · simp [O3, O4_not_parallel_to_E1 z l hz hl]
+    · simp [O3, O4_not_parallel_to_E1 z l]
       simp [O4, E1, Isect]
       simp [line.vec, div_self vec_well_defined]
       rfl
-    · simp [O3, O4_not_parallel_to_E1 z l hz hl]
+    · simp [O3, O4_not_parallel_to_E1 z l]
       simp_rw [line.vec]
       simp [O4, E1, Isect, vec_abs_one, add_sub_right_comm]
       simp [← sub_eq_add_neg, ← sub_one_mul, vec_abs_one]
       simp_rw [line.vec]
 
-lemma l_not_parallel_to_O3_on_O4_and_E1 (hz : z ∈ 𝕆) (hl : l ∈ 𝕆.lines) :
-  ¬AreParallel l (O3 (O4 z l) (E1 z l hz hl)) := by
+lemma l_not_parallel_to_O3_on_O4_and_E1 :
+  ¬AreParallel l (O3 (O4 z l) (E1 z l)) := by
     simp [AreParallel]
-    rw [line.vec, line.vec, (O3_on_O4_and_E1 z l hz hl).1, (O3_on_O4_and_E1 z l hz hl).2.1, ← line.vec]
+    rw [line.vec, line.vec, (O3_on_O4_and_E1 z l).1, (O3_on_O4_and_E1 z l).2.1, ← line.vec]
     ring_nf; field_simp
     -- use some ring properties on h
     rw [← neg_neg (-(Complex.I*l.vec)+l.vec), neg_add, neg_neg, ← sub_eq_add_neg]
@@ -96,12 +95,12 @@ lemma l_not_parallel_to_O3_on_O4_and_E1 (hz : z ∈ 𝕆) (hl : l ∈ 𝕆.lines
       -- Find the contradiction
       simp [Complex.ext_iff] at h
 
-lemma O4_not_parallel_to_O4_on_O3_on_O4_and_E1 (hz : z ∈ 𝕆) (hl : l ∈ 𝕆.lines) :
-  ¬AreParallel (O4 z l) (O4 (Isect l (O3 (O4 z l) (E1 z l hz hl)) (l_not_parallel_to_O3_on_O4_and_E1 z l hz hl)) (O3 (O4 z l) (E1 z l hz hl))) := by
-    have := (O3_on_O4_and_E1 z l hz hl)
+lemma O4_not_parallel_to_O4_on_O3_on_O4_and_E1 :
+  ¬AreParallel (O4 z l) (O4 (Isect l (O3 (O4 z l) (E1 z l)) (l_not_parallel_to_O3_on_O4_and_E1 z l)) (O3 (O4 z l) (E1 z l))) := by
+    have := (O3_on_O4_and_E1 z l)
     simp_rw [AreParallel, O4, line.vec] at *
     simp_rw [this, O3]
-    simp [O4_not_parallel_to_E1 z l hz hl]
+    simp [O4_not_parallel_to_E1 z l]
     rw [← line.vec]
     field_simp [add_sub_assoc]
     simp [← sub_one_mul, vec_abs_one]
@@ -111,13 +110,13 @@ lemma O4_not_parallel_to_O4_on_O3_on_O4_and_E1 (hz : z ∈ 𝕆) (hl : l ∈ �
     simp [div_self, vec_ne_zero l]
     field_simp [Complex.ext_iff]
 
-lemma O4_on_z₁_and_l₄ (hz : z ∈ 𝕆) (hl : l ∈ 𝕆.lines) :
-  (O4 (Isect l (O3 (O4 z l) (E1 z l hz hl)) (l_not_parallel_to_O3_on_O4_and_E1 z l hz hl)) (O3 (O4 z l) (E1 z l hz hl))).vec
+lemma O4_on_z₁_and_l₄ :
+  (O4 (Isect l (O3 (O4 z l) (E1 z l)) (l_not_parallel_to_O3_on_O4_and_E1 z l)) (O3 (O4 z l) (E1 z l))).vec
    = -(Complex.I + 1) * l.vec / Complex.abs (Complex.I - 1) := by
-    have := (O3_on_O4_and_E1 z l hz hl)
+    have := (O3_on_O4_and_E1 z l)
     simp_rw [O4, line.vec, Isect] at *
     simp_rw [this, O3]
-    simp [O4_not_parallel_to_E1 z l hz hl]
+    simp [O4_not_parallel_to_E1 z l]
     rw [← line.vec]
     simp [O4, E1, Isect, vec_abs_one, add_sub_right_comm]
     simp [add_comm, ← sub_eq_add_neg, ← sub_one_mul, vec_abs_one]
@@ -126,7 +125,7 @@ lemma O4_on_z₁_and_l₄ (hz : z ∈ 𝕆) (hl : l ∈ 𝕆.lines) :
     simp [neg_add_eq_sub, Complex.ext_iff, ← neg_div, neg_add_eq_sub]
 
 lemma E2_in_𝕆 (hz : z ∈ 𝕆) (hl : l ∈ 𝕆.lines) :
-  E2 z l hz hl ∈ 𝕆 := by
+  E2 z l ∈ 𝕆 := by
     -- l₁ is perpendicular to l and passes through z.
     let l₁ := O4 z l
     have hl₁ : l₁ ∈ 𝕆.lines := O4_in_𝕆 hz hl
@@ -134,17 +133,17 @@ lemma E2_in_𝕆 (hz : z ∈ 𝕆) (hl : l ∈ 𝕆.lines) :
       simp[l₁, O4, line.vec, div_self vec_well_defined]
 
     -- l₂ is parallel to l and passes through z.
-    let l₂ := E1 z l hz hl
+    let l₂ := E1 z l
     have hl₂ : l₂ ∈ 𝕆.lines := E1_in_𝕆 z l hz hl
-    have hl₁_l₂_not_parallel : ¬AreParallel l₁ l₂ := O4_not_parallel_to_E1 z l hz hl
+    have hl₁_l₂_not_parallel : ¬AreParallel l₁ l₂ := O4_not_parallel_to_E1 z l
 
     -- l₃ bisects the angle between l₁ and l₂. The three of them intersect in z.
     let l₃ := O3 l₁ l₂
     have hl₃ : l₃ ∈ 𝕆.lines := O3_in_𝕆 hl₁ hl₂
-    have hl₃_z₁ : l₃.z₁ = z := (O3_on_O4_and_E1 z l hz hl).1
-    have hl₃_z₂ : l₃.z₂ = z + Complex.I * l.vec - l.vec := (O3_on_O4_and_E1 z l hz hl).2.1
-    have hl₃_vec : l₃.vec = (Complex.I - 1) * l.vec / Complex.abs (Complex.I - 1) := (O3_on_O4_and_E1 z l hz hl).2.2
-    have hl_l₃_not_parallel : ¬AreParallel l l₃ := l_not_parallel_to_O3_on_O4_and_E1 z l hz hl
+    have hl₃_z₁ : l₃.z₁ = z := (O3_on_O4_and_E1 z l).1
+    have hl₃_z₂ : l₃.z₂ = z + Complex.I * l.vec - l.vec := (O3_on_O4_and_E1 z l).2.1
+    have hl₃_vec : l₃.vec = (Complex.I - 1) * l.vec / Complex.abs (Complex.I - 1) := (O3_on_O4_and_E1 z l).2.2
+    have hl_l₃_not_parallel : ¬AreParallel l l₃ := l_not_parallel_to_O3_on_O4_and_E1 z l
 
     -- z₁ is the intersection of l and l₃.
     let z₁ := Isect l l₃ hl_l₃_not_parallel
@@ -153,16 +152,14 @@ lemma E2_in_𝕆 (hz : z ∈ 𝕆) (hl : l ∈ 𝕆.lines) :
     -- l₄ is orthogonal to l₃ and goes through z₁.
     let l₄ := O4 z₁ l₃
     have hl₄ : l₄ ∈ 𝕆.lines := O4_in_𝕆 hz₁ hl₃
-    have hl₁_l₄_not_parallel : ¬AreParallel l₁ l₄ := O4_not_parallel_to_O4_on_O3_on_O4_and_E1 z l hz hl
+    have hl₁_l₄_not_parallel : ¬AreParallel l₁ l₄ := O4_not_parallel_to_O4_on_O3_on_O4_and_E1 z l
     have hl₄_vec : l₄.vec = -(Complex.I + 1) * l.vec / Complex.abs (Complex.I - 1) :=
-      O4_on_z₁_and_l₄ z l hz hl
+      O4_on_z₁_and_l₄ z l
 
     -- The result is the intersection of l₁ and l₄.
-    let z₂ := Isect l₁ l₄ hl₁_l₄_not_parallel
-    have hz₂ : z₂ ∈ 𝕆 := Isect_in_𝕆 hl₁ hl₄
-
-    have : E2 z l hz hl = z₂ := by
-      simp_rw [E2, z₂, Isect, hl₄_vec, l₄, O4, z₁, Isect, hl₃_vec, hl₃_z₁, hl₁_vec, l₁, O4]
+    apply in_𝕆_if_eq (Isect l₁ l₄ hl₁_l₄_not_parallel)
+    · exact Isect_in_𝕆 hl₁ hl₄
+    · simp_rw [E2, Isect, hl₄_vec, l₄, O4, z₁, Isect, hl₃_vec, hl₃_z₁, hl₁_vec, l₁, O4]
       norm_cast
       simp [div_mul_eq_mul_div, div_div_eq_mul_div, div_div, neg_div']
       simp_rw [← neg_mul, neg_add, neg_sub, sub_neg_eq_add, neg_neg, ← sub_eq_add_neg]
@@ -189,11 +186,8 @@ lemma E2_in_𝕆 (hz : z ∈ 𝕆) (hl : l ∈ 𝕆.lines) :
       norm_cast; simp [this, ← Complex.sq_abs_sub_sq_im, vec_abs_one]
       ring_nf
       trivial
-    -- Again: The result is the intersection of l₁ and l₄.
-    rw [this]
-    exact Isect_in_𝕆 hl₁ hl₄
 
-lemma E2_ne_z {z : ℂ} {l : line} {hz : z ∈ 𝕆} {hl : l ∈ 𝕆.lines} (h : z ∉ l.points) : z ≠ (E2 z l hz hl) := by
+lemma E2_ne_z (h : z ∉ l.points) : z ≠ E2 z l := by
   simp [E2]
   by_contra h'
   let k : ℝ := ((z.re - l.z₁.re) * l.vec.re + (z.im - l.z₁.im) * l.vec.im)

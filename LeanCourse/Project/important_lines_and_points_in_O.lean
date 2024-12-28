@@ -43,12 +43,3 @@ lemma i_in_𝕆 : Complex.I ∈ 𝕆 := by
     simp [Isect, imAxis, O4, reAxis, O1, l₁, l₂, line.vec, O3', AreParallel, I_ne_one_or_neg_one, Complex.abs, Complex.normSq]
   rw [i_eq_isect]
   apply Isect_in_𝕆 imAxis_in_𝕆 h₂
-
-lemma conj_in_𝕆 {z : ℂ} (hz : z ∈ 𝕆) : conj z ∈ 𝕆 := by
-  -- Use E2 on the real axis
-  have : conj z = E2 z reAxis hz reAxis_in_𝕆 := by
-    simp [E2, reAxis, O1, line.vec]
-    simp [Complex.ext_iff]
-    ring
-  rw [this]
-  exact E2_in_𝕆 z reAxis hz reAxis_in_𝕆

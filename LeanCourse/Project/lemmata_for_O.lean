@@ -30,7 +30,7 @@ lemma 𝕆ₙ.lines_inc (n m : ℕ) (h: n ≤ m) : 𝕆ₙ.lines n ⊆ 𝕆ₙ.l
       intro l hl
       -- to show: l ∈ lines (m+1)
       -- We know that l ∈ lines m by induction
-      left; exact im h' hl
+      left; use l; simp; exact im h' hl
     · have : n = m + 1 := by linarith
       rw [this]
 
@@ -53,6 +53,21 @@ lemma O4_perpendicular {l : line} {z : ℂ} :
     simp [O4, line.vec, div_self vec_well_defined]
     ring
 
+lemma in_𝕆_if_eq (z : ℂ) {z' : ℂ} : z ∈ 𝕆 → z' = z → z' ∈ 𝕆 := by
+  intro hz h
+  rw [h]
+  assumption
+lemma in_𝕆_lines_if_eq (l : line) {l' : line} : l ∈ 𝕆.lines → l'.eq l → l' ∈ 𝕆.lines := by
+  intro hl h
+  simp [𝕆.lines] at *
+  obtain ⟨i,hi⟩ := hl
+  use i+1
+  left
+  use l
+lemma in_𝕆_lines_if_eqq (l : line) {l' : line} : l ∈ 𝕆.lines → l' = l → l' ∈ 𝕆.lines := by
+  intro hl h
+  rw [h]
+  assumption
 
 /- **Lemmata for the axioms being in 𝕆 if used on elements of 𝕆** -/
 

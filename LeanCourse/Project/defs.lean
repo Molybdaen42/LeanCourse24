@@ -349,7 +349,7 @@ def generate_points (L : Set line) : Set ℂ :=
   | 0 => 𝕆₀
   | (Nat.succ n) => (
       (𝕆ₙ 𝕆₀ n).1 ∪ generate_points (𝕆ₙ 𝕆₀ n).2,
-      (𝕆ₙ 𝕆₀ n).2 ∪ generate_lines (𝕆ₙ 𝕆₀ n).1 (𝕆ₙ 𝕆₀ n).2)
+      {l | ∃ l₁ ∈ (𝕆ₙ 𝕆₀ n).2, l.eq l₁} ∪ generate_lines (𝕆ₙ 𝕆₀ n).1 (𝕆ₙ 𝕆₀ n).2)
 
 @[simp] def 𝕆ₙ.points (n : ℕ) (M₀ : Set ℂ := {0,1}) (L₀ : Set line := ∅) : Set ℂ :=
   (𝕆ₙ (M₀, L₀) n).1

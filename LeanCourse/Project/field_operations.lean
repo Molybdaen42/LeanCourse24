@@ -7,16 +7,6 @@ open Classical
 open Construction
 open ComplexConjugate
 
-lemma conj_in_𝕆 {z : ℂ} (hz : z ∈ 𝕆) : conj z ∈ 𝕆 := by
-  -- Use E2 on the real axis
-  have : conj z = E2 z reAxis := by
-    simp [E2, reAxis, O1, line.vec]
-    simp [Complex.ext_iff]
-    ring
-  rw [this]
-  exact E2_in_𝕆 z reAxis hz reAxis_in_𝕆
-
-
 /- **Field Operations** -/
 
 section add
@@ -148,7 +138,7 @@ theorem 𝕆_add {z₁ z₂ : ℂ} (hz₁ : z₁ ∈ 𝕆) (hz₂ : z₂ ∈ �
       by_contra h
       simp [div_mul_comm, ← h, div_mul, div_self, hz₁_ne_zero] at hz₁_ne_real_mult_z₂
 
-  -- Last step: take the intersectioon of l₃ and l₄.
+  -- Last step: take the intersection of l₃ and l₄.
   apply in_𝕆_if_eq (Isect l₃ l₄ hl₃_l₄_not_parallel)
   · exact Isect_in_𝕆 hl₃ hl₄
   · -- to show: this intersection really is the searched sum
@@ -167,7 +157,36 @@ theorem 𝕆_add {z₁ z₂ : ℂ} (hz₁ : z₁ ∈ 𝕆) (hz₂ : z₂ ∈ �
       norm_cast
       push_neg
       -- Why is it important for z₁ and z₂ to be non-orthogonal?
-      sorry
+      by_cases hz₂_re_ne_zero: z₂.re ≠ 0;
+        · by_contra h
+          specialize hz₁_ne_real_mult_z₂ (z₁.re/z₂.re)
+          have : z₁.re=(z₁.re/z₂.re)*z₂.re := by
+            rw [div_mul_comm, div_self hz₂_re_ne_zero]
+            ring_nf
+          simp [Complex.ext_iff] at hz₁_ne_real_mult_z₂
+          apply hz₁_ne_real_mult_z₂
+          exact this
+          rw [sub_eq_iff_eq_add, add_comm, add_zero,mul_comm z₂.re, ← div_eq_iff] at h
+          rw[← h]
+          ring_nf
+          exact hz₂_re_ne_zero
+      push_neg at hz₂_re_ne_zero
+      rw[hz₂_re_ne_zero]
+      simp
+      have : z₂.im≠ 0 := by
+          simp [Complex.ext_iff] at hz₂_ne_zero
+          apply hz₂_ne_zero
+          exact hz₂_re_ne_zero
+      constructor
+      · exact this
+      · by_contra h
+        specialize hz₁_ne_real_mult_z₂ (z₁.im/z₂.im)
+        simp [Complex.ext_iff] at hz₁_ne_real_mult_z₂
+        apply hz₁_ne_real_mult_z₂
+        · rw[hz₂_re_ne_zero,h]
+          ring_nf
+        rw [div_mul_comm, div_self this]
+        ring_nf
     calc
       _ = z₁ * ((↑z₂.im * ↑z₁.re - ↑z₂.re * ↑z₁.im) / (↑z₂.im * ↑z₁.re - ↑z₂.re * ↑z₁.im) )
              := by ring
@@ -227,7 +246,9 @@ theorem 𝕆_add {z₁ z₂ : ℂ} (hz₁ : z₁ ∈ 𝕆) (hz₂ : z₂ ∈ �
 end add
 section mul
 
-theorem 𝕆_inv {z : ℂ} (hz : z ∈ 𝕆) : z⁻¹ ∈ 𝕆 := by sorry
+theorem 𝕆_inv {z : ℂ} (hz : z ∈ 𝕆) : z⁻¹ ∈ 𝕆 := by
+
+  sorry
 
 lemma 𝕆_real_mul_cmpl {z : ℂ} {a : ℝ} (hz_not_real : z.im ≠ 0) (hz : z ∈ 𝕆) : a * z ∈ 𝕆 := by sorry
 

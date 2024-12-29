@@ -192,67 +192,31 @@ theorem 𝕆_add {z₁ z₂ : ℂ} (hz₁ : z₁ ∈ 𝕆) (hz₂ : z₂ ∈ �
              := by ring
       _ = z₁ := by simp [div_self this]
 
-/-
-  let l₃ := O4 z₁ l₁
-  let l₄ := O4 z₂ l₂
-  have hl₃ : l₃ ∈ 𝕆.lines := O4_in_𝕆 hz₁ hl₁
-  have hl₄ : l₄ ∈ 𝕆.lines := O4_in_𝕆 hz₂ hl₂
-  have hl₃_z₁ : l₃.z₁ = z₁                       := by simp [l₃, O4]
-  have hl₃_z₂ : l₃.z₂ = z₁ + Complex.I * (z₁ / Complex.abs z₁) := by simp [l₃, O4, l₁, O1, line.vec]
-  have hl₄_z₁ : l₄.z₁ = z₂                       := by simp [l₄, O4]
-  have hl₄_z₂ : l₄.z₂ = z₂ + Complex.I * (z₂ / Complex.abs z₂) := by simp [l₄, O4, l₂, O1, line.vec]
-
-  have hl₃_l₄_not_parallel : ¬AreParallel l₃ l₄ := by
-    simp_rw [AreParallel, line.vec, hl₃_z₁, hl₃_z₂, hl₄_z₁, hl₄_z₂]
-    simp [div_self, hz₁_ne_zero, hz₂_ne_zero]
-    constructor
-    · specialize hz₁_ne_real_mult_z₂ ((Complex.abs z₁)/Complex.abs z₂)
-      by_contra h
-      simp [div_mul_comm, ← h, div_mul, div_self, hz₁_ne_zero] at hz₁_ne_real_mult_z₂
-    · specialize hz₁_ne_real_mult_z₂ (-(Complex.abs z₁)/Complex.abs z₂)
-      by_contra h
-      rw [neg_mul_eq_mul_neg] at h
-      apply mul_left_cancel₀ Complex.I_ne_zero at h
-      rw [← neg_eq_iff_eq_neg] at h
-      simp [div_mul_comm, ← h, div_mul, div_self, hz₁_ne_zero] at hz₁_ne_real_mult_z₂
-
-  -- Last step: take the intersectioon of l₃ and l₄.
-  apply in_𝕆_if_eq (Isect l₃ l₄ hl₃_l₄_not_parallel)
-  · exact Isect_in_𝕆 hl₃ hl₄
-  · -- to show: this intersection really is the searched sum
-    simp [Isect, line.vec, hl₃_z₁, hl₃_z₂, hl₄_z₁, hl₄_z₂, div_self, hz₁_ne_zero, hz₂_ne_zero]
-    field_simp
-    have h1 : (Complex.abs z₁ : ℂ) ≠ 0 := by norm_cast; exact (AbsoluteValue.ne_zero_iff Complex.abs).mpr hz₁_ne_zero
-    have h2 : (Complex.abs z₂ : ℂ) ≠ 0 := by norm_cast; exact (AbsoluteValue.ne_zero_iff Complex.abs).mpr hz₂_ne_zero
-    rw [mul_assoc (Complex.abs z₂ : ℂ), mul_comm ((-((z₂.re : ℂ) * z₁.im) + (z₂.im : ℂ) * z₁.re))]
-    rw [mul_comm, mul_comm (Complex.abs z₂ : ℂ), ← mul_assoc (Complex.abs z₂ : ℂ), ← mul_assoc, mul_div_assoc, ← div_div, ← div_div, mul_div_assoc, div_self h2, mul_one]
-    rw [← mul_div_assoc, div_self h1, mul_one]
-    simp [sub_eq_add_neg]
-    field_simp
-    ring_nf
-    field_simp
-    symm
-    have : (z₂.im : ℂ) * (z₁.re : ℂ) - (z₂.re : ℂ) * (z₁.im : ℂ) ≠ 0 := by
-      norm_cast
-      push_neg
-      -- Why is it important for z₁ and z₂ to be non-orthogonal?
-      sorry
-    calc
-      _ = z₁ * ((↑z₂.im * ↑z₁.re - ↑z₂.re * ↑z₁.im) / (↑z₂.im * ↑z₁.re - ↑z₂.re * ↑z₁.im) )
-             := by ring
-      _ = z₁ := by simp [div_self this]
--/
-
 end add
 section mul
 
 theorem 𝕆_inv {z : ℂ} (hz : z ∈ 𝕆) : z⁻¹ ∈ 𝕆 := by
-
+  -- W.l.o.g., suppose that z ≠ 0.
+  by_cases hz_ne_zero : z = 0
+  · simp [hz_ne_zero, zero_in_𝕆]
   sorry
 
 lemma 𝕆_real_mul_cmpl {z : ℂ} {a : ℝ} (hz_not_real : z.im ≠ 0) (hz : z ∈ 𝕆) : a * z ∈ 𝕆 := by sorry
 
-lemma 𝕆_real_mul_real {a z : ℝ} (hz : (z : ℂ) ∈ 𝕆) : (a * z : ℂ) ∈ 𝕆 := by sorry
+lemma 𝕆_re {z : ℂ} (hz : z ∈ 𝕆) : (z.re : ℂ) ∈ 𝕆 := by
+  let l := O4 z reAxis
+  apply in_𝕆_if_eq (Isect reAxis l O4_not_parallel)
+  · exact Isect_in_𝕆 reAxis_in_𝕆 (O4_in_𝕆 hz reAxis_in_𝕆)
+  simp [Isect, reAxis, O1, line.vec, l, O4]
+
+lemma 𝕆_real_mul_real {a z : ℝ} (hz : (z : ℂ) ∈ 𝕆) : (a * z : ℂ) ∈ 𝕆 := by
+  -- Add i to z, multiply by a, and take the real component
+  apply in_𝕆_if_eq (a * (z + Complex.I)).re
+  · apply 𝕆_re
+    apply 𝕆_real_mul_cmpl
+    · simp
+    apply 𝕆_add hz i_in_𝕆
+  simp
 
 lemma 𝕆_real {a : ℝ} : (a : ℂ) ∈ 𝕆 := by
   rw [← mul_one a]
@@ -260,6 +224,12 @@ lemma 𝕆_real {a : ℝ} : (a : ℂ) ∈ 𝕆 := by
   apply 𝕆_real_mul_real one_in_𝕆
 
 lemma 𝕆_i_mul {z : ℂ} (hz : z ∈ 𝕆) : Complex.I * z ∈ 𝕆 := by sorry
+
+lemma 𝕆_im {z : ℂ} (hz : z ∈ 𝕆) : (z.im : ℂ) ∈ 𝕆 := by
+  let l := O4 z imAxis
+  apply in_𝕆_if_eq (-(Complex.I * Isect imAxis l O4_not_parallel))
+  · exact 𝕆_neg (𝕆_i_mul (Isect_in_𝕆 imAxis_in_𝕆 (O4_in_𝕆 hz imAxis_in_𝕆)))
+  simp [Isect, l, O4, line.vec, imAxis, reAxis, O1, mul_comm, ← mul_assoc]
 
 theorem 𝕆_mul {z₁ z₂ : ℂ} (hz₁ : z₁ ∈ 𝕆) (hz₂ : z₂ ∈ 𝕆) : z₁ * z₂ ∈ 𝕆 := by
   -- We can write

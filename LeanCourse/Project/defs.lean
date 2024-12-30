@@ -198,6 +198,23 @@ lemma Parallel_symm (l₁ l₂ : line) :  AreParallel l₁ l₂ ↔ AreParallel 
     obtain h1|h2 := h
     · left; symm; assumption
     · right; symm; exact neg_eq_iff_eq_neg.mpr h2
+
+lemma Not_parallel_if_parallel (l₁ l₂ l₃ : line) : ¬AreParallel l₁ l₂ → AreParallel l₂ l₃ →   ¬AreParallel l₁ l₃ := by
+  intro h' h
+  unfold AreParallel at *
+  push_neg at *
+  constructor
+  · obtain h1|h2 := h
+    · rw [← h1]
+      exact h'.1
+    · rw[h2,neg_neg] at h'
+      exact h'.2
+  · obtain h1|h2 := h
+    · rw[h1] at h'
+      exact h'.2
+    · rw[h2] at h'
+      exact h'.1
+
 -- Some other formulations of parallelity.
 lemma AreParallel_if_disjoint (l₁ l₂ : line) : Disjoint l₁.points l₂.points → AreParallel l₁ l₂ := by
   unfold AreParallel Disjoint

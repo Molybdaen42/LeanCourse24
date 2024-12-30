@@ -201,7 +201,80 @@ theorem 𝕆_inv {z : ℂ} (hz : z ∈ 𝕆) : z⁻¹ ∈ 𝕆 := by
   · simp [hz_ne_zero, zero_in_𝕆]
   sorry
 
-lemma 𝕆_real_mul_cmpl {z : ℂ} {a : ℝ} (hz_not_real : z.im ≠ 0) (hz : z ∈ 𝕆) : a * z ∈ 𝕆 := by sorry
+lemma 𝕆_real_mul_cmpl {z : ℂ} {a : ℝ} (ha : (a:ℂ) ∈ 𝕆) (hz_not_real : z.im ≠ 0) (hz : z ∈ 𝕆) : a * z ∈ 𝕆 := by
+  --defining the lines from z to 0 and 1, not parallel which is why z not be real
+  have z_ne_zero: z ≠ 0 := by simp [Complex.ext_iff, hz_not_real]
+  have z_abs_ne_zero : Complex.abs z ≠ 0 := by simp[sub_ne_zero_of_ne z_ne_zero]; push_neg; exact z_ne_zero;
+  let l₁ := O1 0 z z_ne_zero.symm
+  have l₁_in_𝕆 : l₁ ∈ 𝕆.lines := by exact O1_in_𝕆 zero_in_𝕆 hz
+  have l₁_vec : l₁.vec = z/Complex.abs z := by simp[line.vec,l₁, O1]
+  have z_ne_one: z ≠ 1 := by simp [Complex.ext_iff, hz_not_real]
+  have z_abs_ne_one : Complex.abs (z-1) ≠ 0 := by simp[sub_ne_zero_of_ne z_ne_zero]; push_neg; exact z_ne_one;
+  let l₂ := O1 1 z z_ne_one.symm
+  have l₂_vec : l₂.vec = (z-1)/Complex.abs (z-1) := by simp[line.vec,l₂, O1]
+  have l₂_in_𝕆 : l₂ ∈ 𝕆.lines := by exact O1_in_𝕆 one_in_𝕆 hz
+  have l₁_l₂_not_parallel : ¬AreParallel l₁ l₂ := by
+    unfold AreParallel
+    push_neg
+    constructor
+    · simp [l₁_vec, l₂_vec, Complex.ext_iff]
+      · intro h
+        by_contra h'
+        have := mul_eq_mul_of_div_eq_div z.im z.im z_abs_ne_zero z_abs_ne_one h'
+        have := mul_left_cancel₀ hz_not_real this
+        rw[this] at h
+        have := mul_eq_mul_of_div_eq_div z.re (z.re-1) z_abs_ne_zero z_abs_ne_zero h
+        have := mul_right_cancel₀ z_abs_ne_zero this
+        linarith
+    · simp [l₁_vec, l₂_vec, Complex.ext_iff]
+      · intro h
+        by_contra h'
+        rw[← neg_div] at h'
+        have := mul_eq_mul_of_div_eq_div z.im (-z.im) z_abs_ne_zero z_abs_ne_one h'
+        rw[neg_mul_comm] at this
+        have := mul_left_cancel₀ hz_not_real this
+        rw[this, div_neg, neg_neg] at h
+        have := mul_eq_mul_of_div_eq_div z.re (z.re-1) z_abs_ne_zero z_abs_ne_zero h
+        have := mul_right_cancel₀ z_abs_ne_zero this
+        linarith
+  --defining the line parallel to l₂ going through a
+  let l₃ := E1 a l₂
+  have l₃_in_𝕆 : l₃ ∈ 𝕆.lines := by exact E1_in_𝕆 a l₂ ha l₂_in_𝕆
+  --helps a  lot with the computations
+  have : Complex.abs (z-1) ≠ 0 := by simp[sub_ne_zero_of_ne z_ne_one]; push_neg; exact z_ne_one;
+  have l₃_vec : l₃.vec = (1-z)/Complex.abs (z-1) := by
+    simp [l₃,line.vec, E1,l₂, O1]
+    norm_cast
+    simp [div_self this,← neg_div]
+  have l₂_l₃_parallel : AreParallel l₂ l₃ := by
+    exact (E1_in_𝕆'' a l₂ ha l₂_in_𝕆).2.2
+  have l₁_l₃_not_parallel : ¬AreParallel l₁ l₃ := by
+    exact Not_parallel_if_parallel l₁ l₂ l₃ l₁_l₂_not_parallel l₂_l₃_parallel
+  --define the intersection of l₁ l₃
+  let z₂ := Isect l₁ l₃ l₁_l₃_not_parallel
+  --z₂ should be a*z
+  apply in_𝕆_if_eq z₂
+  exact Isect_in_𝕆 l₁_in_𝕆 l₃_in_𝕆
+  --use all definitions
+  simp [z₂, Isect, l₁_vec,l₃_vec, l₃,E1, l₂_vec,line.vec,l₂,O1,l₁,O1]
+  norm_cast
+  --just calculate
+  simp[← neg_div, div_self this, ← neg_mul]
+  have : (((-z.im * Complex.abs (z - 1) * Complex.abs z) / (-z.im * Complex.abs (z - 1) * Complex.abs z)):ℂ) = 1 := by
+    apply div_self
+    simp[div_self this, z_ne_one, z_ne_zero, hz_not_real]
+  calc
+    _ = a*z*(-z.im*(Complex.abs (z-1))*(Complex.abs z))/(-z.im*(Complex.abs (z-1))*(Complex.abs z))
+      :=  by rw[mul_div_assoc, this];ring
+    _ = -z.im/(Complex.abs (z-1))*a*((Complex.abs (z-1))*(Complex.abs z)/(-z.im))*z/(Complex.abs z)
+      := by ring
+    _ = -z.im/(Complex.abs (z-1))*a*((-z.im)/((Complex.abs (z-1))*(Complex.abs z)))⁻¹*z/(Complex.abs z)
+      := by simp[inv_inv_div_inv]
+    _ = -z.im/(Complex.abs (z-1))*a/((-z.im)/((Complex.abs (z-1))*(Complex.abs z)))*z/(Complex.abs z)
+      := by simp [div_eq_mul_inv];
+    _ = -z.im/(Complex.abs (z-1))*a/((-z.im)/((Complex.abs (z-1))*(Complex.abs z))+z.re*z.im/((Complex.abs (z-1))*(Complex.abs z))-z.re*z.im/((Complex.abs (z-1))*(Complex.abs z)))*z/(Complex.abs z) := by ring
+    _ = -z.im / (Complex.abs (z - 1)) * a /((1 - z.re) / (Complex.abs (z - 1)) * (-z.im / (Complex.abs z)) +-z.im / ↑(Complex.abs (z - 1)) * (z.re / (Complex.abs z))) *(z /(Complex.abs z))
+      := by ring;
 
 lemma 𝕆_re {z : ℂ} (hz : z ∈ 𝕆) : (z.re : ℂ) ∈ 𝕆 := by
   let l := O4 z reAxis

@@ -29,6 +29,24 @@ lemma E1_in_𝕆' (z : ℂ) (l : line) (hz : z ∈ 𝕆) (hl : l ∈ 𝕆.lines)
     · exact E1_in_𝕆 z l hz hl
     · simp
 
+lemma E1_in_𝕆'' (z : ℂ) (l : line) (hz : z ∈ 𝕆) (hl : l ∈ 𝕆.lines) :
+  (E1 z l).z₁ = z ∧ (E1 z l).z₂ = z - l.vec ∧ AreParallel l (E1 z l):= by
+    unfold E1
+    constructor
+    · simp
+    · constructor
+      · simp
+      · unfold AreParallel
+        unfold line.vec
+        simp
+        right
+        simp_rw [neg_div', neg_neg]
+        rw[← line.vec, div_self]
+        rw[div_one]
+        have := l.z₁_neq_z₂
+        simp
+        exact this.symm
+
 section E2
 variable (z : ℂ) (l : line)
 

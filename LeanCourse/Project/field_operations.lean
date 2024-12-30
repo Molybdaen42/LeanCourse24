@@ -201,7 +201,7 @@ theorem 𝕆_inv {z : ℂ} (hz : z ∈ 𝕆) : z⁻¹ ∈ 𝕆 := by
   · simp [hz_ne_zero, zero_in_𝕆]
   sorry
 
-lemma 𝕆_real_mul_cmpl {z : ℂ} {a : ℝ} (ha : (a:ℂ) ∈ 𝕆) (hz_not_real : z.im ≠ 0) (hz : z ∈ 𝕆) : a * z ∈ 𝕆 := by
+lemma 𝕆_real_mul_cmpl {a z : ℂ} (ha_real : a.im = 0) (ha : (a:ℂ) ∈ 𝕆) (hz_not_real : z.im ≠ 0) (hz : z ∈ 𝕆) : a * z ∈ 𝕆 := by
   --defining the lines from z to 0 and 1, not parallel which is why z not be real
   have z_ne_zero: z ≠ 0 := by simp [Complex.ext_iff, hz_not_real]
   have z_abs_ne_zero : Complex.abs z ≠ 0 := by simp[sub_ne_zero_of_ne z_ne_zero]; push_neg; exact z_ne_zero;
@@ -282,19 +282,21 @@ lemma 𝕆_re {z : ℂ} (hz : z ∈ 𝕆) : (z.re : ℂ) ∈ 𝕆 := by
   · exact Isect_in_𝕆 reAxis_in_𝕆 (O4_in_𝕆 hz reAxis_in_𝕆)
   simp [Isect, reAxis, O1, line.vec, l, O4]
 
-lemma 𝕆_real_mul_real {a z : ℝ} (hz : (z : ℂ) ∈ 𝕆) : (a * z : ℂ) ∈ 𝕆 := by
-  -- Add i to z, multiply by a, and take the real component
-  apply in_𝕆_if_eq (a * (z + Complex.I)).re
+lemma 𝕆_real_mul_real {a b : ℂ} (ha_real : a.im = 0) (hb_real : b.im = 0) (ha : a ∈ 𝕆) (hz : b ∈ 𝕆) : a * b ∈ 𝕆 := by
+  -- Add i to b, multiply by a, and take the real component
+  apply in_𝕆_if_eq (a * (b + Complex.I)).re
   · apply 𝕆_re
-    apply 𝕆_real_mul_cmpl
-    · simp
+    apply 𝕆_real_mul_cmpl ha_real ha
+    · simp [hb_real]
     apply 𝕆_add hz i_in_𝕆
-  simp
+  simp [Complex.ext_iff, ha_real, hb_real]
 
+/-
 lemma 𝕆_real {a : ℝ} : (a : ℂ) ∈ 𝕆 := by
   rw [← mul_one a]
   push_cast
-  apply 𝕆_real_mul_real one_in_𝕆
+  apply 𝕆_real_mul_real (Complex.ofReal_im a) (Complex.ofReal_im 1) (sorry) one_in_𝕆
+-/
 
 lemma 𝕆_i_mul {z : ℂ} (hz : z ∈ 𝕆) : Complex.I * z ∈ 𝕆 := by sorry
 
@@ -309,8 +311,20 @@ theorem 𝕆_mul {z₁ z₂ : ℂ} (hz₁ : z₁ ∈ 𝕆) (hz₂ : z₂ ∈ �
   have : z₁ * z₂ = z₁.re * z₂.re - z₁.im * z₂.im + Complex.I * (z₁.re * z₂.im + z₁.im * z₂.re) := by simp [Complex.ext_iff]
   rw [this]
   -- Now, this is just a concatination of previous lemmata
-  norm_cast
-  apply 𝕆_add 𝕆_real (𝕆_i_mul 𝕆_real)
+  apply 𝕆_add
+  · simp [sub_eq_add_neg]
+    apply 𝕆_add
+    · apply 𝕆_real_mul_real
+      all_goals simp [Complex.ofReal_im, 𝕆_re hz₁, 𝕆_re hz₂]
+    · apply 𝕆_neg
+      apply 𝕆_real_mul_real
+      all_goals simp [Complex.ofReal_im, 𝕆_im hz₁, 𝕆_im hz₂]
+  apply 𝕆_i_mul
+  apply 𝕆_add
+  · apply 𝕆_real_mul_real
+    all_goals simp [Complex.ofReal_im, 𝕆_re hz₁, 𝕆_im hz₂]
+  · apply 𝕆_real_mul_real
+    all_goals simp [Complex.ofReal_im, 𝕆_im hz₁, 𝕆_re hz₂]
 
 end mul
 

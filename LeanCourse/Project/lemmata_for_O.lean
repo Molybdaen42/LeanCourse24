@@ -209,3 +209,7 @@ lemma Isect_in_𝕆 {l₁ l₂ : line} {h : ¬AreParallel l₁ l₂} (hl₁ : l�
   use l₂ -- second argument
   constructor; apply 𝕆ₙ.lines_inc N₂ N (le_max_right N₁ N₂); exact hl₂N
   use h
+
+lemma Complex.sq_abs_eq {z : ℂ} : (Complex.abs z)^2 = (z.re : ℂ)^2 + (z.im : ℂ)^2 := by
+  norm_cast
+  simp [← Complex.sq_abs_sub_sq_im]

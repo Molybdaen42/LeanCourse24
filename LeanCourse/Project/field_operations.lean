@@ -298,7 +298,80 @@ lemma 𝕆_real {a : ℝ} : (a : ℂ) ∈ 𝕆 := by
   apply 𝕆_real_mul_real (Complex.ofReal_im a) (Complex.ofReal_im 1) (sorry) one_in_𝕆
 -/
 
-lemma 𝕆_i_mul {z : ℂ} (hz : z ∈ 𝕆) : Complex.I * z ∈ 𝕆 := by sorry
+lemma 𝕆_i_mul {z : ℂ} (hz : z ∈ 𝕆) : Complex.I * z ∈ 𝕆 := by
+  -- W.l.o.g., suppose that z ≠ 0.
+  by_cases hz_ne_zero : z = 0
+  · simp [hz_ne_zero, zero_in_𝕆]
+
+  -- rotate z by π/2 radians
+  let l₁ := O1 z 0 hz_ne_zero
+  have hl₁ : l₁ ∈ 𝕆.lines := O1_in_𝕆 hz zero_in_𝕆
+  have hl₁_vec : l₁.vec = -z / Complex.abs z := by
+    simp [l₁, O1, line.vec]
+
+  let l₂ := O4 0 l₁
+  have hl₂ : l₂ ∈ 𝕆.lines := O4_in_𝕆 zero_in_𝕆 hl₁
+  have hl₂_vec : l₂.vec = Complex.I * (-z / Complex.abs z) := by
+    simp [l₂, O4, line.vec, div_self vec_well_defined]
+    simp [l₁, O1]
+  have l₁_l₂_not_parallel : ¬AreParallel l₁ l₂ := by
+    have : (Complex.abs z : ℂ) ≠ 0 := by norm_cast; exact (AbsoluteValue.ne_zero_iff Complex.abs).mpr hz_ne_zero
+    simp [AreParallel, line.vec]
+    rw [← line.vec, ← line.vec, hl₁_vec, hl₂_vec, ← neg_mul]
+    have : -z / Complex.abs z ≠ 0 := by exact div_ne_zero (neg_ne_zero.mpr hz_ne_zero) this
+    constructor
+    all_goals by_contra h
+    all_goals symm at h
+    all_goals apply (mul_eq_right₀ this).mp at h
+    all_goals simp [Complex.ext_iff] at h
+  have Isect_l₁_l₂ : Isect l₁ l₂ l₁_l₂_not_parallel = 0 := by
+    have : (Complex.abs z : ℂ) ≠ 0 := by norm_cast; exact (AbsoluteValue.ne_zero_iff Complex.abs).mpr hz_ne_zero
+    simp [Isect, l₁, l₂, O1, O4, line.vec, div_self this]
+    ring_nf
+    field_simp
+    have : (z.im : ℂ) ^ 2 + (z.re : ℂ) ^ 2 ≠ 0 := by
+      norm_cast
+      simp_rw [← Complex.sq_abs_sub_sq_im z, add_sub_assoc']
+      simp [hz_ne_zero]
+    simp_rw [div_sub_div_same, ← neg_add', ← mul_add, neg_div, mul_div_assoc, div_self this]
+    simp
+
+  let l₃ := O3 l₁ l₂ -- attention: Here, the paper by James King has an error
+  have hl₃ : l₃ ∈ 𝕆.lines := O3_in_𝕆 hl₁ hl₂
+  have hl₃_z₁ : l₃.z₁ = 0 := by
+    simp [l₃, O3, l₁_l₂_not_parallel, Isect_l₁_l₂]
+  have hl₃_z₂ : l₃.z₂ = (1 + Complex.I)*(-z / Complex.abs z) := by
+    simp [l₃, O3, l₁_l₂_not_parallel, Isect_l₁_l₂, hl₁_vec, hl₂_vec, ← one_add_mul]
+
+  apply in_𝕆_if_eq (E2 z l₃)
+  · exact E2_in_𝕆 z l₃ hz hl₃
+  have : (Complex.abs z : ℂ) ≠ 0 := by norm_cast; exact (AbsoluteValue.ne_zero_iff Complex.abs).mpr hz_ne_zero
+  simp [E2, hl₃_z₁, hl₃_z₂, line.vec, div_self this]
+  field_simp
+  simp [← neg_mul, ← add_mul, ← mul_div, mul_assoc, ← div_div, div_self this]
+  ring_nf
+  field_simp
+  have two_times_sqr_two_eq_one : 2 / (Complex.abs (1 + Complex.I) : ℂ) ^ 2 = 1 := by
+    simp [Complex.sq_abs_eq]
+    norm_num
+  symm
+  calc
+    _ = (1 + Complex.I) * z * (2 * ((z.re^2 + z.im^2) /
+        (Complex.abs z) ^ 2) / (Complex.abs (1 + Complex.I)) ^ 2)
+        - z
+          := by ring
+    _ = (1 + Complex.I) * z * (2 * ((Complex.abs z) ^ 2 /
+        (Complex.abs z) ^ 2) / (Complex.abs (1 + Complex.I)) ^ 2)
+        - z
+          := by rw [Complex.sq_abs_eq]
+    _ = (1 + Complex.I) * z * (2 /
+        (Complex.abs (1 + Complex.I)) ^ 2)
+        - z
+          := by simp [div_self, this]
+    _ = (1 + Complex.I) * z
+        - z
+          := by simp [two_times_sqr_two_eq_one]
+    _ = Complex.I * z := by ring
 
 lemma 𝕆_im {z : ℂ} (hz : z ∈ 𝕆) : (z.im : ℂ) ∈ 𝕆 := by
   let l := O4 z imAxis

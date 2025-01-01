@@ -259,7 +259,8 @@ lemma 𝕆_real_mul_cmpl {a z : ℂ} (ha_real : a.im = 0) (ha : (a:ℂ) ∈ 𝕆
   simp [z₂, Isect, l₁_vec,l₃_vec, l₃,E1, l₂_vec,line.vec,l₂,O1,l₁,O1]
   norm_cast
   --just calculate
-  simp[← neg_div, div_self this, ← neg_mul]
+  simp[← neg_div, div_self this, ← neg_mul, ha_real]
+  have a_re : a = a.re := by simp [Complex.ext_iff, ha_real]
   have : (((-z.im * Complex.abs (z - 1) * Complex.abs z) / (-z.im * Complex.abs (z - 1) * Complex.abs z)):ℂ) = 1 := by
     apply div_self
     simp[div_self this, z_ne_one, z_ne_zero, hz_not_real]
@@ -274,7 +275,12 @@ lemma 𝕆_real_mul_cmpl {a z : ℂ} (ha_real : a.im = 0) (ha : (a:ℂ) ∈ 𝕆
       := by simp [div_eq_mul_inv];
     _ = -z.im/(Complex.abs (z-1))*a/((-z.im)/((Complex.abs (z-1))*(Complex.abs z))+z.re*z.im/((Complex.abs (z-1))*(Complex.abs z))-z.re*z.im/((Complex.abs (z-1))*(Complex.abs z)))*z/(Complex.abs z) := by ring
     _ = -z.im / (Complex.abs (z - 1)) * a /((1 - z.re) / (Complex.abs (z - 1)) * (-z.im / (Complex.abs z)) +-z.im / ↑(Complex.abs (z - 1)) * (z.re / (Complex.abs z))) *(z /(Complex.abs z))
-      := by ring;
+      := by ring
+    _ = -↑z.im / ↑(Complex.abs (z - 1)) * ↑a.re /
+      ((1 - ↑z.re) / ↑(Complex.abs (z - 1)) * (-↑z.im / ↑(Complex.abs z)) +
+        -↑z.im / ↑(Complex.abs (z - 1)) * (↑z.re / ↑(Complex.abs z))) *
+    (z / ↑(Complex.abs z))
+      := by rw [← a_re]
 
 lemma 𝕆_re {z : ℂ} (hz : z ∈ 𝕆) : (z.re : ℂ) ∈ 𝕆 := by
   let l := O4 z reAxis
@@ -417,6 +423,15 @@ noncomputable def 𝕆Field : Subfield ℂ where
 
 theorem 𝕆_isField : IsField 𝕆Field := by
   exact Field.toIsField 𝕆Field
+
+
+-- **ℚ ⊆ 𝕆**
+
+lemma int_in_𝕆 : ℤ ⊆ 𝕆 := by
+  induction n with
+  | zero
+  sorry
+theorem rat_in_𝕆 : ℚ ⊆ 𝕆 := by sorry
 
 
 -- **𝕆 is closed under taking square and cube roots**

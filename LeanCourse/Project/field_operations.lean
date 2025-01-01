@@ -425,19 +425,47 @@ theorem 𝕆_isField : IsField 𝕆Field := by
   exact Field.toIsField 𝕆Field
 
 
--- **ℚ ⊆ 𝕆**
+-- *ℚ ⊆ 𝕆*
 
-lemma int_in_𝕆 : ℤ ⊆ 𝕆 := by
+lemma 𝕆_sub {z₁ z₂ : ℂ} (hz₁ : z₁ ∈ 𝕆) (hz₂ : z₂ ∈ 𝕆) : z₁ - z₂ ∈ 𝕆 := by
+  rw [sub_eq_add_neg]
+  exact 𝕆_add hz₁ (𝕆_neg hz₂)
+
+lemma 𝕆_div {z₁ z₂ : ℂ} (hz₁ : z₁ ∈ 𝕆) (hz₂ : z₂ ∈ 𝕆) : z₁/z₂ ∈ 𝕆 := by
+  rw [← mul_one z₁, mul_div_assoc, ← inv_eq_one_div]
+  exact 𝕆_mul hz₁ (𝕆_inv hz₂)
+
+lemma nat_in_𝕆 : ∀ n : ℕ, (n : ℂ) ∈ 𝕆 := by
+  intro n
   induction n with
-  | zero
-  sorry
-theorem rat_in_𝕆 : ℚ ⊆ 𝕆 := by sorry
+  | zero => norm_cast; exact zero_in_𝕆
+  | succ n hn => push_cast; exact 𝕆_add hn one_in_𝕆
 
+lemma int_in_𝕆 : ∀ n : ℤ, (n : ℂ) ∈ 𝕆 := by
+  intro n
+  induction n with
+  | ofNat n => exact nat_in_𝕆 n
+  | negSucc n => simp; rw [← neg_add]; apply 𝕆_neg; norm_cast; exact nat_in_𝕆 (1+n)
 
--- **𝕆 is closed under taking square and cube roots**
+theorem rat_in_𝕆 : ∀ r : ℚ, (r : ℂ) ∈ 𝕆 := by
+  intro r
+  have : (r : ℂ) = r.num / r.den := by norm_cast; symm; exact Rat.divInt_self r
+  simp_rw [this]
+  apply 𝕆_div
+  · apply int_in_𝕆
+  · apply nat_in_𝕆
+
+-- *𝕆 is closed under taking square and cube roots*
 
 section square_root
-lemma 𝕆_square_roots_pos_real {z : ℝ} {hz_pos : z > 0} (hz : (z : ℂ) ∈ 𝕆) : ∃ z' ∈ 𝕆, z = z' * z' := by sorry
+lemma 𝕆_square_roots_pos_real {a : ℝ} {ha_pos : a > 0} (ha : (a : ℂ) ∈ 𝕆) :
+    ∃ b ∈ 𝕆, a = b * b := by
+  let z₁ := Complex.I * a
+
+
+  -- b = √a and -√a both work. Let's use the positive one.
+  use √a; norm_cast; simp [Real.sqrt_mul_self, (le_of_lt ha_pos)]
+  sorry
 theorem 𝕆_square_roots {z : ℂ} (hz : z ∈ 𝕆) : ∃ z' ∈ 𝕆, z = z' * z' := by sorry
 end square_root
 

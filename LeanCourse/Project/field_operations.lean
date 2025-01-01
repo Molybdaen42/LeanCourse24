@@ -143,7 +143,7 @@ theorem 𝕆_add {z₁ z₂ : ℂ} (hz₁ : z₁ ∈ 𝕆) (hz₂ : z₂ ∈ �
   · exact Isect_in_𝕆 hl₃ hl₄
   · -- to show: this intersection really is the searched sum
     simp [Isect, line.vec, hl₃_z₁, hl₃_z₂, hl₄_z₁, hl₄_z₂, div_self, hz₁_ne_zero, hz₂_ne_zero]
-    field_simp
+    simp [div_mul_eq_mul_div, neg_div', div_add_div_same, mul_div_assoc', div_div, div_div_eq_mul_div]
     have h1 : (Complex.abs z₁ : ℂ) ≠ 0 := by norm_cast; exact (AbsoluteValue.ne_zero_iff Complex.abs).mpr hz₁_ne_zero
     have h2 : (Complex.abs z₂ : ℂ) ≠ 0 := by norm_cast; exact (AbsoluteValue.ne_zero_iff Complex.abs).mpr hz₂_ne_zero
     rw [mul_assoc (Complex.abs z₂ : ℂ), mul_comm ((-((z₂.re : ℂ) * z₁.im) + (z₂.im : ℂ) * z₁.re))]
@@ -152,7 +152,7 @@ theorem 𝕆_add {z₁ z₂ : ℂ} (hz₁ : z₁ ∈ 𝕆) (hz₂ : z₂ ∈ �
     ring_nf
     simp
     symm
-    field_simp
+    simp only [inv_eq_one_div, mul_div_assoc', mul_one]
     have : (z₂.im : ℂ) * (z₁.re : ℂ) - (z₂.re : ℂ) * (z₁.im : ℂ) ≠ 0 := by
       norm_cast
       push_neg
@@ -353,10 +353,10 @@ lemma 𝕆_i_mul {z : ℂ} (hz : z ∈ 𝕆) : Complex.I * z ∈ 𝕆 := by
   · exact E2_in_𝕆 z l₃ hz hl₃
   have : (Complex.abs z : ℂ) ≠ 0 := by norm_cast; exact (AbsoluteValue.ne_zero_iff Complex.abs).mpr hz_ne_zero
   simp [E2, hl₃_z₁, hl₃_z₂, line.vec, div_self this]
-  field_simp
+  simp [div_add_div_same, div_div, mul_div_assoc', neg_div']
   simp [← neg_mul, ← add_mul, ← mul_div, mul_assoc, ← div_div, div_self this]
   ring_nf
-  field_simp
+  simp only [inv_eq_one_div, div_pow, mul_div_assoc', div_div, div_mul_eq_mul_div]
   have two_times_sqr_two_eq_one : 2 / (Complex.abs (1 + Complex.I) : ℂ) ^ 2 = 1 := by
     simp [Complex.sq_abs_eq]
     norm_num

@@ -41,7 +41,7 @@ lemma vec_ne_zero (l : line) : l.vec ≠ 0 := by
 
 /-- The direction vector is of length one.-/
 lemma vec_abs_one (l : line) : Complex.abs l.vec = 1 := by
-  field_simp [line.vec, vec_well_defined]
+  simp [line.vec, map_div₀, Complex.abs_ofReal, Complex.abs_abs, div_self vec_well_defined]
 
 /-- The term z₂ - z₁ is never zero.-/
 lemma diff_ne_zero (l : line) : l.z₂ - l.z₁ ≠ 0 := by
@@ -262,8 +262,7 @@ noncomputable def O2 (z₁ z₂ : ℂ) (h : z₁ ≠ z₂) : line where
   z₁ := (z₁+z₂)/2                      -- the midpoint of z₁ and z₂
   z₂ := (z₁+z₂)/2 + Complex.I*(z₂-z₁) -- turns the vector z₂-z₁ by 90° and adds it to the midpoint
   z₁_neq_z₂ := by
-    field_simp
-    simp
+    simp [div_add', eq_div_iff]
     exact sub_ne_zero_of_ne (id (Ne.symm h))
 
 /-- Given two lines l₁ and l₂, we can fold l₁ onto l₂ (i.e. bisect the angle
@@ -271,7 +270,7 @@ between them). [Attention: There are two possibilities for the fold, the two of 
 noncomputable def O3 (l₁ l₂ : line) : line := if h : AreParallel l₁ l₂ then {
   z₁ := (l₁.z₁ + l₂.z₁)/2
   z₂ := (l₁.z₁ + l₂.z₂)/2
-  z₁_neq_z₂ := by field_simp [l₂.z₁_neq_z₂]
+  z₁_neq_z₂ := by simp [eq_div_iff, IsUnit.div_mul_cancel,l₂.z₁_neq_z₂]
 } else {
   z₁ := Isect l₁ l₂ h
   z₂ := Isect l₁ l₂ h + l₁.vec + l₂.vec -- Be attentive to the signs!
@@ -291,7 +290,7 @@ between them). [Attention: There are two possibilities for the fold, the two of 
 noncomputable def O3' (l₁ l₂ : line) : line := if h : AreParallel l₁ l₂ then {
   z₁ := (l₁.z₁ + l₂.z₁)/2
   z₂ := (l₁.z₁ + l₂.z₂)/2
-  z₁_neq_z₂ := by field_simp [l₂.z₁_neq_z₂]
+  z₁_neq_z₂ := by simp [eq_div_iff, IsUnit.div_mul_cancel,l₂.z₁_neq_z₂]
 } else {
   z₁ := Isect l₁ l₂ h
   z₂ := Isect l₁ l₂ h + l₁.vec - l₂.vec -- Be attentive to the signs!

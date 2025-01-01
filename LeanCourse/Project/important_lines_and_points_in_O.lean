@@ -28,13 +28,10 @@ lemma i_in_𝕆 : Complex.I ∈ 𝕆 := by
   have I_ne_one_or_neg_one : ¬(1 = Complex.I ∨ 1 = -Complex.I) := by simp [Complex.ext_iff]
   have h5 : ¬AreParallel imAxis l₂ := by
     simp [AreParallel, line.vec, imAxis, O4, reAxis, O1, l₁, l₂, O3', Isect, I_ne_one_or_neg_one, Complex.abs, Complex.normSq]
-    ring_nf; field_simp
-    constructor
-    · simp [Complex.ext_iff]
-      intro h; exfalso
-      obtain h' := Ne.symm ((fun {x} ↦ Real.sqrt_ne_zero'.mpr) zero_lt_two)
-      contradiction
-    · simp [Complex.ext_iff]
+    ring_nf; simp only [inv_eq_one_div, mul_div_assoc', neg_div', ne_eq,
+      Complex.ofReal_eq_zero, Nat.ofNat_nonneg, Real.sqrt_eq_zero, OfNat.ofNat_ne_zero,
+      not_false_eq_true, add_div', isUnit_iff_ne_zero, IsUnit.div_mul_cancel, eq_div_iff, sub_div']
+    simp [Complex.ext_iff]
 
   -- Now put it all together
   have h₁ : l₁ ∈ 𝕆.lines := by exact O4_in_𝕆 one_in_𝕆 reAxis_in_𝕆

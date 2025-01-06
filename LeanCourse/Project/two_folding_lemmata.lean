@@ -43,7 +43,7 @@ lemma E1_in_𝕆'' (z : ℂ) (l : line) (hz : z ∈ 𝕆) (hl : l ∈ 𝕆.lines
         simp_rw [neg_div', neg_neg]
         rw[← line.vec, div_self]
         rw[div_one]
-        have := l.z₁_neq_z₂
+        have := l.z₁_ne_z₂
         simp
         exact this.symm
 

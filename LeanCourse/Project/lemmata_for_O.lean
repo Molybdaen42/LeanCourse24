@@ -213,3 +213,5 @@ lemma Isect_in_𝕆 {l₁ l₂ : line} {h : ¬AreParallel l₁ l₂} (hl₁ : l�
 lemma Complex.sq_abs_eq {z : ℂ} : (Complex.abs z)^2 = (z.re : ℂ)^2 + (z.im : ℂ)^2 := by
   norm_cast
   simp [← Complex.sq_abs_sub_sq_im]
+lemma Complex.sq_abs_eq_in_ℝ {z : ℂ} : (Complex.abs z)^2 = (z.re)^2 + (z.im)^2 := by
+  simp [← Complex.sq_abs_sub_sq_im]

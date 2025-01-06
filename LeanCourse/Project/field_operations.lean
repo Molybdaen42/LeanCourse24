@@ -3,6 +3,7 @@ import LeanCourse.Project.lemmata_for_O
 import LeanCourse.Project.important_lines_and_points_in_O
 import LeanCourse.Project.two_folding_lemmata
 import Mathlib.Algebra.Field.Defs
+import Mathlib.Analysis.SpecialFunctions.PolarCoord
 open Classical
 open Construction
 open ComplexConjugate
@@ -58,11 +59,12 @@ lemma 𝕆_double {z : ℂ} (hz : z ∈ 𝕆) : 2 * z ∈ 𝕆 := by
   ring_nf
 
 lemma 𝕆_add_multiples {z₁ z₂ : ℂ} (hz₁ : z₁ ∈ 𝕆) (hz₂ : z₂ ∈ 𝕆) (h_multiple : ∃ a : ℝ, z₁ = a * z₂) : z₁ + z₂ ∈ 𝕆 := by
+  obtain ⟨a,ha⟩ := h_multiple
   -- Here is the proof why we can assume w.l.o.g. that |z₁| < |z₂| holds.
   by_cases h_abs_ne : z₁ = z₂ ∨ z₁ = -z₂
   · -- The case that z₁ = ±z₂,
     -- therefore their sum equals 0 or 2 * z₁. Apply zero_in_𝕆 or 𝕆_double.
-    obtain ⟨a,ha⟩ := h_multiple
+
     simp [ha] at h_abs_ne
     rcases h_abs_ne with a_one|a_neg_one
     · -- a = 1
@@ -78,11 +80,10 @@ lemma 𝕆_add_multiples {z₁ z₂ : ℂ} (hz₁ : z₁ ∈ 𝕆) (hz₂ : z₂
     have hz₁_ne_neg_z₂ : z₁ ≠ -z₂ := by
       by_contra h
       simp [h] at h_abs_ne
-    by_cases hz₁_ne_zero : z₁ = 0; simp [hz₁_ne_zero, hz₂]
-    by_cases hz₂_ne_zero : z₂ = 0; simp [hz₂_ne_zero, hz₁]
+    by_cases hz₁_ne_zero : z₁ = 0; · simp [hz₁_ne_zero, hz₂]
+    by_cases hz₂_ne_zero : z₂ = 0; · simp [hz₂_ne_zero, hz₁]
     by_cases hz₁_ne_h₂ : z₁ = z₂; rw [← hz₁_ne_h₂,← two_mul]; apply 𝕆_double hz₁
     push_neg at hz₁_ne_zero hz₂_ne_zero
-    obtain ⟨a,ha⟩ := h_multiple
 
     -- First mark the line l₁ passing through 0, z₁ and z₂.
     let l₁ := O1 z₁ 0 hz₁_ne_zero
@@ -297,13 +298,6 @@ lemma 𝕆_real_mul_real {a b : ℂ} (ha_real : a.im = 0) (hb_real : b.im = 0) (
     apply 𝕆_add hz i_in_𝕆
   simp [Complex.ext_iff, ha_real, hb_real]
 
-/-
-lemma 𝕆_real {a : ℝ} : (a : ℂ) ∈ 𝕆 := by
-  rw [← mul_one a]
-  push_cast
-  apply 𝕆_real_mul_real (Complex.ofReal_im a) (Complex.ofReal_im 1) (sorry) one_in_𝕆
--/
-
 lemma 𝕆_i_mul {z : ℂ} (hz : z ∈ 𝕆) : Complex.I * z ∈ 𝕆 := by
   -- W.l.o.g., suppose that z ≠ 0.
   by_cases hz_ne_zero : z = 0
@@ -455,20 +449,166 @@ theorem rat_in_𝕆 : ∀ r : ℚ, (r : ℂ) ∈ 𝕆 := by
   · apply int_in_𝕆
   · apply nat_in_𝕆
 
--- *𝕆 is closed under taking square and cube roots*
+
+-- **𝕆 is closed under taking square and cube roots**
 
 section square_root
 lemma 𝕆_square_roots_pos_real {a : ℝ} {ha_pos : a > 0} (ha : (a : ℂ) ∈ 𝕆) :
-    ∃ b ∈ 𝕆, a = b * b := by
-  let z₁ := Complex.I * a
+    (√a : ℂ) ∈ 𝕆 := by
+  let z₁ := Complex.I * (a - 1) / 2
+  have hz₁ : z₁ ∈ 𝕆 := by
+    apply 𝕆_div
+    · exact 𝕆_mul i_in_𝕆 (𝕆_sub ha one_in_𝕆)
+    apply nat_in_𝕆
+  have hz₁_ne_neg_i : z₁ ≠ -Complex.I := by
+    simp [z₁, Complex.ext_iff]
+    simp [div_eq_iff, sub_eq_iff_eq_add]
+    norm_num
+    linarith
+
+  -- O5 is returning a set of lines, not just one single line.
+  -- Take the following line l out of O5
+  let l : line := ⟨Complex.I*(a-1)/2, (√a-Complex.I)/2, (by simp [Complex.ext_iff]; intro h; linarith)⟩
+  have hl_in_O5 : l ∈ O5 (-Complex.I) z₁ hz₁_ne_neg_i.symm reAxis := by
+    simp [O5, reAxis, O1, z₁]
+    constructor
+    · use 1-√a
+      simp only [Complex.ofReal_sub, Complex.ofReal_one, sub_sub_cancel, mul_div_assoc', ne_eq,
+        OfNat.ofNat_ne_zero, not_false_eq_true, mul_div_cancel_left₀, sub_add_cancel]
+    · ring_nf
+      simp [Complex.abs, Complex.normSq]
+      simp_rw [← Real.sqrt_mul (le_of_lt ha_pos), Real.sqrt_mul_self (le_of_lt ha_pos)]
+      refine (Real.sqrt_inj ?_ ?_).mpr ?_
+      · rw [← sq]
+        apply add_nonneg
+        · linarith
+        · simp [sq_nonneg]
+      · simp [← sq, sq_nonneg]
+      ring_nf
+  have hl : l ∈ 𝕆.lines := by
+    apply O5_in_𝕆 (𝕆_neg i_in_𝕆) hz₁ reAxis_in_𝕆
+    exact hl_in_O5
+
+  -- The searched point z₂ is E2 of -i and l
+  let z₂ := E2 (-Complex.I) l
+  have hz₂ : z₂ ∈ 𝕆 := by
+    exact E2_in_𝕆 (-Complex.I) l (𝕆_neg i_in_𝕆) hl
+
+  -- We want to show that √a = z₂
+  apply in_𝕆_if_eq z₂ hz₂
+  simp [z₂, E2, l, line.vec]
+  simp [Complex.ext_iff]
+  have h1 : (Complex.abs (√a * (1 / 2) + Complex.I * (a * (-1 / 2))))⁻¹ ^ 2 = 4 / (a + a ^ 2) := by
+    simp [mul_div_assoc', add_div',
+      div_mul_cancel₀, map_div₀, div_pow,
+      div_mul_eq_mul_div, Complex.sq_abs_eq_in_ℝ, Real.sq_sqrt (le_of_lt ha_pos)]
+    norm_num
+  have h2 : (a + a^2)/(a + a^2) = 1 := by
+    simp (disch := field_simp_discharge) only [div_self, mul_one]
+  constructor
+  · simp [Complex.div_im, mul_div_assoc]
+    ring_nf
+    simp_rw [mul_assoc, mul_comm a, mul_comm (a^2), ← mul_add, h1]
+    symm
+    calc
+      _ = √a * ((a + a ^ 2) / (a + a ^ 2)) := by ring
+      _ = √a := by simp [h2]
+  · simp [Complex.div_im, mul_div_assoc]
+    ring_nf
+    simp_rw [mul_assoc, mul_comm (a^2), mul_comm (a^3), add_assoc, ← mul_add, h1]
+    symm
+    calc
+      _ = a - a * ((a + a ^ 2) / (a + a ^ 2)) := by ring
+      _ = 0 := by simp [h2]
+
+lemma 𝕆_abs {z : ℂ} (hz : z ∈ 𝕆) : (Complex.abs z : ℂ) ∈ 𝕆 := by
+  simp [Complex.abs, Complex.normSq]
+  by_cases h : z.re*z.re + z.im*z.im = 0
+  · simp [h, zero_in_𝕆]
+  apply 𝕆_square_roots_pos_real
+  · simp_rw [lt_iff_le_and_ne]
+    constructor
+    · ring_nf
+      exact add_nonneg (sq_nonneg z.re) (sq_nonneg z.im)
+    · symm; exact h
+  · push_cast
+    apply 𝕆_add (𝕆_mul (𝕆_re hz) (𝕆_re hz)) (𝕆_mul (𝕆_im hz) (𝕆_im hz))
+
+lemma half_angle {z : ℂ} (hz : z ∈ 𝕆) : Complex.exp (z.arg/2 * Complex.I) ∈ 𝕆 := by
+  by_cases z_ne_zero : z = 0
+  · simp [z_ne_zero, one_in_𝕆]
+
+  let l₁ := O1 z 0 z_ne_zero
+  have hl₁ : l₁ ∈ 𝕆.lines := O1_in_𝕆 hz zero_in_𝕆
+  by_cases z_im_ne_zero : (z.im : ℂ)  = 0
+  · -- Suppose z.im = 0
+    have : z.arg = 0 ∨ z.arg = Real.pi := by
+      norm_cast at z_im_ne_zero
+      simp [Complex.arg, z_im_ne_zero, Real.pi_ne_zero, Real.pi_ne_zero.symm, le_or_lt]
+    rcases this with h|h
+    · simp [h, one_in_𝕆]
+    · simp [h, Complex.exp_mul_I, i_in_𝕆]
+  by_cases l₁_reAxis_not_parallel : AreParallel l₁ reAxis
+  · -- Suppose l₁ and reAxis are parallel.
+    -- Then they are equal, i.e. z ∈ ℝ
+    have : (z.im : ℂ) = 0 := by
+      norm_cast
+      simp [AreParallel, reAxis, O1, line.vec, l₁, Complex.ext_iff, z_ne_zero, ← or_and_right] at l₁_reAxis_not_parallel
+      exact l₁_reAxis_not_parallel.2
+    contradiction
+  have Isect_l₁_reAxis : Isect l₁ reAxis l₁_reAxis_not_parallel = 0 := by
+    simp [Isect, l₁, reAxis, O1, line.vec]
+    have : (Complex.abs z : ℂ) ≠ 0 := by norm_cast; exact (AbsoluteValue.ne_zero_iff Complex.abs).mpr z_ne_zero
+    simp [← div_mul, neg_div, div_self z_im_ne_zero, mul_div_left_comm, div_self this]
+
+  let l₂ := O3 l₁ reAxis -- or O3' ????
+  have hl₂ : l₂ ∈ 𝕆.lines := O3_in_𝕆 hl₁ reAxis_in_𝕆
+  have l₁_l₂_not_parallel : ¬AreParallel l₁ l₂ := by
+    simp [AreParallel]
+    simp [l₂, O3, l₁_reAxis_not_parallel]
+    simp [line.vec, Isect, reAxis, O1, l₁]
+    ring_nf
+    field_simp
+    simp_rw [← div_div, div_add_div_same, div_sub_div_same, neg_div, neg_add_eq_sub, ← neg_sub 1 (z/Complex.abs z), neg_div]
+    sorry
+  let z₁ := Isect l₁ l₂ l₁_l₂_not_parallel
+  apply in_𝕆_if_eq (z₁ / Complex.abs z₁)
+  · unfold z₁
+    apply 𝕆_div
+    · exact Isect_in_𝕆 hl₁ hl₂
+    · exact 𝕆_abs (Isect_in_𝕆 hl₁ hl₂)
+  · simp [z₁, Isect, l₁_l₂_not_parallel]
+    simp [l₂, O3, l₁_reAxis_not_parallel]
+    simp [l₁, O1]
+    simp [reAxis, line.vec, Isect, O1]
+    sorry
+
+theorem 𝕆_square_roots {z : ℂ} (hz : z ∈ 𝕆) : ∃ z' ∈ 𝕆, z = z' * z' := by
+  let z_pol := Complex.polarCoord z
+  use Complex.polarCoord.symm (√(z_pol.1), z_pol.2 / 2)
+  simp [Complex.polarCoord_symm_apply, z_pol, Complex.polarCoord_apply]
+  constructor
+  · apply 𝕆_mul
+    · by_cases h : Complex.abs z = 0
+      · simp [h, zero_in_𝕆]
+      · apply 𝕆_square_roots_pos_real
+        · simp [(AbsoluteValue.ne_zero_iff Complex.abs).mp h, AbsoluteValue.nonneg Complex.abs z]
+        · exact 𝕆_abs hz
+    · simp [Complex.cos_add_sin_I]
+      exact half_angle hz
+  · rw [Complex.cos_add_sin_I]
+    ring_nf
+    norm_cast
+    rw [Real.sq_sqrt (AbsoluteValue.nonneg Complex.abs z)]
+    rw [← Complex.exp_nat_mul (z.arg * Complex.I * (1/2)) 2]
+    simp [← mul_assoc, mul_comm]
+    rw [mul_comm, mul_comm Complex.I]
+    exact Eq.symm (Complex.abs_mul_exp_arg_mul_I z)
 
 
-  -- b = √a and -√a both work. Let's use the positive one.
-  use √a; norm_cast; simp [Real.sqrt_mul_self, (le_of_lt ha_pos)]
-  sorry
-theorem 𝕆_square_roots {z : ℂ} (hz : z ∈ 𝕆) : ∃ z' ∈ 𝕆, z = z' * z' := by sorry
 end square_root
 
 section cube_root
+#check Complex.sin_three_mul
 theorem 𝕆_cube_roots {z : ℂ} (hz : z ∈ 𝕆) : ∃ z' ∈ 𝕆, z = z' * z' * z' := by sorry
 end cube_root

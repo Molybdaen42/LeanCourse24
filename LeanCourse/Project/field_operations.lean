@@ -143,7 +143,7 @@ theorem 𝕆_add {z₁ z₂ : ℂ} (hz₁ : z₁ ∈ 𝕆) (hz₂ : z₂ ∈ �
   · exact Isect_in_𝕆 hl₃ hl₄
   · -- to show: this intersection really is the searched sum
     simp [Isect, line.vec, hl₃_z₁, hl₃_z₂, hl₄_z₁, hl₄_z₂, div_self, hz₁_ne_zero, hz₂_ne_zero]
-    field_simp
+    simp [div_mul_eq_mul_div, neg_div', div_add_div_same, mul_div_assoc', div_div, div_div_eq_mul_div]
     have h1 : (Complex.abs z₁ : ℂ) ≠ 0 := by norm_cast; exact (AbsoluteValue.ne_zero_iff Complex.abs).mpr hz₁_ne_zero
     have h2 : (Complex.abs z₂ : ℂ) ≠ 0 := by norm_cast; exact (AbsoluteValue.ne_zero_iff Complex.abs).mpr hz₂_ne_zero
     rw [mul_assoc (Complex.abs z₂ : ℂ), mul_comm ((-((z₂.re : ℂ) * z₁.im) + (z₂.im : ℂ) * z₁.re))]
@@ -152,7 +152,7 @@ theorem 𝕆_add {z₁ z₂ : ℂ} (hz₁ : z₁ ∈ 𝕆) (hz₂ : z₂ ∈ �
     ring_nf
     simp
     symm
-    field_simp
+    simp only [inv_eq_one_div, mul_div_assoc', mul_one]
     have : (z₂.im : ℂ) * (z₁.re : ℂ) - (z₂.re : ℂ) * (z₁.im : ℂ) ≠ 0 := by
       norm_cast
       push_neg
@@ -259,7 +259,8 @@ lemma 𝕆_real_mul_cmpl {a z : ℂ} (ha_real : a.im = 0) (ha : (a:ℂ) ∈ 𝕆
   simp [z₂, Isect, l₁_vec,l₃_vec, l₃,E1, l₂_vec,line.vec,l₂,O1,l₁,O1]
   norm_cast
   --just calculate
-  simp[← neg_div, div_self this, ← neg_mul]
+  simp[← neg_div, div_self this, ← neg_mul, ha_real]
+  have a_re : a = a.re := by simp [Complex.ext_iff, ha_real]
   have : (((-z.im * Complex.abs (z - 1) * Complex.abs z) / (-z.im * Complex.abs (z - 1) * Complex.abs z)):ℂ) = 1 := by
     apply div_self
     simp[div_self this, z_ne_one, z_ne_zero, hz_not_real]
@@ -274,7 +275,12 @@ lemma 𝕆_real_mul_cmpl {a z : ℂ} (ha_real : a.im = 0) (ha : (a:ℂ) ∈ 𝕆
       := by simp [div_eq_mul_inv];
     _ = -z.im/(Complex.abs (z-1))*a/((-z.im)/((Complex.abs (z-1))*(Complex.abs z))+z.re*z.im/((Complex.abs (z-1))*(Complex.abs z))-z.re*z.im/((Complex.abs (z-1))*(Complex.abs z)))*z/(Complex.abs z) := by ring
     _ = -z.im / (Complex.abs (z - 1)) * a /((1 - z.re) / (Complex.abs (z - 1)) * (-z.im / (Complex.abs z)) +-z.im / ↑(Complex.abs (z - 1)) * (z.re / (Complex.abs z))) *(z /(Complex.abs z))
-      := by ring;
+      := by ring
+    _ = -↑z.im / ↑(Complex.abs (z - 1)) * ↑a.re /
+      ((1 - ↑z.re) / ↑(Complex.abs (z - 1)) * (-↑z.im / ↑(Complex.abs z)) +
+        -↑z.im / ↑(Complex.abs (z - 1)) * (↑z.re / ↑(Complex.abs z))) *
+    (z / ↑(Complex.abs z))
+      := by rw [← a_re]
 
 lemma 𝕆_re {z : ℂ} (hz : z ∈ 𝕆) : (z.re : ℂ) ∈ 𝕆 := by
   let l := O4 z reAxis
@@ -347,10 +353,10 @@ lemma 𝕆_i_mul {z : ℂ} (hz : z ∈ 𝕆) : Complex.I * z ∈ 𝕆 := by
   · exact E2_in_𝕆 z l₃ hz hl₃
   have : (Complex.abs z : ℂ) ≠ 0 := by norm_cast; exact (AbsoluteValue.ne_zero_iff Complex.abs).mpr hz_ne_zero
   simp [E2, hl₃_z₁, hl₃_z₂, line.vec, div_self this]
-  field_simp
+  simp [div_add_div_same, div_div, mul_div_assoc', neg_div']
   simp [← neg_mul, ← add_mul, ← mul_div, mul_assoc, ← div_div, div_self this]
   ring_nf
-  field_simp
+  simp only [inv_eq_one_div, div_pow, mul_div_assoc', div_div, div_mul_eq_mul_div]
   have two_times_sqr_two_eq_one : 2 / (Complex.abs (1 + Complex.I) : ℂ) ^ 2 = 1 := by
     simp [Complex.sq_abs_eq]
     norm_num
@@ -419,10 +425,47 @@ theorem 𝕆_isField : IsField 𝕆Field := by
   exact Field.toIsField 𝕆Field
 
 
--- **𝕆 is closed under taking square and cube roots**
+-- *ℚ ⊆ 𝕆*
+
+lemma 𝕆_sub {z₁ z₂ : ℂ} (hz₁ : z₁ ∈ 𝕆) (hz₂ : z₂ ∈ 𝕆) : z₁ - z₂ ∈ 𝕆 := by
+  rw [sub_eq_add_neg]
+  exact 𝕆_add hz₁ (𝕆_neg hz₂)
+
+lemma 𝕆_div {z₁ z₂ : ℂ} (hz₁ : z₁ ∈ 𝕆) (hz₂ : z₂ ∈ 𝕆) : z₁/z₂ ∈ 𝕆 := by
+  rw [← mul_one z₁, mul_div_assoc, ← inv_eq_one_div]
+  exact 𝕆_mul hz₁ (𝕆_inv hz₂)
+
+lemma nat_in_𝕆 : ∀ n : ℕ, (n : ℂ) ∈ 𝕆 := by
+  intro n
+  induction n with
+  | zero => norm_cast; exact zero_in_𝕆
+  | succ n hn => push_cast; exact 𝕆_add hn one_in_𝕆
+
+lemma int_in_𝕆 : ∀ n : ℤ, (n : ℂ) ∈ 𝕆 := by
+  intro n
+  induction n with
+  | ofNat n => exact nat_in_𝕆 n
+  | negSucc n => simp; rw [← neg_add]; apply 𝕆_neg; norm_cast; exact nat_in_𝕆 (1+n)
+
+theorem rat_in_𝕆 : ∀ r : ℚ, (r : ℂ) ∈ 𝕆 := by
+  intro r
+  have : (r : ℂ) = r.num / r.den := by norm_cast; symm; exact Rat.divInt_self r
+  simp_rw [this]
+  apply 𝕆_div
+  · apply int_in_𝕆
+  · apply nat_in_𝕆
+
+-- *𝕆 is closed under taking square and cube roots*
 
 section square_root
-lemma 𝕆_square_roots_pos_real {z : ℝ} {hz_pos : z > 0} (hz : (z : ℂ) ∈ 𝕆) : ∃ z' ∈ 𝕆, z = z' * z' := by sorry
+lemma 𝕆_square_roots_pos_real {a : ℝ} {ha_pos : a > 0} (ha : (a : ℂ) ∈ 𝕆) :
+    ∃ b ∈ 𝕆, a = b * b := by
+  let z₁ := Complex.I * a
+
+
+  -- b = √a and -√a both work. Let's use the positive one.
+  use √a; norm_cast; simp [Real.sqrt_mul_self, (le_of_lt ha_pos)]
+  sorry
 theorem 𝕆_square_roots {z : ℂ} (hz : z ∈ 𝕆) : ∃ z' ∈ 𝕆, z = z' * z' := by sorry
 end square_root
 

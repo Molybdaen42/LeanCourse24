@@ -17,7 +17,7 @@ lemma E1_in_𝕆 (z : ℂ) (l : line) (hz : z ∈ 𝕆) (hl : l ∈ 𝕆.lines) 
     · exact O4_in_𝕆 hz (O4_in_𝕆 hz hl)
     · -- show that the built line is equal to O4 z (O4 z l)
       simp [O4, line.vec]
-      field_simp
+      simp [mul_div_assoc', div_div_eq_mul_div, div_mul_eq_mul_div, div_div]
       simp [mul_div_assoc, sub_eq_add_neg, ← mul_assoc, ← neg_div, neg_sub]
       rfl
 
@@ -92,7 +92,7 @@ lemma l_not_parallel_to_O3_on_O4_and_E1 :
   ¬AreParallel l (O3 (O4 z l) (E1 z l)) := by
     simp [AreParallel]
     rw [line.vec, line.vec, (O3_on_O4_and_E1 z l).1, (O3_on_O4_and_E1 z l).2.1, ← line.vec]
-    ring_nf; field_simp
+    ring_nf; simp only [inv_eq_one_div, mul_div_assoc', mul_one, neg_div', div_add_div_same]
     -- use some ring properties on h
     rw [← neg_neg (-(Complex.I*l.vec)+l.vec), neg_add, neg_neg, ← sub_eq_add_neg]
     rw [mul_div_assoc, ← sub_one_mul, ← sub_one_mul, mul_div, mul_comm]
@@ -120,7 +120,7 @@ lemma O4_not_parallel_to_O4_on_O3_on_O4_and_E1 :
     simp_rw [this, O3]
     simp [O4_not_parallel_to_E1 z l]
     rw [← line.vec]
-    field_simp [add_sub_assoc]
+    simp only [div_div_eq_mul_div, add_sub_assoc, add_sub_cancel_left, mul_div_assoc', div_mul_eq_mul_div, div_div, neg_div']
     simp [← sub_one_mul, vec_abs_one]
     rw [← neg_mul, neg_mul_comm]
     rw [mul_comm (Complex.I-1) l.vec, ← mul_assoc]

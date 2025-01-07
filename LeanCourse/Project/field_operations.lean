@@ -27,8 +27,7 @@ theorem 𝕆_neg {z : ℂ} (hz : z ∈ 𝕆) : -z ∈ 𝕆 := by
     simp [l₂, O4, line.vec, l₁, O1]
     ring
   have hl₂_vec : l₂.vec = -Complex.I * z / Complex.abs z := by
-    have : (Complex.abs z : ℂ) ≠ 0 := by norm_cast; exact (AbsoluteValue.ne_zero_iff Complex.abs).mpr z_ne_zero
-    simp [line.vec, hl₂_z₁, hl₂_z₂, div_self this, neg_div]
+    simp [line.vec, hl₂_z₁, hl₂_z₂, div_abs z_ne_zero, neg_div]
 
   apply in_𝕆_if_eq (E2 z l₂)
   · exact E2_in_𝕆 z l₂ hz hl₂
@@ -50,8 +49,7 @@ lemma 𝕆_double {z : ℂ} (hz : z ∈ 𝕆) : 2 * z ∈ 𝕆 := by
     simp [l₂, O4, line.vec, l₁, O1]
     ring
   have hl₂_vec : l₂.vec = -Complex.I * z / Complex.abs z := by
-    have : (Complex.abs z : ℂ) ≠ 0 := by norm_cast; exact (AbsoluteValue.ne_zero_iff Complex.abs).mpr z_ne_zero
-    simp [line.vec, hl₂_z₁, hl₂_z₂, div_self this, neg_div]
+    simp [line.vec, hl₂_z₁, hl₂_z₂, div_abs z_ne_zero, neg_div]
 
   apply in_𝕆_if_eq (E2 0 l₂)
   · exact E2_in_𝕆 0 l₂ zero_in_𝕆 hl₂
@@ -145,11 +143,9 @@ theorem 𝕆_add {z₁ z₂ : ℂ} (hz₁ : z₁ ∈ 𝕆) (hz₂ : z₂ ∈ �
   · -- to show: this intersection really is the searched sum
     simp [Isect, line.vec, hl₃_z₁, hl₃_z₂, hl₄_z₁, hl₄_z₂, div_self, hz₁_ne_zero, hz₂_ne_zero]
     simp [div_mul_eq_mul_div, neg_div', div_add_div_same, mul_div_assoc', div_div, div_div_eq_mul_div]
-    have h1 : (Complex.abs z₁ : ℂ) ≠ 0 := by norm_cast; exact (AbsoluteValue.ne_zero_iff Complex.abs).mpr hz₁_ne_zero
-    have h2 : (Complex.abs z₂ : ℂ) ≠ 0 := by norm_cast; exact (AbsoluteValue.ne_zero_iff Complex.abs).mpr hz₂_ne_zero
     rw [mul_assoc (Complex.abs z₂ : ℂ), mul_comm ((-((z₂.re : ℂ) * z₁.im) + (z₂.im : ℂ) * z₁.re))]
-    rw [mul_comm (Complex.abs z₂ : ℂ),  ← mul_assoc (Complex.abs z₂ : ℂ), ← mul_assoc, mul_comm, mul_div_assoc, ← div_div, ← div_div, mul_div_assoc, div_self h2, mul_one]
-    rw [mul_div_assoc, div_self h1, mul_one]
+    rw [mul_comm (Complex.abs z₂ : ℂ),  ← mul_assoc (Complex.abs z₂ : ℂ), ← mul_assoc, mul_comm, mul_div_assoc, ← div_div, ← div_div, mul_div_assoc, div_abs hz₂_ne_zero, mul_one]
+    rw [mul_div_assoc, div_abs hz₁_ne_zero, mul_one]
     ring_nf
     simp
     symm
@@ -345,10 +341,9 @@ lemma 𝕆_i_mul {z : ℂ} (hz : z ∈ 𝕆) : Complex.I * z ∈ 𝕆 := by
 
   apply in_𝕆_if_eq (E2 z l₃)
   · exact E2_in_𝕆 z l₃ hz hl₃
-  have : (Complex.abs z : ℂ) ≠ 0 := by norm_cast; exact (AbsoluteValue.ne_zero_iff Complex.abs).mpr hz_ne_zero
-  simp [E2, hl₃_z₁, hl₃_z₂, line.vec, div_self this]
+  simp [E2, hl₃_z₁, hl₃_z₂, line.vec, div_abs hz_ne_zero]
   simp [div_add_div_same, div_div, mul_div_assoc', neg_div']
-  simp [← neg_mul, ← add_mul, ← mul_div, mul_assoc, ← div_div, div_self this]
+  simp [← neg_mul, ← add_mul, ← mul_div, mul_assoc, ← div_div, div_abs hz_ne_zero]
   ring_nf
   simp only [inv_eq_one_div, div_pow, mul_div_assoc', div_div, div_mul_eq_mul_div]
   have two_times_sqr_two_eq_one : 2 / (Complex.abs (1 + Complex.I) : ℂ) ^ 2 = 1 := by
@@ -367,7 +362,7 @@ lemma 𝕆_i_mul {z : ℂ} (hz : z ∈ 𝕆) : Complex.I * z ∈ 𝕆 := by
     _ = (1 + Complex.I) * z * (2 /
         (Complex.abs (1 + Complex.I)) ^ 2)
         - z
-          := by simp [div_self, this]
+          := by simp [div_abs, hz_ne_zero]
     _ = (1 + Complex.I) * z
         - z
           := by simp [two_times_sqr_two_eq_one]
@@ -449,7 +444,7 @@ theorem rat_in_𝕆 : ∀ r : ℚ, (r : ℂ) ∈ 𝕆 := by
   · apply int_in_𝕆
   · apply nat_in_𝕆
 
-theorem Rat_subset_𝕆 : Set.range Complex.instRatCast.ratCast ⊆ 𝕆 := by 
+theorem Rat_subset_𝕆 : Set.range Complex.instRatCast.ratCast ⊆ 𝕆 := by
   intro z
   simp
   intro q hqz
@@ -566,8 +561,7 @@ lemma half_angle {z : ℂ} (hz : z ∈ 𝕆) : Complex.exp (z.arg/2 * Complex.I)
     contradiction
   have Isect_l₁_reAxis : Isect l₁ reAxis l₁_reAxis_not_parallel = 0 := by
     simp [Isect, l₁, reAxis, O1, line.vec]
-    have : (Complex.abs z : ℂ) ≠ 0 := by norm_cast; exact (AbsoluteValue.ne_zero_iff Complex.abs).mpr z_ne_zero
-    simp [← div_mul, neg_div, div_self z_im_ne_zero, mul_div_left_comm, div_self this]
+    simp [← div_mul, neg_div, div_self z_im_ne_zero, mul_div_left_comm, div_abs z_ne_zero]
 
   let l₂ := O3 l₁ reAxis -- or O3' ????
   have hl₂ : l₂ ∈ 𝕆.lines := O3_in_𝕆 hl₁ reAxis_in_𝕆
@@ -578,6 +572,10 @@ lemma half_angle {z : ℂ} (hz : z ∈ 𝕆) : Complex.exp (z.arg/2 * Complex.I)
     ring_nf
     field_simp
     simp_rw [← div_div, div_add_div_same, div_sub_div_same, neg_div, neg_add_eq_sub, ← neg_sub 1 (z/Complex.abs z), neg_div]
+    --simp [Complex.abs, Complex.normSq, Complex.ext_iff]
+    --ring_nf
+    --field_simp
+    --rw [one_sub_div (Complex.abs_ne_zero z_ne_zero)]
     sorry
   let z₁ := Isect l₁ l₂ l₁_l₂_not_parallel
   apply in_𝕆_if_eq (z₁ / Complex.abs z₁)
@@ -591,7 +589,7 @@ lemma half_angle {z : ℂ} (hz : z ∈ 𝕆) : Complex.exp (z.arg/2 * Complex.I)
     simp [reAxis, line.vec, Isect, O1]
     sorry
 
-theorem 𝕆_square_roots {z : ℂ} (hz : z ∈ 𝕆) : ∃ z' ∈ 𝕆, z = z' * z' := by
+theorem 𝕆_square_roots {z : ℂ} (hz : z ∈ 𝕆) : ∃ z' ∈ 𝕆, z = z'^2 := by
   let z_pol := Complex.polarCoord z
   use Complex.polarCoord.symm (√(z_pol.1), z_pol.2 / 2)
   simp [Complex.polarCoord_symm_apply, z_pol, Complex.polarCoord_apply]
@@ -613,10 +611,74 @@ theorem 𝕆_square_roots {z : ℂ} (hz : z ∈ 𝕆) : ∃ z' ∈ 𝕆, z = z' 
     rw [mul_comm, mul_comm Complex.I]
     exact Eq.symm (Complex.abs_mul_exp_arg_mul_I z)
 
-
 end square_root
 
+
 section cube_root
+
+
+lemma vec_in_𝕆 {l : line} (hl : l ∈ 𝕆.lines) : l.vec ∈ 𝕆 := by
+  -- w.l.o.g. l.vec ≠ ±i
+  by_cases vec_ne_i : l.vec = Complex.I; · simp [vec_ne_i, i_in_𝕆]
+  by_cases vec_ne_neg_i : l.vec = -Complex.I; · simp [vec_ne_neg_i, 𝕆_neg i_in_𝕆]
+
+  -- w.l.o.g. l (now called l₁) passes through 0
+  let l₁ := E1 0 l
+  have hl₁ : l₁ ∈ 𝕆.lines := E1_in_𝕆 0 l zero_in_𝕆 hl
+  have : -l₁.vec = l.vec := by
+    simp [l₁, E1, line.vec, div_self vec_well_defined]
+  rw [← this] at vec_ne_i vec_ne_neg_i ⊢
+
+  let l₂ := O4 1 l₁
+  have hl₂ : l₂ ∈ 𝕆.lines := O4_in_𝕆 one_in_𝕆 hl₁
+  have hl₂_z₁ : l₂.z₁ = 1 := by
+    simp_rw [l₂, O4]
+  have hl₂_z₂ : l₂.z₂ = 1 + Complex.I * l₁.vec := by
+    simp_rw [l₂, O4]
+  have hl₂_vec : l₂.vec = Complex.I * l₁.vec := by
+    simp [line.vec, hl₂_z₁, hl₂_z₂]
+    rw [div_self]; simp
+    simp [l₁.z₁_ne_z₂.symm]
+
+  let z₁ := Isect l₁ l₂ O4_not_parallel
+  have hz₁ : z₁ ∈ 𝕆 := Isect_in_𝕆 hl₁ hl₂
+
+  apply in_𝕆_if_eq (z₁ / Complex.abs z₁) -- or the negative version of this...
+  · exact 𝕆_div hz₁ (𝕆_abs hz₁)
+  simp [z₁, Isect, hl₂_vec, hl₂_z₁]
+  --simp [line.vec]
+  have : (l₁.vec.im * l₁.vec.im + l₁.vec.re * l₁.vec.re : ℂ) = 1 := by
+    simp [add_comm, ← sq, ← Complex.sq_abs_eq, vec_abs_one]
+  simp [this]
+  --simp [line.vec]
+  /-have : z₁ ≠ 0 := by
+    -- use vec_ne_neg_i and vec_ne_i
+    sorry-/
+  sorry
+
+lemma slope_in_𝕆 {l : line} (hl : l ∈ 𝕆.lines) : (l.vec.im / l.vec.re : ℂ) ∈ 𝕆 := by
+  apply 𝕆_div
+  · exact 𝕆_im (vec_in_𝕆 hl)
+  · exact 𝕆_re (vec_in_𝕆 hl)
+
+lemma 𝕆_polynomials_of_deg_three (a b c : ℝ) (ha : (a : ℂ) ∈ 𝕆) (hb : (b : ℂ) ∈ 𝕆) (hc : (c : ℂ) ∈ 𝕆) :
+    ∃ x ∈ 𝕆, x^3 + a*x^2 + b*x + c = 0 := by
+  let l₁ := O1 (-Complex.I) (1-Complex.I) (by simp [Complex.ext_iff])
+  let l₂ := O1 (-c) (-c+Complex.I) (by simp [Complex.ext_iff])
+  -- let l₃ : line := ⟨(b+c/m)*Complex.I, 1+(m+b+c/m)*Complex.I, sorry⟩ -- m is a solution (and the slope of l₃)
+  -- have : l₃ ∈ O6 (a+Complex.I) (c+b*Complex.I) l₁ l₂
+  -- have : m = l₃.vec.im / l₃.vec.re
+  -- use m
+  sorry
+
+lemma 𝕆_cube_root_real {a : ℝ} (ha : (a : ℂ) ∈ 𝕆) :
+    ∃ x ∈ 𝕆, x^3 = a := by
+  obtain ⟨x,hx,hxa⟩ := 𝕆_polynomials_of_deg_three 0 0 (-a) zero_in_𝕆 zero_in_𝕆 (by simp [𝕆_neg ha])
+  simp [← sub_eq_add_neg, sub_eq_iff_eq_add] at hxa
+  use x
+
 #check Complex.sin_three_mul
-theorem 𝕆_cube_roots {z : ℂ} (hz : z ∈ 𝕆) : ∃ z' ∈ 𝕆, z = z' * z' * z' := by sorry
+
+theorem 𝕆_cube_roots {z : ℂ} (hz : z ∈ 𝕆) : ∃ z' ∈ 𝕆, z = z'^3 := by sorry
+
 end cube_root

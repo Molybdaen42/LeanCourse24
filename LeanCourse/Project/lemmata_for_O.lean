@@ -215,3 +215,7 @@ lemma Complex.sq_abs_eq {z : ℂ} : (Complex.abs z)^2 = (z.re : ℂ)^2 + (z.im :
   simp [← Complex.sq_abs_sub_sq_im]
 lemma Complex.sq_abs_eq_in_ℝ {z : ℂ} : (Complex.abs z)^2 = (z.re)^2 + (z.im)^2 := by
   simp [← Complex.sq_abs_sub_sq_im]
+
+lemma div_abs {z : ℂ} (h : z ≠ 0) : (Complex.abs z : ℂ)/(Complex.abs z : ℂ) = 1 := by
+  norm_cast
+  exact div_self ((AbsoluteValue.ne_zero_iff Complex.abs).mpr h)

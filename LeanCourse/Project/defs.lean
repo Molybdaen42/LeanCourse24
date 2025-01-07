@@ -138,7 +138,7 @@ lemma line_eq_iff_both_points_lie_in_the_other' (l₁ l₂ : line) :
 lemma line_eq_if_add_vec (l : line) {k : ℝ} (h : k ≠ 0) : l.eq ⟨l.z₁, l.z₁ + k*l.vec, (by simp [h, vec_ne_zero])⟩ := by
   -- first prove that |z₂ - z₁| ≠ 0
   have : (Complex.abs (l.z₂ - l.z₁) : ℂ) ≠ 0 := by
-    exact Complex.ofReal_ne_zero.mpr ((AbsoluteValue.ne_zero_iff Complex.abs).mpr (diff_ne_zero l))
+    exact Complex.ofReal_ne_zero.mpr vec_well_defined
   -- It's enough to show that l.z₁ and l.z₂ lie in the other line
   apply (line_eq_iff_both_points_lie_in_the_other l ⟨l.z₁, l.z₁ + k*l.vec, (by simp [h, vec_ne_zero])⟩).mpr
   -- Now it's pretty straightforward

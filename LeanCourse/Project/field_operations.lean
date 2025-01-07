@@ -449,6 +449,14 @@ theorem rat_in_𝕆 : ∀ r : ℚ, (r : ℂ) ∈ 𝕆 := by
   · apply int_in_𝕆
   · apply nat_in_𝕆
 
+theorem Rat_subset_𝕆 : Set.range Complex.instRatCast.ratCast ⊆ 𝕆 := by 
+  intro z
+  simp
+  intro q hqz
+  rw [← hqz]
+  have : RatCast.ratCast q = (q : ℂ) := by rfl
+  exact rat_in_𝕆 q
+
 
 -- **𝕆 is closed under taking square and cube roots**
 

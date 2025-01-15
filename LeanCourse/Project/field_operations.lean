@@ -192,12 +192,6 @@ theorem 𝕆_add {z₁ z₂ : ℂ} (hz₁ : z₁ ∈ 𝕆) (hz₂ : z₂ ∈ �
 end add
 section mul
 
-theorem 𝕆_inv {z : ℂ} (hz : z ∈ 𝕆) : z⁻¹ ∈ 𝕆 := by
-  -- W.l.o.g., suppose that z ≠ 0.
-  by_cases hz_ne_zero : z = 0
-  · simp [hz_ne_zero, zero_in_𝕆]
-  sorry
-
 lemma 𝕆_real_mul_cmpl {a z : ℂ} (ha_real : a.im = 0) (ha : (a:ℂ) ∈ 𝕆) (hz_not_real : z.im ≠ 0) (hz : z ∈ 𝕆) : a * z ∈ 𝕆 := by
   --defining the lines from z to 0 and 1, not parallel which is why z not be real
   have z_ne_zero: z ≠ 0 := by simp [Complex.ext_iff, hz_not_real]
@@ -393,6 +387,129 @@ theorem 𝕆_mul {z₁ z₂ : ℂ} (hz₁ : z₁ ∈ 𝕆) (hz₂ : z₂ ∈ �
     all_goals simp [Complex.ofReal_im, 𝕆_re hz₁, 𝕆_im hz₂]
   · apply 𝕆_real_mul_real
     all_goals simp [Complex.ofReal_im, 𝕆_im hz₁, 𝕆_re hz₂]
+
+lemma 𝕆_real_inv_cmpl {a z : ℂ} (ha_real : a.im = 0) (ha : (a:ℂ) ∈ 𝕆) (hz_not_real : z.im ≠ 0) (hz : z ∈ 𝕆) (ha_not_zero : a≠ 0) :  z/a ∈ 𝕆 := by
+  --defining the lines from z to 0 and 1, not parallel which is why z not be real
+  have ha_eq_re : a = (a.re :ℂ):= by simp [Complex.ext_iff,ha_real]
+  have z_ne_zero: z ≠ 0 := by simp [Complex.ext_iff, hz_not_real]
+  have z_abs_ne_zero : Complex.abs z ≠ 0 := by simp[sub_ne_zero_of_ne z_ne_zero]; push_neg; exact z_ne_zero;
+  let l₁ := O1 0 z z_ne_zero.symm
+  have l₁_in_𝕆 : l₁ ∈ 𝕆.lines := by exact O1_in_𝕆 zero_in_𝕆 hz
+  have l₁_vec : l₁.vec = z/Complex.abs z := by simp[line.vec,l₁, O1]
+  have z_ne_a : a≠ z := by simp[Complex.ext_iff];intro h;rw[ha_real, Eq.comm];push_neg; exact   hz_not_real;
+  have z_a_abs_ne_zero : Complex.abs (z-a)≠ 0 := by simp [Eq.comm, z_ne_a]
+  let l₂ := O1 a z z_ne_a
+  have l₂_vec : l₂.vec = (z-a)/Complex.abs (z-a) := by simp[line.vec,l₂, O1]
+  have l₂_in_𝕆 : l₂ ∈ 𝕆.lines := by exact O1_in_𝕆 ha hz
+  have l₁_l₂_not_parallel : ¬AreParallel l₁ l₂ := by
+    unfold AreParallel
+    push_neg
+    constructor
+    · simp [l₁_vec, l₂_vec, Complex.ext_iff]
+      · intro h
+        by_contra h'
+        simp_rw[ha_real] at h'
+        have := mul_eq_mul_of_div_eq_div z.im (z.im-0) z_abs_ne_zero z_a_abs_ne_zero h'
+        simp_rw[sub_zero] at this
+        have := mul_left_cancel₀ hz_not_real this
+        rw[this] at h
+        have := mul_eq_mul_of_div_eq_div z.re (z.re-a.re) z_abs_ne_zero z_abs_ne_zero h
+        have := mul_right_cancel₀ z_abs_ne_zero this
+        have := Eq.symm this
+        simp [sub_eq_iff_eq_add] at this
+        rw[this] at ha_eq_re
+        rw[ha_eq_re] at ha_not_zero
+        contradiction
+    · simp [l₁_vec, l₂_vec, Complex.ext_iff]
+      · intro h
+        by_contra h'
+        rw[← neg_div] at h'
+        have := mul_eq_mul_of_div_eq_div z.im (-(z.im-a.im)) z_abs_ne_zero z_a_abs_ne_zero h'
+        simp_rw[neg_mul_comm, ha_real, sub_zero] at this
+        have := mul_left_cancel₀ hz_not_real this
+        rw[this, div_neg, neg_neg] at h
+        have := mul_eq_mul_of_div_eq_div z.re (z.re-a.re) z_abs_ne_zero z_abs_ne_zero h
+        have := mul_right_cancel₀ z_abs_ne_zero this
+        have := Eq.symm this
+        simp [sub_eq_iff_eq_add] at this
+        rw[this] at ha_eq_re
+        rw[ha_eq_re] at ha_not_zero
+        contradiction
+  --defining the line parallel to l₂ going through a
+  let l₃ := E1 1 l₂
+  have l₃_in_𝕆 : l₃ ∈ 𝕆.lines := by exact E1_in_𝕆 1 l₂ one_in_𝕆 l₂_in_𝕆
+  --helps a  lot with the computations
+  have l₃_vec : l₃.vec = (a-z)/Complex.abs (z-a) := by
+    simp [l₃,line.vec, E1,l₂_vec,l₂,O1]
+    norm_cast
+    simp [div_self z_a_abs_ne_zero,← neg_div]
+  have l₂_l₃_parallel : AreParallel l₂ l₃ := by
+    exact (E1_in_𝕆'' 1 l₂ one_in_𝕆 l₂_in_𝕆).2.2
+  have l₁_l₃_not_parallel : ¬AreParallel l₁ l₃ := by
+    exact Not_parallel_if_parallel l₁ l₂ l₃ l₁_l₂_not_parallel l₂_l₃_parallel
+  --define the intersection of l₁ l₃
+  let z₂ := Isect l₁ l₃ l₁_l₃_not_parallel
+  --z₂ should be a*z
+  apply in_𝕆_if_eq z₂
+  exact Isect_in_𝕆 l₁_in_𝕆 l₃_in_𝕆;
+  simp_rw [z₂, Isect,l₃_vec,l₃,E1,l₁_vec,l₁,O1]
+  simp [ha_real];norm_cast
+  simp [div_mul_div_comm, div_add_div_same, sub_mul];norm_cast
+  rw[mul_comm z.re z.im,sub_add_eq_add_sub, add_neg_cancel, zero_sub, div_mul, mul_div_cancel_of_imp]
+  push_cast;
+  have hz_not_real' : (z.im :ℂ)≠ 0 := by simp [hz_not_real]
+  rw[div_mul_eq_mul_div, ← neg_div, neg_neg, div_div_div_cancel_right₀]
+  · norm_cast;simp [mul_comm,← mul_div,div_mul_cancel_right₀ hz_not_real', ← ha_eq_re];ring_nf;
+  · simp [];push_neg; exact z_ne_a.symm
+  · by_contra h; push_neg at h; rw[h.1] at z_abs_ne_zero; contradiction
+
+lemma 𝕆_real_inv_real {a b : ℂ} (ha_real : a.im = 0) (hb_real : b.im = 0) (ha : a ∈ 𝕆) (hb : b ∈ 𝕆) (hb_ne_zero : b ≠ 0) : a / b ∈ 𝕆 := by
+  -- Add i to b, multiply by a, and take the real component
+  apply in_𝕆_if_eq ((a + Complex.I) / b ).re
+  · apply 𝕆_re
+    apply 𝕆_real_inv_cmpl hb_real hb
+    · simp [ha_real]
+    · apply 𝕆_add ha i_in_𝕆
+    · exact hb_ne_zero
+  simp [Complex.ext_iff, ha_real, hb_real]
+  constructor
+  · simp [Complex.div_re,add_div];left;exact hb_real
+  · simp [Complex.div_im, hb_real, ha_real]
+
+theorem 𝕆_inv {z : ℂ} (hz : z ∈ 𝕆) : z⁻¹ ∈ 𝕆 := by
+  -- W.l.o.g., suppose that z ≠ 0.
+  by_cases hz_ne_zero : z = 0
+  · simp [hz_ne_zero, zero_in_𝕆]
+  · -- We can write
+    rw[inv_eq_one_div]
+    have : 1/z = (z.re - z.im*Complex.I)/(z.re*z.re+z.im*z.im) := by simp [Complex.ext_iff, Complex.normSq, Complex.div_re, Complex.div_im,← neg_mul, mul_div_assoc, ← div_eq_mul_inv];
+    rw [this]
+    by_cases hz_not_real : z.im = 0
+    · rw[hz_not_real]
+      simp
+      rw[inv_eq_one_div]
+      apply 𝕆_real_inv_real rfl rfl one_in_𝕆 (𝕆_re hz)
+      · simp [Complex.ext_iff] at hz_ne_zero
+        by_contra h
+        push_neg at hz_ne_zero
+        apply hz_ne_zero
+        exact Complex.ofReal_eq_zero.mp h
+        · exact hz_not_real
+    -- Now, this is just a concatination of previous lemmata
+    apply 𝕆_real_inv_cmpl
+    · simp [Complex.ofReal_im]
+    · apply 𝕆_add
+      · exact 𝕆_mul (𝕆_re hz) (𝕆_re hz)
+      · exact 𝕆_mul (𝕆_im hz) (𝕆_im hz)
+    · simp [hz_not_real]
+    · rw [ sub_eq_add_neg]
+      apply 𝕆_add (𝕆_re hz)
+      apply 𝕆_neg
+      apply 𝕆_mul (𝕆_im hz) (i_in_𝕆)
+    · have := Complex.normSq_pos.mpr hz_ne_zero
+      rw [Complex.normSq_apply] at this
+      norm_cast
+      exact ne_of_gt this
 
 end mul
 

@@ -590,7 +590,7 @@ lemma 𝕆_square_roots_pos_real {a : ℝ} {ha_pos : a > 0} (ha : (a : ℂ) ∈ 
   -- Take the following line l out of O5
   let l : line := ⟨Complex.I*(a-1)/2, (√a-Complex.I)/2, (by simp [Complex.ext_iff]; intro h; linarith)⟩
   have hl_in_O5 : l ∈ O5 (-Complex.I) z₁ hz₁_ne_neg_i.symm reAxis := by
-    simp [O5, reAxis, O1, z₁]
+    simp [O5, reAxis, O1, z₁, l]
     constructor
     · use 1-√a
       simp only [Complex.ofReal_sub, Complex.ofReal_one, sub_sub_cancel, mul_div_assoc', ne_eq,
@@ -654,86 +654,6 @@ lemma 𝕆_abs {z : ℂ} (hz : z ∈ 𝕆) : (Complex.abs z : ℂ) ∈ 𝕆 := b
   · push_cast
     apply 𝕆_add (𝕆_mul (𝕆_re hz) (𝕆_re hz)) (𝕆_mul (𝕆_im hz) (𝕆_im hz))
 
-lemma half_angle {z : ℂ} (hz : z ∈ 𝕆) : Complex.exp (z.arg/2 * Complex.I) ∈ 𝕆 := by
-  by_cases z_ne_zero : z = 0
-  · simp [z_ne_zero, one_in_𝕆]
-
-  let l₁ := O1 z 0 z_ne_zero
-  have hl₁ : l₁ ∈ 𝕆.lines := O1_in_𝕆 hz zero_in_𝕆
-  by_cases z_im_ne_zero : (z.im : ℂ)  = 0
-  · -- Suppose z.im = 0
-    have : z.arg = 0 ∨ z.arg = Real.pi := by
-      norm_cast at z_im_ne_zero
-      simp [Complex.arg, z_im_ne_zero, Real.pi_ne_zero, Real.pi_ne_zero.symm, le_or_lt]
-    rcases this with h|h
-    · simp [h, one_in_𝕆]
-    · simp [h, Complex.exp_mul_I, i_in_𝕆]
-  by_cases l₁_reAxis_not_parallel : AreParallel l₁ reAxis
-  · -- Suppose l₁ and reAxis are parallel.
-    -- Then they are equal, i.e. z ∈ ℝ
-    have : (z.im : ℂ) = 0 := by
-      norm_cast
-      simp [AreParallel, reAxis, O1, line.vec, l₁, Complex.ext_iff, z_ne_zero, ← or_and_right] at l₁_reAxis_not_parallel
-      exact l₁_reAxis_not_parallel.2
-    contradiction
-  have Isect_l₁_reAxis : Isect l₁ reAxis l₁_reAxis_not_parallel = 0 := by
-    simp [Isect, l₁, reAxis, O1, line.vec]
-    simp [← div_mul, neg_div, div_self z_im_ne_zero, mul_div_left_comm, div_abs z_ne_zero]
-
-  let l₂ := O3 l₁ reAxis -- or O3' ????
-  have hl₂ : l₂ ∈ 𝕆.lines := O3_in_𝕆 hl₁ reAxis_in_𝕆
-  have l₁_l₂_not_parallel : ¬AreParallel l₁ l₂ := by
-    simp [AreParallel]
-    simp [l₂, O3, l₁_reAxis_not_parallel]
-    simp [line.vec, Isect, reAxis, O1, l₁]
-    ring_nf
-    field_simp
-    simp_rw [← div_div, div_add_div_same, div_sub_div_same, neg_div, neg_add_eq_sub, ← neg_sub 1 (z/Complex.abs z), neg_div]
-    --simp [Complex.abs, Complex.normSq, Complex.ext_iff]
-    --ring_nf
-    --field_simp
-    --rw [one_sub_div (Complex.abs_ne_zero z_ne_zero)]
-    sorry
-  let z₁ := Isect l₁ l₂ l₁_l₂_not_parallel
-  apply in_𝕆_if_eq (z₁ / Complex.abs z₁)
-  · unfold z₁
-    apply 𝕆_div
-    · exact Isect_in_𝕆 hl₁ hl₂
-    · exact 𝕆_abs (Isect_in_𝕆 hl₁ hl₂)
-  · simp [z₁, Isect, l₁_l₂_not_parallel]
-    simp [l₂, O3, l₁_reAxis_not_parallel]
-    simp [l₁, O1]
-    simp [reAxis, line.vec, Isect, O1]
-    sorry
-
-theorem 𝕆_square_roots {z : ℂ} (hz : z ∈ 𝕆) : ∃ z' ∈ 𝕆, z = z'^2 := by
-  let z_pol := Complex.polarCoord z
-  use Complex.polarCoord.symm (√(z_pol.1), z_pol.2 / 2)
-  simp [Complex.polarCoord_symm_apply, z_pol, Complex.polarCoord_apply]
-  constructor
-  · apply 𝕆_mul
-    · by_cases h : Complex.abs z = 0
-      · simp [h, zero_in_𝕆]
-      · apply 𝕆_square_roots_pos_real
-        · simp [(AbsoluteValue.ne_zero_iff Complex.abs).mp h, AbsoluteValue.nonneg Complex.abs z]
-        · exact 𝕆_abs hz
-    · simp [Complex.cos_add_sin_I]
-      exact half_angle hz
-  · rw [Complex.cos_add_sin_I]
-    ring_nf
-    norm_cast
-    rw [Real.sq_sqrt (AbsoluteValue.nonneg Complex.abs z)]
-    rw [← Complex.exp_nat_mul (z.arg * Complex.I * (1/2)) 2]
-    simp [← mul_assoc, mul_comm]
-    rw [mul_comm, mul_comm Complex.I]
-    exact Eq.symm (Complex.abs_mul_exp_arg_mul_I z)
-
-end square_root
-
-
-section cube_root
-
-
 lemma vec_in_𝕆 {l : line} (hl : l ∈ 𝕆.lines) : l.vec ∈ 𝕆 := by
   -- w.l.o.g. l.vec ≠ ±i
   by_cases vec_ne_i : l.vec = Complex.I; · simp [vec_ne_i, i_in_𝕆]
@@ -772,6 +692,108 @@ lemma vec_in_𝕆 {l : line} (hl : l ∈ 𝕆.lines) : l.vec ∈ 𝕆 := by
     -- use vec_ne_neg_i and vec_ne_i
     sorry-/
   sorry
+
+lemma half_angle {z : ℂ} (hz : z ∈ 𝕆) : Complex.exp (z.arg/2 * Complex.I) ∈ 𝕆 := by
+  by_cases z_ne_zero : z = 0
+  · simp [z_ne_zero, one_in_𝕆]
+
+  let l₁ := O1 z 0 z_ne_zero
+  have hl₁ : l₁ ∈ 𝕆.lines := O1_in_𝕆 hz zero_in_𝕆
+  have hl₁_z₁ : l₁.z₁ = z := by simp [l₁, O1]
+  have hl₁_z₂ : l₁.z₂ = 0 := by simp [l₁, O1]
+  have hl₁_vec : l₁.vec = -z/Complex.abs z := by simp [line.vec, hl₁_z₁, hl₁_z₂]
+  by_cases z_im_ne_zero : (z.im : ℂ)  = 0
+  · -- Suppose z.im = 0
+    have : z.arg = 0 ∨ z.arg = Real.pi := by
+      norm_cast at z_im_ne_zero
+      simp [Complex.arg, z_im_ne_zero, Real.pi_ne_zero, Real.pi_ne_zero.symm, le_or_lt]
+    rcases this with h|h
+    · simp [h, one_in_𝕆]
+    · simp [h, Complex.exp_mul_I, i_in_𝕆]
+  by_cases l₁_reAxis_not_parallel : AreParallel l₁ reAxis
+  · -- Suppose l₁ and reAxis are parallel.
+    -- Then they are equal, i.e. z ∈ ℝ
+    have : (z.im : ℂ) = 0 := by
+      norm_cast
+      simp [AreParallel, reAxis, O1, line.vec, l₁, Complex.ext_iff, z_ne_zero, ← or_and_right] at l₁_reAxis_not_parallel
+      exact l₁_reAxis_not_parallel.2
+    contradiction
+  have Isect_l₁_reAxis : Isect l₁ reAxis l₁_reAxis_not_parallel = 0 := by
+    simp [Isect, l₁, reAxis, O1, line.vec]
+    simp [← div_mul, neg_div, div_self z_im_ne_zero, mul_div_left_comm, div_abs z_ne_zero]
+
+  let l₂ := O3 l₁ reAxis -- or O3' ????
+  have hl₂ : l₂ ∈ 𝕆.lines := O3_in_𝕆 hl₁ reAxis_in_𝕆
+  have hl₂_z₁ : l₂.z₁ = 0 := by
+    simp [l₂, O3, l₁_reAxis_not_parallel]
+    simp [Isect, hl₁_z₁, hl₁_vec]
+    simp [reAxis, O1, line.vec]
+    simp [← div_mul, neg_div, div_self z_im_ne_zero]
+    simp [mul_div_left_comm, div_abs z_ne_zero]
+  have hl₂_z₂ : l₂.z₂ = 1 - z/Complex.abs z := by
+    simp [l₂, O3, l₁_reAxis_not_parallel]
+    simp [Isect, hl₁_z₁, hl₁_vec]
+    simp [reAxis, O1, line.vec]
+    simp [← div_mul, neg_div, div_self z_im_ne_zero]
+    simp [mul_div_left_comm, div_abs z_ne_zero]
+    rw [sub_eq_neg_add]
+  have hl₂_vec : l₂.vec = (1 - z/Complex.abs z)/Complex.abs (1 - z/Complex.abs z) := by
+    simp [line.vec, hl₂_z₁, hl₂_z₂]
+  have l₁_l₂_not_parallel : ¬AreParallel l₁ l₂ := by
+    simp [AreParallel]
+    simp [hl₁_vec, hl₂_vec]
+    ring_nf
+    field_simp
+    simp_rw [← div_div, div_add_div_same, div_sub_div_same, neg_div, neg_add_eq_sub, ← neg_sub 1 (z/Complex.abs z), neg_div]
+    rw [← div_abs z_ne_zero, ← sub_div]
+    simp
+    rw [div_div_div_comm, div_abs z_ne_zero, div_one]
+    simp [Complex.ext_iff]
+    ring_nf
+    norm_cast at z_im_ne_zero
+    simp [← neg_mul, ← add_mul, mul_eq_mul_right_iff, z_im_ne_zero]
+    constructor
+    all_goals intro h1
+    all_goals by_contra h2
+    · rw [← h2, mul_eq_mul_right_iff] at h1
+      simp [z_ne_zero] at h1
+    · rw [← neg_eq_iff_eq_neg] at h2
+      rw [← h2, ← neg_mul_comm, mul_eq_mul_right_iff] at h1
+      simp [z_ne_zero] at h1
+
+  apply in_𝕆_if_eq l₂.vec
+  · exact vec_in_𝕆 hl₂
+  · rw [hl₂_vec]
+    simp [Complex.exp_mul_I]
+    --simp [Complex.ext_iff]
+    sorry
+
+theorem 𝕆_square_roots {z : ℂ} (hz : z ∈ 𝕆) : ∃ z' ∈ 𝕆, z = z'^2 := by
+  let z_pol := Complex.polarCoord z
+  use Complex.polarCoord.symm (√(z_pol.1), z_pol.2 / 2)
+  simp [Complex.polarCoord_symm_apply, z_pol, Complex.polarCoord_apply]
+  constructor
+  · apply 𝕆_mul
+    · by_cases h : Complex.abs z = 0
+      · simp [h, zero_in_𝕆]
+      · apply 𝕆_square_roots_pos_real
+        · simp [(AbsoluteValue.ne_zero_iff Complex.abs).mp h, AbsoluteValue.nonneg Complex.abs z]
+        · exact 𝕆_abs hz
+    · simp [Complex.cos_add_sin_I]
+      exact half_angle hz
+  · rw [Complex.cos_add_sin_I]
+    ring_nf
+    norm_cast
+    rw [Real.sq_sqrt (AbsoluteValue.nonneg Complex.abs z)]
+    rw [← Complex.exp_nat_mul (z.arg * Complex.I * (1/2)) 2]
+    simp [← mul_assoc, mul_comm]
+    rw [mul_comm, mul_comm Complex.I]
+    exact Eq.symm (Complex.abs_mul_exp_arg_mul_I z)
+
+end square_root
+
+
+section cube_root
 
 lemma slope_in_𝕆 {l : line} (hl : l ∈ 𝕆.lines) : (l.vec.im / l.vec.re : ℂ) ∈ 𝕆 := by
   apply 𝕆_div

@@ -662,6 +662,8 @@ lemma vec_in_𝕆 {l : line} (hl : l ∈ 𝕆.lines) : l.vec ∈ 𝕆 := by
   -- w.l.o.g. l (now called l₁) passes through 0
   let l₁ := E1 0 l
   have hl₁ : l₁ ∈ 𝕆.lines := E1_in_𝕆 0 l zero_in_𝕆 hl
+  have hl₁_z₁ : l₁.z₁ = 0 := by
+    simp [l₁, E1]
   have : -l₁.vec = l.vec := by
     simp [l₁, E1, line.vec, div_self vec_well_defined]
   rw [← this] at vec_ne_i vec_ne_neg_i ⊢
@@ -680,18 +682,39 @@ lemma vec_in_𝕆 {l : line} (hl : l ∈ 𝕆.lines) : l.vec ∈ 𝕆 := by
   let z₁ := Isect l₁ l₂ O4_not_parallel
   have hz₁ : z₁ ∈ 𝕆 := Isect_in_𝕆 hl₁ hl₂
 
-  apply in_𝕆_if_eq (z₁ / Complex.abs z₁) -- or the negative version of this...
-  · exact 𝕆_div hz₁ (𝕆_abs hz₁)
-  simp [z₁, Isect, hl₂_vec, hl₂_z₁]
-  --simp [line.vec]
-  have : (l₁.vec.im * l₁.vec.im + l₁.vec.re * l₁.vec.re : ℂ) = 1 := by
-    simp [add_comm, ← sq, ← Complex.sq_abs_eq, vec_abs_one]
-  simp [this]
-  --simp [line.vec]
-  /-have : z₁ ≠ 0 := by
-    -- use vec_ne_neg_i and vec_ne_i
-    sorry-/
-  sorry
+  by_cases hcases : l₁.vec.re / |l₁.vec.re| = -1
+  · -- if l₁.vec.re < 0
+    apply in_𝕆_if_eq (z₁ / Complex.abs z₁) -- here it's the positive version
+    · exact 𝕆_div hz₁ (𝕆_abs hz₁)
+    simp [z₁, Isect, hl₂_vec, hl₂_z₁, hl₁_z₁, vec_abs_one]
+    have : (l₁.vec.im * l₁.vec.im + l₁.vec.re * l₁.vec.re : ℂ) = 1 := by
+      simp [add_comm, ← sq, ← Complex.sq_abs_eq, vec_abs_one]
+    simp [this]
+    rw [neg_eq_iff_eq_neg, ← neg_div, ← neg_mul, mul_comm, mul_div_assoc, eq_comm, mul_right_eq_self₀]
+    simp [vec_ne_zero, neg_div, neg_eq_iff_eq_neg]
+    norm_cast; norm_num
+    exact hcases
+  · -- if l₁.vec.re > 0
+    have hcases : l₁.vec.re / |l₁.vec.re| = 1 := by 
+      have : l₁.vec.re ≠ 0 := by 
+        intro l₁_vec_re_eq_zero
+        simp [Complex.ext_iff, l₁_vec_re_eq_zero, neg_eq_iff_eq_neg] at vec_ne_i vec_ne_neg_i
+        have : Complex.abs l₁.vec = 1 := vec_abs_one l₁
+        simp [Complex.abs, Complex.normSq, l₁_vec_re_eq_zero, ← sq, vec_ne_i, vec_ne_neg_i] at this
+      rw [← neg_eq_iff_eq_neg, ← neg_div] at hcases
+      simp [div_eq_one_iff_eq, this] at hcases ⊢ 
+      rw [eq_comm, abs_eq_self]
+      simp [eq_comm, abs_eq_neg_self] at hcases
+      exact le_of_lt hcases
+    apply in_𝕆_if_eq (-z₁ / Complex.abs z₁) -- and here the negative version
+    · exact 𝕆_div (𝕆_neg hz₁) (𝕆_abs hz₁)
+    simp [z₁, Isect, hl₂_vec, hl₂_z₁, hl₁_z₁, vec_abs_one]
+    have : (l₁.vec.im * l₁.vec.im + l₁.vec.re * l₁.vec.re : ℂ) = 1 := by
+      simp [add_comm, ← sq, ← Complex.sq_abs_eq, vec_abs_one]
+    simp [this]
+    rw [← mul_neg, mul_comm, mul_div_assoc, eq_comm, mul_right_eq_self₀]
+    simp [vec_ne_zero]
+    norm_cast
 
 lemma half_angle {z : ℂ} (hz : z ∈ 𝕆) : Complex.exp (z.arg/2 * Complex.I) ∈ 𝕆 := by
   by_cases z_ne_zero : z = 0
@@ -722,51 +745,65 @@ lemma half_angle {z : ℂ} (hz : z ∈ 𝕆) : Complex.exp (z.arg/2 * Complex.I)
     simp [Isect, l₁, reAxis, O1, line.vec]
     simp [← div_mul, neg_div, div_self z_im_ne_zero, mul_div_left_comm, div_abs z_ne_zero]
 
-  let l₂ := O3 l₁ reAxis -- or O3' ????
-  have hl₂ : l₂ ∈ 𝕆.lines := O3_in_𝕆 hl₁ reAxis_in_𝕆
+  let l₂ := O3' l₁ reAxis
+  have hl₂ : l₂ ∈ 𝕆.lines := O3'_in_𝕆 hl₁ reAxis_in_𝕆
   have hl₂_z₁ : l₂.z₁ = 0 := by
-    simp [l₂, O3, l₁_reAxis_not_parallel]
+    simp [l₂, O3', l₁_reAxis_not_parallel]
     simp [Isect, hl₁_z₁, hl₁_vec]
     simp [reAxis, O1, line.vec]
     simp [← div_mul, neg_div, div_self z_im_ne_zero]
     simp [mul_div_left_comm, div_abs z_ne_zero]
-  have hl₂_z₂ : l₂.z₂ = 1 - z/Complex.abs z := by
-    simp [l₂, O3, l₁_reAxis_not_parallel]
+  have hl₂_z₂ : l₂.z₂ = -(1 + z/Complex.abs z) := by
+    simp [l₂, O3', l₁_reAxis_not_parallel]
     simp [Isect, hl₁_z₁, hl₁_vec]
     simp [reAxis, O1, line.vec]
     simp [← div_mul, neg_div, div_self z_im_ne_zero]
     simp [mul_div_left_comm, div_abs z_ne_zero]
-    rw [sub_eq_neg_add]
-  have hl₂_vec : l₂.vec = (1 - z/Complex.abs z)/Complex.abs (1 - z/Complex.abs z) := by
+    ring_nf
+  have hl₂_vec : l₂.vec = -(Complex.abs z + z) / Complex.abs (Complex.abs z + z) := by
     simp [line.vec, hl₂_z₁, hl₂_z₂]
-  have l₁_l₂_not_parallel : ¬AreParallel l₁ l₂ := by
-    simp [AreParallel]
-    simp [hl₁_vec, hl₂_vec]
-    ring_nf
-    field_simp
-    simp_rw [← div_div, div_add_div_same, div_sub_div_same, neg_div, neg_add_eq_sub, ← neg_sub 1 (z/Complex.abs z), neg_div]
-    rw [← div_abs z_ne_zero, ← sub_div]
-    simp
-    rw [div_div_div_comm, div_abs z_ne_zero, div_one]
-    simp [Complex.ext_iff]
-    ring_nf
-    norm_cast at z_im_ne_zero
-    simp [← neg_mul, ← add_mul, mul_eq_mul_right_iff, z_im_ne_zero]
+    have : ∀ x, Complex.abs (-x) = Complex.abs x := by 
+      intro x
+      rw [map_neg_eq_map]
+    simp_rw [← neg_add, this]
+    rw [← div_abs z_ne_zero, ← add_div]
+    simp [← neg_div, div_div_div_cancel_right₀, z_ne_zero]
+    ring_nf    
+  
+  apply in_𝕆_if_eq (-l₂.vec)
+  · exact 𝕆_neg (vec_in_𝕆 hl₂)
+  · -- Prove that -l₂.vec = (Complex.abs z + z) / Complex.abs (Complex.abs z + z)
+    -- is equal to Complex.exp (z.arg/2 * Complex.I)
+    rw [hl₂_vec, neg_div, neg_neg]
+    norm_cast
+    rw [Complex.ext_abs_arg_iff, Complex.abs_exp_ofReal_mul_I]
     constructor
-    all_goals intro h1
-    all_goals by_contra h2
-    · rw [← h2, mul_eq_mul_right_iff] at h1
-      simp [z_ne_zero] at h1
-    · rw [← neg_eq_iff_eq_neg] at h2
-      rw [← h2, ← neg_mul_comm, mul_eq_mul_right_iff] at h1
-      simp [z_ne_zero] at h1
-
-  apply in_𝕆_if_eq l₂.vec
-  · exact vec_in_𝕆 hl₂
-  · rw [hl₂_vec]
-    simp [Complex.exp_mul_I]
-    --simp [Complex.ext_iff]
-    sorry
+    · simp; symm; apply div_self
+      norm_cast at z_im_ne_zero
+      simp [Complex.ext_iff, z_im_ne_zero]
+    · rw [Complex.exp_mul_I, Complex.arg_cos_add_sin_mul_I]
+      · norm_cast at z_im_ne_zero
+        rw [div_eq_mul_inv (Complex.abs z + z), Complex.arg_mul, Complex.arg_inv]
+        · simp [Complex.arg_ofReal_of_nonneg, Real.pi_ne_zero.symm]
+          -- Prove that z.arg/2 = (Complex.abs z + z).arg
+          /-simp [Complex.arg]
+          by_cases z_re_nonneg : 0 ≤ z.re
+          · have : 0 ≤ Complex.abs z + z.re := add_nonneg (AbsoluteValue.nonneg Complex.abs z) z_re_nonneg
+            simp [z_re_nonneg, this]
+            sorry
+          · sorry-/
+          sorry
+        · simp [Complex.ext_iff, z_im_ne_zero]
+        · simp [Complex.ext_iff, z_im_ne_zero]
+        · simp [Complex.arg_inv, Complex.arg_ofReal_of_nonneg, Real.pi_ne_zero.symm]
+          exact Complex.arg_mem_Ioc (Complex.abs z + z)
+      · simp
+        have := Real.pi_pos
+        constructor
+        · have := (Complex.arg_mem_Ioc z).1
+          linarith
+        · have := (Complex.arg_mem_Ioc z).2
+          linarith
 
 theorem 𝕆_square_roots {z : ℂ} (hz : z ∈ 𝕆) : ∃ z' ∈ 𝕆, z = z'^2 := by
   let z_pol := Complex.polarCoord z

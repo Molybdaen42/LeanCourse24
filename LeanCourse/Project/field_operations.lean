@@ -838,6 +838,64 @@ lemma slope_in_𝕆 {l : line} (hl : l ∈ 𝕆.lines) : (l.vec.im / l.vec.re : 
   · exact 𝕆_im (vec_in_𝕆 hl)
   · exact 𝕆_re (vec_in_𝕆 hl)
 
+lemma 𝕆_depressed_cubics (p q : ℝ) (hp : (p : ℂ) ∈ 𝕆) (hq : (q : ℂ) ∈ 𝕆) :
+    ∀ x ∈ (⟨1,0,p,q⟩ : Cubic ℂ).roots, x ∈ 𝕆 := by
+  -- m is a zero of the depressed cubic polynomial x^3 + p*x + q
+  intro m hm
+  simp [Cubic.roots, Cubic.toPoly] at hm
+  obtain ⟨poly_nonneg, hm⟩ := hm
+
+  -- w.l.o.g. m ≠ i
+  by_cases m_ne_i : m = Complex.I
+  · rw [m_ne_i]; exact i_in_𝕆
+  -- w.l.o.g. m ≠ -i
+  by_cases m_ne_neg_i : m = -Complex.I
+  · rw [m_ne_neg_i]; exact 𝕆_neg i_in_𝕆
+  -- w.l.o.g. m^3 + m ≠ 0
+  by_cases m_cubed_plus_m_ne_zero : Complex.I = q+p*Complex.I
+  · simp [Complex.ext_iff] at m_cubed_plus_m_ne_zero
+    simp [← m_cubed_plus_m_ne_zero, pow_three, ← mul_add_one] at hm
+    rcases hm with hm|hm
+    · rw [hm]; exact zero_in_𝕆
+    · rw [← sq, add_eq_zero_iff_eq_neg, ← Complex.I_sq, sq_eq_sq_iff_eq_or_eq_neg] at hm
+      simp [m_ne_i, m_ne_neg_i] at hm
+
+  let l₁ := O1 (-Complex.I) (1-Complex.I) (by simp [Complex.ext_iff])
+  have hl₁ : l₁ ∈ 𝕆.lines := O1_in_𝕆 (𝕆_neg i_in_𝕆) (𝕆_sub one_in_𝕆 i_in_𝕆)
+  have hl₁_vec : l₁.vec = 1 := by simp [l₁, O1, line.vec]
+
+  let l₂ := O1 (-q) (-q+Complex.I) (by simp [Complex.ext_iff])
+  have hl₂ : l₂ ∈ 𝕆.lines := O1_in_𝕆 (𝕆_neg hq) (𝕆_add (𝕆_neg hq) i_in_𝕆)
+  have hl₂_vec : l₂.vec = Complex.I := by simp [l₂, O1, line.vec]
+
+  let l₃ : line := {-- m is a solution (and thus the slope of l₃)
+    z₁ := (p+q/m)*Complex.I
+    z₂ := 1+(m+p+q/m)*Complex.I
+    z₁_ne_z₂ := by
+      rw [add_assoc, add_mul m, ← add_assoc, ne_eq, self_eq_add_left]
+      simp [Complex.ext_iff, ← sub_eq_add_neg, sub_eq_zero] at m_ne_i ⊢
+      intro h
+      simp [h] at m_ne_i
+      exact m_ne_i
+  }
+  have : l₃ ∈ O6 Complex.I (q+p*Complex.I) m_cubed_plus_m_ne_zero l₁ l₂ := by
+    sorry
+
+  have hl₃ : l₃ ∈ 𝕆.lines := by
+    apply O6_in_𝕆 i_in_𝕆 (𝕆_add hq (𝕆_mul hp i_in_𝕆)) hl₁ hl₂
+    exact this
+
+  apply in_𝕆_if_eq (l₃.vec.im / l₃.vec.re)
+  · apply 𝕆_div
+    · apply 𝕆_im
+      · apply vec_in_𝕆 hl₃
+    · apply 𝕆_re
+      · apply vec_in_𝕆 hl₃
+
+  -- Left to show: m = ↑l₃.vec.im / ↑l₃.vec.re
+  simp [l₃, line.vec]
+  sorry
+
 lemma 𝕆_cubics (a b c : ℝ) (ha : (a : ℂ) ∈ 𝕆) (hb : (b : ℂ) ∈ 𝕆) (hc : (c : ℂ) ∈ 𝕆) :
     ∀ x ∈ (⟨1,a,b,c⟩ : Cubic ℂ).roots, x ∈ 𝕆 := by
   -- m is a zero of the cubic polynomial x^3 + a*x^2 + b*x + c
@@ -845,40 +903,76 @@ lemma 𝕆_cubics (a b c : ℝ) (ha : (a : ℂ) ∈ 𝕆) (hb : (b : ℂ) ∈ �
   simp [Cubic.roots, Cubic.toPoly] at hm
   obtain ⟨poly_nonneg, hm⟩ := hm
 
-  let l₁ := O1 (-Complex.I) (1-Complex.I) (by simp [Complex.ext_iff])
-  have hl₁ : l₁ ∈ 𝕆.lines := O1_in_𝕆 (𝕆_neg i_in_𝕆) (𝕆_sub one_in_𝕆 i_in_𝕆)
-  have hl₁_vec : l₁.vec = 1 := by simp [l₁, O1, line.vec]
+  -- Change of variables (t is the variable of the future depressed version t^3 + p*t + q)
+  -- let t := x + a/3
 
-  let l₂ := O1 (-c) (-c+Complex.I) (by simp [Complex.ext_iff])
-  have hl₂ : l₂ ∈ 𝕆.lines := O1_in_𝕆 (𝕆_neg hc) (𝕆_add (𝕆_neg hc) i_in_𝕆)
-  have hl₂_vec : l₂.vec = Complex.I := by simp [l₂, O1, line.vec]
+  let p := (3*b - a^2)/3
+  have hp : (p : ℂ) ∈ 𝕆 := by
+    simp [p, sq]
+    apply 𝕆_div
+    · apply 𝕆_sub
+      · apply 𝕆_mul
+        · apply nat_in_𝕆
+        · exact hb
+      · exact 𝕆_mul ha ha
+    · apply nat_in_𝕆
 
-  -- let l₃ : line := ⟨(b+c/m)*Complex.I, 1+(m+b+c/m)*Complex.I, sorry⟩ -- m is a solution (and the slope of l₃)
-  -- have : l₃ ∈ O6 (a+Complex.I) (c+b*Complex.I) l₁ l₂
-  -- have : m = l₃.vec.im / l₃.vec.re
-  -- use m
-  sorry
+  let q := (2*a^3 - 9*a*b + 27*c)/27
+  have hq : (q : ℂ) ∈ 𝕆 := by
+    simp [q, pow_three]
+    apply 𝕆_div
+    · apply 𝕆_add
+      · apply 𝕆_sub
+        · apply 𝕆_mul
+          · apply nat_in_𝕆
+          · exact 𝕆_mul ha (𝕆_mul ha ha)
+        · apply 𝕆_mul
+          · apply 𝕆_mul
+            · apply nat_in_𝕆
+            · exact ha
+          · exact hb
+      · apply 𝕆_mul
+        · apply nat_in_𝕆
+        · exact hc
+    · apply nat_in_𝕆
 
--- Löschen, wenn das oben funktioniert
-lemma 𝕆_cubics' (a b c : ℝ) (ha : (a : ℂ) ∈ 𝕆) (hb : (b : ℂ) ∈ 𝕆) (hc : (c : ℂ) ∈ 𝕆) :
-    ∃ x ∈ 𝕆, x^3 + a*x^2 + b*x + c = 0 := by
-  let l₁ := O1 (-Complex.I) (1-Complex.I) (by simp [Complex.ext_iff])
-  have hl₁ : l₁ ∈ 𝕆.lines := O1_in_𝕆 (𝕆_neg i_in_𝕆) (𝕆_sub one_in_𝕆 i_in_𝕆)
-  have hl₁_vec : l₁.vec = 1 := by simp [l₁, O1, line.vec]
-  let l₂ := O1 (-c) (-c+Complex.I) (by simp [Complex.ext_iff])
-  have hl₂ : l₂ ∈ 𝕆.lines := O1_in_𝕆 (𝕆_neg hc) (𝕆_add (𝕆_neg hc) i_in_𝕆)
-  have hl₂_vec : l₂.vec = Complex.I := by simp [l₂, O1, line.vec]
-  -- let l₃ : line := ⟨(b+c/m)*Complex.I, 1+(m+b+c/m)*Complex.I, sorry⟩ -- m is a solution (and the slope of l₃)
-  -- have : l₃ ∈ O6 (a+Complex.I) (c+b*Complex.I) l₁ l₂
-  -- have : m = l₃.vec.im / l₃.vec.re
-  -- use m
-  sorry
+  let depr_poly := (⟨1,0,p,q⟩ : Cubic ℂ)
+
+  -- This depressed cubic has a root m' with
+  let m' := m + a/3
+  have : m' ∈ depr_poly.roots := by
+    simp [depr_poly, Cubic.roots, Cubic.toPoly, p, q]
+    constructor
+    · simp [Polynomial.ext_iff]
+      use 3
+      simp [Polynomial.coeff]
+    · ring_nf
+      calc
+       _ = m ^ 3 + (a : ℂ) * m ^ 2 + b * m + c := by ring_nf
+       _ = 0 := by exact hm
+  -- since m' is a root of a depressed cubic, it lies in 𝕆
+  have : m' ∈ 𝕆 := by
+    apply 𝕆_depressed_cubics p q hp hq
+    exact this
+  -- m and m' differ only by numbers in 𝕆 and operations which are closed in 𝕆.
+  rw [← add_zero m, ← sub_self (a/3 : ℂ), ← add_sub_assoc]
+  apply 𝕆_sub this
+  apply 𝕆_div ha
+  apply nat_in_𝕆
 
 lemma 𝕆_cube_root_real {a : ℝ} (ha : (a : ℂ) ∈ 𝕆) :
     ∃ x ∈ 𝕆, x^3 = a := by
-  obtain ⟨x,hx,hxa⟩ := 𝕆_polynomials_of_deg_three 0 0 (-a) zero_in_𝕆 zero_in_𝕆 (by simp [𝕆_neg ha])
-  simp [← sub_eq_add_neg, sub_eq_iff_eq_add] at hxa
-  use x
+  have cubic := 𝕆_cubics 0 0 (-a) zero_in_𝕆 zero_in_𝕆 (by simp [𝕆_neg ha])
+  simp [Cubic.roots, Cubic.toPoly] at cubic
+  have : Polynomial.X ^ 3 + -Polynomial.C (a : ℂ) ≠ 0 := by
+    simp [← sub_eq_add_neg, sub_eq_zero, Polynomial.ext_iff]
+    use 3
+    simp
+  specialize cubic (a^((1 : ℂ)/3)) this
+  simp at cubic
+
+  use a^((1 : ℂ)/3)
+  simp [cubic]
 
 #check Complex.sin_three_mul
 

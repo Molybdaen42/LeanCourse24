@@ -4,6 +4,7 @@ import LeanCourse.Project.important_lines_and_points_in_O
 import LeanCourse.Project.two_folding_lemmata
 import Mathlib.Algebra.Field.Defs
 import Mathlib.Analysis.SpecialFunctions.PolarCoord
+import Mathlib.Algebra.CubicDiscriminant
 open Classical
 open Construction
 open ComplexConjugate
@@ -695,14 +696,14 @@ lemma vec_in_𝕆 {l : line} (hl : l ∈ 𝕆.lines) : l.vec ∈ 𝕆 := by
     norm_cast; norm_num
     exact hcases
   · -- if l₁.vec.re > 0
-    have hcases : l₁.vec.re / |l₁.vec.re| = 1 := by 
-      have : l₁.vec.re ≠ 0 := by 
+    have hcases : l₁.vec.re / |l₁.vec.re| = 1 := by
+      have : l₁.vec.re ≠ 0 := by
         intro l₁_vec_re_eq_zero
         simp [Complex.ext_iff, l₁_vec_re_eq_zero, neg_eq_iff_eq_neg] at vec_ne_i vec_ne_neg_i
         have : Complex.abs l₁.vec = 1 := vec_abs_one l₁
         simp [Complex.abs, Complex.normSq, l₁_vec_re_eq_zero, ← sq, vec_ne_i, vec_ne_neg_i] at this
       rw [← neg_eq_iff_eq_neg, ← neg_div] at hcases
-      simp [div_eq_one_iff_eq, this] at hcases ⊢ 
+      simp [div_eq_one_iff_eq, this] at hcases ⊢
       rw [eq_comm, abs_eq_self]
       simp [eq_comm, abs_eq_neg_self] at hcases
       exact le_of_lt hcases
@@ -762,14 +763,14 @@ lemma half_angle {z : ℂ} (hz : z ∈ 𝕆) : Complex.exp (z.arg/2 * Complex.I)
     ring_nf
   have hl₂_vec : l₂.vec = -(Complex.abs z + z) / Complex.abs (Complex.abs z + z) := by
     simp [line.vec, hl₂_z₁, hl₂_z₂]
-    have : ∀ x, Complex.abs (-x) = Complex.abs x := by 
+    have : ∀ x, Complex.abs (-x) = Complex.abs x := by
       intro x
       rw [map_neg_eq_map]
     simp_rw [← neg_add, this]
     rw [← div_abs z_ne_zero, ← add_div]
     simp [← neg_div, div_div_div_cancel_right₀, z_ne_zero]
-    ring_nf    
-  
+    ring_nf
+
   apply in_𝕆_if_eq (-l₂.vec)
   · exact 𝕆_neg (vec_in_𝕆 hl₂)
   · -- Prove that -l₂.vec = (Complex.abs z + z) / Complex.abs (Complex.abs z + z)
@@ -837,10 +838,36 @@ lemma slope_in_𝕆 {l : line} (hl : l ∈ 𝕆.lines) : (l.vec.im / l.vec.re : 
   · exact 𝕆_im (vec_in_𝕆 hl)
   · exact 𝕆_re (vec_in_𝕆 hl)
 
-lemma 𝕆_polynomials_of_deg_three (a b c : ℝ) (ha : (a : ℂ) ∈ 𝕆) (hb : (b : ℂ) ∈ 𝕆) (hc : (c : ℂ) ∈ 𝕆) :
+lemma 𝕆_cubics (a b c : ℝ) (ha : (a : ℂ) ∈ 𝕆) (hb : (b : ℂ) ∈ 𝕆) (hc : (c : ℂ) ∈ 𝕆) :
+    ∀ x ∈ (⟨1,a,b,c⟩ : Cubic ℂ).roots, x ∈ 𝕆 := by
+  -- m is a zero of the cubic polynomial x^3 + a*x^2 + b*x + c
+  intro m hm
+  simp [Cubic.roots, Cubic.toPoly] at hm
+  obtain ⟨poly_nonneg, hm⟩ := hm
+
+  let l₁ := O1 (-Complex.I) (1-Complex.I) (by simp [Complex.ext_iff])
+  have hl₁ : l₁ ∈ 𝕆.lines := O1_in_𝕆 (𝕆_neg i_in_𝕆) (𝕆_sub one_in_𝕆 i_in_𝕆)
+  have hl₁_vec : l₁.vec = 1 := by simp [l₁, O1, line.vec]
+
+  let l₂ := O1 (-c) (-c+Complex.I) (by simp [Complex.ext_iff])
+  have hl₂ : l₂ ∈ 𝕆.lines := O1_in_𝕆 (𝕆_neg hc) (𝕆_add (𝕆_neg hc) i_in_𝕆)
+  have hl₂_vec : l₂.vec = Complex.I := by simp [l₂, O1, line.vec]
+
+  -- let l₃ : line := ⟨(b+c/m)*Complex.I, 1+(m+b+c/m)*Complex.I, sorry⟩ -- m is a solution (and the slope of l₃)
+  -- have : l₃ ∈ O6 (a+Complex.I) (c+b*Complex.I) l₁ l₂
+  -- have : m = l₃.vec.im / l₃.vec.re
+  -- use m
+  sorry
+
+-- Löschen, wenn das oben funktioniert
+lemma 𝕆_cubics' (a b c : ℝ) (ha : (a : ℂ) ∈ 𝕆) (hb : (b : ℂ) ∈ 𝕆) (hc : (c : ℂ) ∈ 𝕆) :
     ∃ x ∈ 𝕆, x^3 + a*x^2 + b*x + c = 0 := by
   let l₁ := O1 (-Complex.I) (1-Complex.I) (by simp [Complex.ext_iff])
+  have hl₁ : l₁ ∈ 𝕆.lines := O1_in_𝕆 (𝕆_neg i_in_𝕆) (𝕆_sub one_in_𝕆 i_in_𝕆)
+  have hl₁_vec : l₁.vec = 1 := by simp [l₁, O1, line.vec]
   let l₂ := O1 (-c) (-c+Complex.I) (by simp [Complex.ext_iff])
+  have hl₂ : l₂ ∈ 𝕆.lines := O1_in_𝕆 (𝕆_neg hc) (𝕆_add (𝕆_neg hc) i_in_𝕆)
+  have hl₂_vec : l₂.vec = Complex.I := by simp [l₂, O1, line.vec]
   -- let l₃ : line := ⟨(b+c/m)*Complex.I, 1+(m+b+c/m)*Complex.I, sorry⟩ -- m is a solution (and the slope of l₃)
   -- have : l₃ ∈ O6 (a+Complex.I) (c+b*Complex.I) l₁ l₂
   -- have : m = l₃.vec.im / l₃.vec.re

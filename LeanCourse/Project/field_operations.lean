@@ -845,6 +845,10 @@ lemma 𝕆_depressed_cubics (p q : ℝ) (hp : (p : ℂ) ∈ 𝕆) (hq : (q : ℂ
   simp [Cubic.roots, Cubic.toPoly] at hm
   obtain ⟨poly_nonneg, hm⟩ := hm
 
+  -- w.l.o.g. m ≠ 0
+  by_cases m_ne_zero : m = 0
+  · rw [m_ne_zero]; exact zero_in_𝕆
+
   -- w.l.o.g. m^3 + m ≠ 0
   by_cases m_cubed_plus_m_ne_zero : Complex.I = q+p*Complex.I
   · simp [Complex.ext_iff] at m_cubed_plus_m_ne_zero
@@ -853,6 +857,17 @@ lemma 𝕆_depressed_cubics (p q : ℝ) (hp : (p : ℂ) ∈ 𝕆) (hq : (q : ℂ
     · rw [hm]; exact zero_in_𝕆
     · rw [← sq, add_eq_zero_iff_eq_neg, ← Complex.I_sq, sq_eq_sq_iff_eq_or_eq_neg] at hm
       simp [Complex.ext_iff] at hm
+
+  -- From m^3+pm+q=0 and m≠0 follows directly:
+  have hm' : p + q/m = -m*m := by
+    have hm : m * (p + q/m + m*m) = 0 := by
+      ring_nf at hm ⊢
+      rw [← mul_comm q, mul_inv_cancel_right₀ m_ne_zero]
+      norm_cast at hm
+      rw [add_assoc, ← add_comm q, ← add_assoc] at hm
+      exact hm
+    simp [mul_eq_zero, m_ne_zero] at hm
+    rw [neg_mul, ← add_eq_zero_iff_eq_neg, hm]
 
   let l₁ := O1 (-Complex.I) (1-Complex.I) (by simp [Complex.ext_iff])
   have hl₁ : l₁ ∈ 𝕆.lines := O1_in_𝕆 (𝕆_neg i_in_𝕆) (𝕆_sub one_in_𝕆 i_in_𝕆)
@@ -872,10 +887,19 @@ lemma 𝕆_depressed_cubics (p q : ℝ) (hp : (p : ℂ) ∈ 𝕆) (hq : (q : ℂ
   have : l₃ ∈ O6 Complex.I (q+p*Complex.I) m_cubed_plus_m_ne_zero l₁ l₂ := by
     rw [O6, Set.mem_setOf_eq, ← and_assoc]
     constructor
-    · simp [hl₃_vec, hl₁_vec, hl₂_vec]
-      simp [Complex.ext_iff]
-    · --simp
+    · simp [hl₃_vec, hl₁_vec, hl₂_vec, Complex.ext_iff]
+    constructor
+    · simp [dist_point_line, hl₁_vec, Complex.ext_iff]
+      rw [add_assoc, hm', neg_mul, ← sub_eq_add_neg]
+      simp_rw [← Complex.ext_iff]
+      simp [l₁, O1]
+      ring_nf
+      simp [Complex.abs_apply, Complex.normSq_apply]
+      --simp_rw [Real.sqrt_mul_self_eq_abs]
+      --simp
       --ring_nf
+      sorry
+    · simp [dist_point_line]
       sorry
 
   have hl₃ : l₃ ∈ 𝕆.lines := by

@@ -869,15 +869,19 @@ lemma 𝕆_depressed_cubics (p q : ℝ) (hp : (p : ℂ) ∈ 𝕆) (hq : (q : ℂ
     simp [mul_eq_zero, m_ne_zero] at hm
     rw [neg_mul, ← add_eq_zero_iff_eq_neg, hm]
 
+  -- Define two lines l₁
   let l₁ := O1 (-Complex.I) (1-Complex.I) (by simp [Complex.ext_iff])
   have hl₁ : l₁ ∈ 𝕆.lines := O1_in_𝕆 (𝕆_neg i_in_𝕆) (𝕆_sub one_in_𝕆 i_in_𝕆)
   have hl₁_vec : l₁.vec = 1 := by simp [l₁, O1, line.vec]
 
+  -- and l₂
   let l₂ := O1 (-q) (-q+Complex.I) (by simp [Complex.ext_iff])
   have hl₂ : l₂ ∈ 𝕆.lines := O1_in_𝕆 (𝕆_neg hq) (𝕆_add (𝕆_neg hq) i_in_𝕆)
+  have hl₂_z₁ : l₂.z₁ = -q := by simp [l₂, O1]
   have hl₂_vec : l₂.vec = Complex.I := by simp [l₂, O1, line.vec]
 
-  let l₃ : line := {-- the slope of l₃ is m
+  -- which, used O6 on them, give us a line l₃ with slope m
+  let l₃ : line := {
     z₁ := (p+q/m)*Complex.I
     z₂ := 1+(m+p+q/m)*Complex.I
     z₁_ne_z₂ := by simp [Complex.ext_iff]
@@ -889,18 +893,84 @@ lemma 𝕆_depressed_cubics (p q : ℝ) (hp : (p : ℂ) ∈ 𝕆) (hq : (q : ℂ
     constructor
     · simp [hl₃_vec, hl₁_vec, hl₂_vec, Complex.ext_iff]
     constructor
-    · simp [dist_point_line, hl₁_vec, Complex.ext_iff]
+    · use 2*m + m*m*Complex.I
+      simp [dist_point_line, hl₁_vec, Complex.ext_iff]
       rw [add_assoc, hm', neg_mul, ← sub_eq_add_neg]
-      simp_rw [← Complex.ext_iff]
-      simp [l₁, O1]
-      ring_nf
-      simp [Complex.abs_apply, Complex.normSq_apply]
-      --simp_rw [Real.sqrt_mul_self_eq_abs]
-      --simp
-      --ring_nf
-      sorry
-    · simp [dist_point_line]
-      sorry
+      constructor
+      · -- 2m + m^2*i lies in l₃.points ...
+        use 1-2*m
+        ring_nf
+        trivial
+      · simp [l₁, O1]
+        constructor
+        · -- ... and on the parabola induced by the directrix l₁ and the focal point i
+          simp [Complex.abs_apply, Complex.normSq_apply]
+          rw [← neg_add', neg_mul_neg, Real.sqrt_mul_self (add_nonneg zero_le_one (mul_self_nonneg m))]
+          rw [Real.sqrt_eq_iff_mul_self_eq_of_pos]
+          · ring_nf
+          · have : m*m ≥ 0 := by exact (mul_self_nonneg m)
+            linarith
+        · -- 2m + m^2*i is the only point having the properties above
+          intro z t htz_re htz_im h
+          rw [← Complex.re_add_im z, add_sub_assoc, ← sub_one_mul] at h
+          simp [← htz_re, ← htz_im] at h ⊢
+          simp [Complex.abs_apply, Complex.normSq_apply] at h
+          rw [Real.sqrt_eq_iff_mul_self_eq, Real.mul_self_sqrt] at h
+          · rw [← sub_eq_zero] at h
+            ring_nf at h ⊢
+            have h : t = 1 - 2*m := by
+              rw [← sub_eq_zero, ← sq_eq_zero_iff, ← h]
+              ring_nf
+            simp [h]
+            ring_nf
+            trivial
+          · apply mul_self_nonneg
+          · simp [add_nonneg, mul_self_nonneg]
+          · apply Real.sqrt_nonneg
+    · use q/(m*m) + (q/m-m*m) * Complex.I
+      have hm'' : p = -(q/m + m*m) := by
+        simp [neg_add, ← neg_mul, ← hm']
+      simp [dist_point_line, hl₂_vec, hl₂_z₁, Complex.ext_iff, hm'']
+      norm_cast
+      simp
+      constructor
+      · -- q/(m^2) + (q/m - m^2)*i lies in l₃.points ...
+        use 1 - q/(m*m)
+        ring_nf
+        simp [sq, mul_assoc, m_ne_zero]
+      · ring_nf
+        constructor
+        · -- ... and on the parabola induced by the directrix l₂ and the focal point (q+p*i)
+          simp_rw [Complex.abs_apply, Complex.normSq_apply, ← sq]
+          norm_cast; simp
+          norm_cast; simp
+          rw [Real.sqrt_sq_eq_abs, Real.sqrt_eq_iff_mul_self_eq, abs_mul_abs_self]
+          · simp [sq]
+            ring_nf
+          · simp [add_nonneg, sq_nonneg]
+          · exact abs_nonneg (-q - q * (m ^ 2)⁻¹)
+        · -- q/(m^2) + (q/m - m^2)*i is the only point having the properties above
+          intro z t htz_re htz_im h
+          rw [← Complex.re_add_im z] at h
+          simp [← htz_re, ← htz_im] at h ⊢
+          simp [Complex.abs_apply, Complex.normSq_apply] at h
+          norm_cast at h; simp at h
+          simp_rw [← sq, Real.sqrt_sq_eq_abs] at h
+          rw [Real.sqrt_eq_iff_mul_self_eq, abs_mul_abs_self] at h
+          · rw [← sub_eq_zero] at h
+            ring_nf at h
+            simp [m_ne_zero] at h
+            ring_nf at h ⊢
+            have h : t = 1 - q/(m*m) := by
+              rw [← sub_eq_zero, ← sq_eq_zero_iff, ← zero_mul (1/m^2), ← h, ← sub_eq_zero]
+              ring_nf
+              simp [m_ne_zero]
+              ring_nf
+            simp [h]
+            ring_nf
+            simp [sq, mul_assoc, m_ne_zero]
+          · simp [add_nonneg, sq_nonneg]
+          · apply abs_nonneg
 
   have hl₃ : l₃ ∈ 𝕆.lines := by
     apply O6_in_𝕆 i_in_𝕆 (𝕆_add hq (𝕆_mul hp i_in_𝕆)) hl₁ hl₂

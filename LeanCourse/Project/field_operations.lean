@@ -721,7 +721,7 @@ lemma half_angle {z : ℂ} (hz : z ∈ 𝕆) : Complex.exp (z.arg/2 * Complex.I)
   -- w.l.o.g. z ≠ 0 and z.im ≠ 0
   by_cases z_ne_zero : z = 0
   · simp [z_ne_zero, one_in_𝕆]
-  by_cases z_im_ne_zero : (z.im : ℂ)  = 0
+  by_cases z_im_ne_zero : (z.im : ℂ) = 0
   · have : z.arg = 0 ∨ z.arg = Real.pi := by
       norm_cast at z_im_ne_zero
       simp [Complex.arg, z_im_ne_zero, Real.pi_ne_zero, Real.pi_ne_zero.symm, le_or_lt]
@@ -735,34 +735,85 @@ lemma half_angle {z : ℂ} (hz : z ∈ 𝕆) : Complex.exp (z.arg/2 * Complex.I)
   · -- Prove that -l₂.vec = (Complex.abs z + z) / Complex.abs (Complex.abs z + z)
     -- is equal to Complex.exp (z.arg/2 * Complex.I)
     norm_cast
-    rw [Complex.ext_abs_arg_iff, Complex.abs_exp_ofReal_mul_I]
+    simp [Complex.ext_iff, Complex.exp_re, Complex.exp_im]
     constructor
-    · simp; symm; apply div_self
-      norm_cast at z_im_ne_zero
-      simp [Complex.ext_iff, z_im_ne_zero]
-    · rw [Complex.exp_mul_I, Complex.arg_cos_add_sin_mul_I]
-      · norm_cast at z_im_ne_zero
-        rw [div_eq_mul_inv (Complex.abs z + z), Complex.arg_mul, Complex.arg_inv]
-        · simp [Complex.arg_ofReal_of_nonneg, Real.pi_ne_zero.symm]
-          -- Prove that z.arg/2 = (Complex.abs z + z).arg
-          /-simp [Complex.arg]
-          by_cases z_re_nonneg : 0 ≤ z.re
-          · have : 0 ≤ Complex.abs z + z.re := add_nonneg (AbsoluteValue.nonneg Complex.abs z) z_re_nonneg
-            simp [z_re_nonneg, this]
-            sorry
-          · sorry-/
-          sorry
-        · simp [Complex.ext_iff, z_im_ne_zero]
-        · simp [Complex.ext_iff, z_im_ne_zero]
-        · simp [Complex.arg_inv, Complex.arg_ofReal_of_nonneg, Real.pi_ne_zero.symm]
-          exact Complex.arg_mem_Ioc (Complex.abs z + z)
-      · simp
-        have := Real.pi_pos
-        constructor
-        · have := (Complex.arg_mem_Ioc z).1
-          linarith
+    · -- the real part, i.e. cos (z.arg / 2) = (Complex.abs z + z.re) / Complex.abs (↑(Complex.abs z) + z)
+      rw [Real.cos_half (le_of_lt (Complex.arg_mem_Ioc z).1) (Complex.arg_mem_Ioc z).2]
+      rw [Real.sqrt_eq_iff_mul_self_eq]
+      · simp_rw [Complex.cos_arg z_ne_zero, div_mul_div_comm, Complex.mul_self_abs, Complex.abs_apply, Complex.normSq_apply]
+        simp
+        ring_nf
+        rw [Real.sq_sqrt (add_nonneg (sq_nonneg z.re) (sq_nonneg z.im))]
+        field_simp
+        have : z.re * 2 / (√(z.re ^ 2 + z.im ^ 2) * 2) = z.re / √(z.re ^ 2 + z.im ^ 2) := by
+          simp [mul_comm, ← div_div]
+        rw [this, add_assoc (z.re * √(z.re ^ 2 + z.im ^ 2) * 2) (z.re^2) (z.im^2)]
+        simp_rw [sq, ← Complex.normSq_apply z, ← Complex.abs_apply, ← Complex.sq_abs z]
+        rw [add_assoc (z.re * Complex.abs z * 2) (Complex.abs z ^2), ← mul_two]
+        rw [← add_mul, mul_div_assoc, mul_comm (z.re * Complex.abs z + Complex.abs z ^2), ← div_div, div_self two_ne_zero, mul_div, mul_one]
+        rw [eq_div_iff]
+        · rw [sq, ← add_mul, ← mul_comm (Complex.abs z), ← mul_assoc]
+          simp [one_add_div, z_ne_zero]
+          ring_nf
+        · simp [sq, ← add_mul, z_ne_zero]
+          rw [add_eq_zero_iff_eq_neg', Complex.abs_eq_sqrt_sq_add_sq]
+          norm_cast at z_im_ne_zero
+          simp [Real.sqrt_eq_cases, ← sq, z_im_ne_zero]
+          simp [← Complex.sq_abs_eq_in_ℝ]
+      · have := (Real.cos_mem_Icc z.arg).1
+        linarith
+      · simp [div_nonneg_iff]
+        left
+        rw [Complex.abs_apply, Complex.normSq_apply, ← neg_le_iff_add_nonneg]
+        apply Real.le_sqrt_of_sq_le
+        simp [← sq, sq_nonneg]
+    · -- the imaginary part, i.e. sin (z.arg / 2) = z.im / Complex.abs ((Complex.abs z) + z)
+      have : (1 - Real.cos z.arg) / 2 = z.im / Complex.abs ((Complex.abs z) + z) * (z.im / Complex.abs ((Complex.abs z) + z)) := by
+        simp_rw [Complex.cos_arg z_ne_zero, div_mul_div_comm, Complex.mul_self_abs, Complex.abs_apply, Complex.normSq_apply]
+        simp
+        ring_nf
+        rw [Real.sq_sqrt (add_nonneg (sq_nonneg z.re) (sq_nonneg z.im))]
+        field_simp
+        rw [neg_div, ← sub_eq_add_neg]
+        have : z.re * 2 / (√(z.re ^ 2 + z.im ^ 2) * 2) = z.re / √(z.re ^ 2 + z.im ^ 2) := by
+          simp [mul_comm, ← div_div]
+        rw [this, add_assoc (z.re * √(z.re ^ 2 + z.im ^ 2) * 2) (z.re^2) (z.im^2)]
+        simp_rw [sq, ← Complex.normSq_apply z, ← Complex.abs_apply, ← Complex.sq_abs z]
+        rw [add_assoc (z.re * Complex.abs z * 2) (Complex.abs z ^2), ← mul_two]
+        rw [← add_mul, mul_div_assoc, mul_comm (z.re * Complex.abs z + Complex.abs z ^2), ← div_div, div_self two_ne_zero, mul_div, mul_one]
+        rw [eq_div_iff]
+        · rw [sq, ← add_mul, ← mul_comm (Complex.abs z), ← mul_assoc]
+          simp [one_sub_div, z_ne_zero]
+          ring_nf
+          exact Complex.sq_abs_sub_sq_re z
+        · simp [sq, ← add_mul, z_ne_zero]
+          rw [add_eq_zero_iff_eq_neg', Complex.abs_eq_sqrt_sq_add_sq]
+          norm_cast at z_im_ne_zero
+          simp [Real.sqrt_eq_cases, ← sq, z_im_ne_zero]
+          simp [← Complex.sq_abs_eq_in_ℝ]
+      by_cases z_arg_sign : 0 ≤ z.arg
+      · -- case 0 ≤ z.arg (or equivalently, 0 ≤ z.im)
+        rw [Real.sin_half_eq_sqrt z_arg_sign]
+        · rw [Real.sqrt_eq_iff_mul_self_eq]
+          · exact this
+          · have := (Real.cos_mem_Icc z.arg).2
+            linarith
+          · simp [div_nonneg_iff, Complex.arg_nonneg_iff.mp z_arg_sign]
         · have := (Complex.arg_mem_Ioc z).2
           linarith
+      · -- case z.arg < 0 (or equivalently, z.im < 0)
+        rw [not_le] at z_arg_sign
+        rw [Real.sin_half_eq_neg_sqrt, neg_eq_iff_eq_neg]
+        · rw [Real.sqrt_eq_iff_mul_self_eq]
+          · rw [neg_mul_neg]
+            exact this
+          · have := (Real.cos_mem_Icc z.arg).2
+            linarith
+          · simp at z_arg_sign
+            simp [div_nonpos_iff, le_of_lt z_arg_sign]
+        · have := (Complex.arg_mem_Ioc z).1
+          linarith
+        · exact le_of_lt z_arg_sign
 
 theorem 𝕆_square_roots {z : ℂ} (hz : z ∈ 𝕆) : ∃ z' ∈ 𝕆, z = z'^2 := by
   use √(Complex.abs z) * Complex.exp (z.arg / 2 * Complex.I)
@@ -1071,6 +1122,8 @@ lemma trisect_angle {z : ℂ} (hz : z ∈ 𝕆) : Complex.exp (z.arg/3 * Complex
     norm_cast
     #check Complex.sin_three_mul
     -- maybe Complex.ext_iff instead of Complex.ext_abs_arg_iff
+    -- YES!!!!
+    -- Just like in sqrt version!!!!
     rw [Complex.ext_abs_arg_iff, Complex.abs_exp_ofReal_mul_I]
     constructor
     · simp; symm; apply div_self

@@ -718,64 +718,22 @@ lemma vec_in_𝕆 {l : line} (hl : l ∈ 𝕆.lines) : l.vec ∈ 𝕆 := by
     norm_cast
 
 lemma half_angle {z : ℂ} (hz : z ∈ 𝕆) : Complex.exp (z.arg/2 * Complex.I) ∈ 𝕆 := by
+  -- w.l.o.g. z ≠ 0 and z.im ≠ 0
   by_cases z_ne_zero : z = 0
   · simp [z_ne_zero, one_in_𝕆]
-
-  let l₁ := O1 z 0 z_ne_zero
-  have hl₁ : l₁ ∈ 𝕆.lines := O1_in_𝕆 hz zero_in_𝕆
-  have hl₁_z₁ : l₁.z₁ = z := by simp [l₁, O1]
-  have hl₁_z₂ : l₁.z₂ = 0 := by simp [l₁, O1]
-  have hl₁_vec : l₁.vec = -z/Complex.abs z := by simp [line.vec, hl₁_z₁, hl₁_z₂]
   by_cases z_im_ne_zero : (z.im : ℂ)  = 0
-  · -- Suppose z.im = 0
-    have : z.arg = 0 ∨ z.arg = Real.pi := by
+  · have : z.arg = 0 ∨ z.arg = Real.pi := by
       norm_cast at z_im_ne_zero
       simp [Complex.arg, z_im_ne_zero, Real.pi_ne_zero, Real.pi_ne_zero.symm, le_or_lt]
     rcases this with h|h
     · simp [h, one_in_𝕆]
     · simp [h, Complex.exp_mul_I, i_in_𝕆]
-  by_cases l₁_reAxis_not_parallel : AreParallel l₁ reAxis
-  · -- Suppose l₁ and reAxis are parallel.
-    -- Then they are equal, i.e. z ∈ ℝ
-    have : (z.im : ℂ) = 0 := by
-      norm_cast
-      simp [AreParallel, reAxis, O1, line.vec, l₁, Complex.ext_iff, z_ne_zero, ← or_and_right] at l₁_reAxis_not_parallel
-      exact l₁_reAxis_not_parallel.2
-    contradiction
-  have Isect_l₁_reAxis : Isect l₁ reAxis l₁_reAxis_not_parallel = 0 := by
-    simp [Isect, l₁, reAxis, O1, line.vec]
-    simp [← div_mul, neg_div, div_self z_im_ne_zero, mul_div_left_comm, div_abs z_ne_zero]
 
-  let l₂ := O3' l₁ reAxis
-  have hl₂ : l₂ ∈ 𝕆.lines := O3'_in_𝕆 hl₁ reAxis_in_𝕆
-  have hl₂_z₁ : l₂.z₁ = 0 := by
-    simp [l₂, O3', l₁_reAxis_not_parallel]
-    simp [Isect, hl₁_z₁, hl₁_vec]
-    simp [reAxis, O1, line.vec]
-    simp [← div_mul, neg_div, div_self z_im_ne_zero]
-    simp [mul_div_left_comm, div_abs z_ne_zero]
-  have hl₂_z₂ : l₂.z₂ = -(1 + z/Complex.abs z) := by
-    simp [l₂, O3', l₁_reAxis_not_parallel]
-    simp [Isect, hl₁_z₁, hl₁_vec]
-    simp [reAxis, O1, line.vec]
-    simp [← div_mul, neg_div, div_self z_im_ne_zero]
-    simp [mul_div_left_comm, div_abs z_ne_zero]
-    ring_nf
-  have hl₂_vec : l₂.vec = -(Complex.abs z + z) / Complex.abs (Complex.abs z + z) := by
-    simp [line.vec, hl₂_z₁, hl₂_z₂]
-    have : ∀ x, Complex.abs (-x) = Complex.abs x := by
-      intro x
-      rw [map_neg_eq_map]
-    simp_rw [← neg_add, this]
-    rw [← div_abs z_ne_zero, ← add_div]
-    simp [← neg_div, div_div_div_cancel_right₀, z_ne_zero]
-    ring_nf
-
-  apply in_𝕆_if_eq (-l₂.vec)
-  · exact 𝕆_neg (vec_in_𝕆 hl₂)
+  apply in_𝕆_if_eq ((Complex.abs z + z) / Complex.abs (Complex.abs z + z))
+  · have := 𝕆_add (𝕆_abs hz) hz
+    exact 𝕆_div this (𝕆_abs this)
   · -- Prove that -l₂.vec = (Complex.abs z + z) / Complex.abs (Complex.abs z + z)
     -- is equal to Complex.exp (z.arg/2 * Complex.I)
-    rw [hl₂_vec, neg_div, neg_neg]
     norm_cast
     rw [Complex.ext_abs_arg_iff, Complex.abs_exp_ofReal_mul_I]
     constructor
@@ -807,9 +765,7 @@ lemma half_angle {z : ℂ} (hz : z ∈ 𝕆) : Complex.exp (z.arg/2 * Complex.I)
           linarith
 
 theorem 𝕆_square_roots {z : ℂ} (hz : z ∈ 𝕆) : ∃ z' ∈ 𝕆, z = z'^2 := by
-  let z_pol := Complex.polarCoord z
-  use Complex.polarCoord.symm (√(z_pol.1), z_pol.2 / 2)
-  simp [Complex.polarCoord_symm_apply, z_pol, Complex.polarCoord_apply]
+  use √(Complex.abs z) * Complex.exp (z.arg / 2 * Complex.I)
   constructor
   · apply 𝕆_mul
     · by_cases h : Complex.abs z = 0
@@ -817,10 +773,8 @@ theorem 𝕆_square_roots {z : ℂ} (hz : z ∈ 𝕆) : ∃ z' ∈ 𝕆, z = z'^
       · apply 𝕆_square_roots_pos_real
         · simp [(AbsoluteValue.ne_zero_iff Complex.abs).mp h, AbsoluteValue.nonneg Complex.abs z]
         · exact 𝕆_abs hz
-    · simp [Complex.cos_add_sin_I]
-      exact half_angle hz
-  · rw [Complex.cos_add_sin_I]
-    ring_nf
+    · exact half_angle hz
+  · ring_nf
     norm_cast
     rw [Real.sq_sqrt (AbsoluteValue.nonneg Complex.abs z)]
     rw [← Complex.exp_nat_mul (z.arg * Complex.I * (1/2)) 2]
@@ -1052,7 +1006,7 @@ lemma 𝕆_cubics (a b c : ℝ) (ha : (a : ℂ) ∈ 𝕆) (hb : (b : ℂ) ∈ �
   apply 𝕆_div ha
   apply nat_in_𝕆
 
-lemma 𝕆_cube_root_real {a : ℝ} (ha : (a : ℂ) ∈ 𝕆) :
+lemma 𝕆_cube_roots_real {a : ℝ} (ha : (a : ℂ) ∈ 𝕆) :
     ∃ (x : ℝ), (x : ℂ) ∈ 𝕆 ∧ x^3 = a := by
   have cubic := 𝕆_cubics 0 0 (-a) zero_in_𝕆 zero_in_𝕆 (by simp [𝕆_neg ha])
   simp [Cubic.roots, Cubic.toPoly] at cubic
@@ -1088,8 +1042,76 @@ lemma 𝕆_cube_root_real {a : ℝ} (ha : (a : ℂ) ∈ 𝕆) :
     rw [this]
     simp [cubic]
 
-#check Complex.sin_three_mul
+lemma trisect_angle {z : ℂ} (hz : z ∈ 𝕆) : Complex.exp (z.arg/3 * Complex.I) ∈ 𝕆 := by
+  -- w.l.o.g. z ≠ 0 and z.im ≠ 0
+  by_cases z_ne_zero : z = 0
+  · simp [z_ne_zero, one_in_𝕆]
+  by_cases z_im_ne_zero : (z.im : ℂ)  = 0
+  · have : z.arg = 0 ∨ z.arg = Real.pi := by
+      norm_cast at z_im_ne_zero
+      simp [Complex.arg, z_im_ne_zero, Real.pi_ne_zero, Real.pi_ne_zero.symm, le_or_lt]
+    rcases this with h|h
+    · simp [h, one_in_𝕆]
+    · rw [h, Complex.exp_mul_I]
+      norm_cast
+      simp [Real.cos_pi_div_three, Real.sin_pi_div_three, mul_comm]
+      apply 𝕆_add
+      · exact 𝕆_inv (by apply nat_in_𝕆)
+      · apply 𝕆_i_mul
+        apply 𝕆_div
+        · apply 𝕆_square_roots_pos_real (by apply nat_in_𝕆)
+          norm_num
+        · apply nat_in_𝕆
 
-theorem 𝕆_cube_roots {z : ℂ} (hz : z ∈ 𝕆) : ∃ z' ∈ 𝕆, z = z'^3 := by sorry
+  apply in_𝕆_if_eq ((2 * Complex.abs z + z) / Complex.abs (2 * Complex.abs z + z))
+  · have := 𝕆_add (𝕆_double (𝕆_abs hz)) hz
+    exact 𝕆_div this (𝕆_abs this)
+  · -- Prove that -l₂.vec = (Complex.abs z + z) / Complex.abs (Complex.abs z + z)
+    -- is equal to Complex.exp (z.arg/2 * Complex.I)
+    norm_cast
+    #check Complex.sin_three_mul
+    -- maybe Complex.ext_iff instead of Complex.ext_abs_arg_iff
+    rw [Complex.ext_abs_arg_iff, Complex.abs_exp_ofReal_mul_I]
+    constructor
+    · simp; symm; apply div_self
+      norm_cast at z_im_ne_zero
+      simp [Complex.ext_iff, z_im_ne_zero]
+    · rw [Complex.exp_mul_I, Complex.arg_cos_add_sin_mul_I]
+      · norm_cast at z_im_ne_zero
+        simp
+        rw [div_eq_mul_inv (2 * Complex.abs z + z), Complex.arg_mul, Complex.arg_inv]
+        · simp [Complex.arg_ofReal_of_nonneg, Real.pi_ne_zero.symm]
+          -- Prove that z.arg/2 = (Complex.abs z + z).arg
+          /-simp [Complex.arg]
+          by_cases z_re_nonneg : 0 ≤ z.re
+          · have : 0 ≤ Complex.abs z + z.re := add_nonneg (AbsoluteValue.nonneg Complex.abs z) z_re_nonneg
+            simp [z_re_nonneg, this]
+            sorry
+          · sorry-/
+          sorry
+        · simp [Complex.ext_iff, z_im_ne_zero]
+        · simp [Complex.ext_iff, z_im_ne_zero]
+        · simp [Complex.arg_inv, Complex.arg_ofReal_of_nonneg, Real.pi_ne_zero.symm]
+          exact Complex.arg_mem_Ioc (2 * Complex.abs z + z)
+      · simp
+        have := Real.pi_pos
+        constructor
+        · have := (Complex.arg_mem_Ioc z).1
+          linarith
+        · have := (Complex.arg_mem_Ioc z).2
+          linarith
+
+theorem 𝕆_cube_roots {z : ℂ} (hz : z ∈ 𝕆) : ∃ z' ∈ 𝕆, z = z'^3 := by
+  obtain ⟨r,hr,hr_cubed_eq_abs⟩ := 𝕆_cube_roots_real (𝕆_abs hz)
+  use r * Complex.exp (z.arg / 3 * Complex.I)
+  constructor
+  · apply 𝕆_mul hr (trisect_angle hz)
+  · ring_nf
+    norm_cast
+    rw [hr_cubed_eq_abs]
+    rw [← Complex.exp_nat_mul (z.arg * Complex.I * (1/3)) 3]
+    simp [← mul_assoc, mul_comm]
+    rw [mul_comm, mul_comm Complex.I]
+    exact Eq.symm (Complex.abs_mul_exp_arg_mul_I z)
 
 end cube_root

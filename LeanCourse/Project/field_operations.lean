@@ -239,7 +239,7 @@ lemma 𝕆_real_mul_cmpl {a z : ℂ} (ha_real : a.im = 0) (ha : (a:ℂ) ∈ 𝕆
     norm_cast
     simp [div_self this,← neg_div]
   have l₂_l₃_parallel : AreParallel l₂ l₃ := by
-    exact (E1_in_𝕆'' a l₂ ha l₂_in_𝕆).2.2
+    exact (E1_parallel_l a l₂)
   have l₁_l₃_not_parallel : ¬AreParallel l₁ l₃ := by
     exact Not_parallel_if_parallel l₁ l₂ l₃ l₁_l₂_not_parallel l₂_l₃_parallel
   --define the intersection of l₁ l₃
@@ -445,7 +445,7 @@ lemma 𝕆_real_inv_cmpl {a z : ℂ} (ha_real : a.im = 0) (ha : (a:ℂ) ∈ 𝕆
     norm_cast
     simp [div_self z_a_abs_ne_zero,← neg_div]
   have l₂_l₃_parallel : AreParallel l₂ l₃ := by
-    exact (E1_in_𝕆'' 1 l₂ one_in_𝕆 l₂_in_𝕆).2.2
+    exact (E1_parallel_l 1 l₂ )
   have l₁_l₃_not_parallel : ¬AreParallel l₁ l₃ := by
     exact Not_parallel_if_parallel l₁ l₂ l₃ l₁_l₂_not_parallel l₂_l₃_parallel
   --define the intersection of l₁ l₃
@@ -1134,14 +1134,13 @@ lemma trisect_angle {z : ℂ} (hz : z ∈ 𝕆) : Complex.exp (z.arg/3 * Complex
         simp
         rw [div_eq_mul_inv (2 * Complex.abs z + z), Complex.arg_mul, Complex.arg_inv]
         · simp [Complex.arg_ofReal_of_nonneg, Real.pi_ne_zero.symm]
-          -- Prove that z.arg/2 = (Complex.abs z + z).arg
-          /-simp [Complex.arg]
+          -- Prove that z.arg/3 = (2*Complex.abs z + z).arg
+          simp [Complex.arg]
           by_cases z_re_nonneg : 0 ≤ z.re
-          · have : 0 ≤ Complex.abs z + z.re := add_nonneg (AbsoluteValue.nonneg Complex.abs z) z_re_nonneg
+          · have : 0 ≤ 2 * Complex.abs z + z.re := add_nonneg (mul_nonneg zero_le_two (AbsoluteValue.nonneg Complex.abs z)) z_re_nonneg
             simp [z_re_nonneg, this]
             sorry
-          · sorry-/
-          sorry
+          · sorry
         · simp [Complex.ext_iff, z_im_ne_zero]
         · simp [Complex.ext_iff, z_im_ne_zero]
         · simp [Complex.arg_inv, Complex.arg_ofReal_of_nonneg, Real.pi_ne_zero.symm]

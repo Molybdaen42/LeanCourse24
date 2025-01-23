@@ -1093,38 +1093,58 @@ lemma 𝕆_cube_roots_real {a : ℝ} (ha : (a : ℂ) ∈ 𝕆) :
     rw [this]
     simp [cubic]
 
-lemma trisect_angle {z : ℂ} (hz : z ∈ 𝕆) : Complex.exp (z.arg/3 * Complex.I) ∈ 𝕆 := by
-  -- w.l.o.g. z ≠ 0 and z.im ≠ 0
-  by_cases z_ne_zero : z = 0
-  · simp [z_ne_zero, one_in_𝕆]
-  by_cases z_im_ne_zero : (z.im : ℂ)  = 0
-  · have : z.arg = 0 ∨ z.arg = Real.pi := by
-      norm_cast at z_im_ne_zero
-      simp [Complex.arg, z_im_ne_zero, Real.pi_ne_zero, Real.pi_ne_zero.symm, le_or_lt]
-    rcases this with h|h
-    · simp [h, one_in_𝕆]
-    · rw [h, Complex.exp_mul_I]
-      norm_cast
-      simp [Real.cos_pi_div_three, Real.sin_pi_div_three, mul_comm]
-      apply 𝕆_add
-      · exact 𝕆_inv (by apply nat_in_𝕆)
-      · apply 𝕆_i_mul
-        apply 𝕆_div
-        · apply 𝕆_square_roots_pos_real (by apply nat_in_𝕆)
-          norm_num
-        · apply nat_in_𝕆
+lemma 𝕆_sin_arg {z : ℂ} (hz : z ∈ 𝕆) : Complex.sin (z.arg) ∈ 𝕆 := by
+  norm_cast
+  simp [Complex.sin_arg]
+  exact 𝕆_div (𝕆_im hz) (𝕆_abs hz)
 
-  apply in_𝕆_if_eq ((2 * Complex.abs z + z) / Complex.abs (2 * Complex.abs z + z))
+lemma 𝕆_sin_arg_div_three {z : ℂ} (hz : z ∈ 𝕆) : Complex.sin (z.arg / 3) ∈ 𝕆 := by
+  have h1 : ↑(-(3 : ℝ)/4) ∈ 𝕆 := by
+    simp
+    apply 𝕆_div
+    · apply 𝕆_neg
+      apply nat_in_𝕆
+    · apply nat_in_𝕆
+  have h2 : ↑((Real.sin z.arg)/4) ∈ 𝕆 := by
+    simp
+    apply 𝕆_div (𝕆_sin_arg hz)
+    apply nat_in_𝕆
+  have cubic := 𝕆_cubics 0 (-(3 : ℝ)/4) ((Real.sin z.arg)/4) zero_in_𝕆 h1 h2
+  specialize cubic (Real.sin (z.arg / 3))
+  simp at cubic
+  apply cubic
+
+  have : Polynomial.X ^ 3 + Polynomial.C (-3 / 4) * Polynomial.X + Polynomial.C (Complex.sin ↑z.arg / 4) ≠ 0 := by
+    simp [Polynomial.ext_iff]
+    use 1
+    simp
+  simp [Cubic.roots, Cubic.toPoly, this]
+
+  -- Use the sine identity sin (3*x) = 3 * sin x − 4 * (sin x) ^3 on z.arg/3
+  have := Complex.sin_three_mul (z.arg / 3)
+  simp [mul_div] at this
+  simp [this]
+  ring_nf
+
+lemma 𝕆_trisect_angle {z : ℂ} (hz : z ∈ 𝕆) : Complex.exp (z.arg/3 * Complex.I) ∈ 𝕆 := by
+  rw [Complex.exp_mul_I]
+  apply 𝕆_add
+  · sorry
+  · exact 𝕆_mul (𝕆_sin_arg_div_three hz) i_in_𝕆
+
+  /-apply in_𝕆_if_eq ((2 * Complex.abs z + z) / Complex.abs (2 * Complex.abs z + z))
   · have := 𝕆_add (𝕆_double (𝕆_abs hz)) hz
     exact 𝕆_div this (𝕆_abs this)
   · -- Prove that -l₂.vec = (Complex.abs z + z) / Complex.abs (Complex.abs z + z)
     -- is equal to Complex.exp (z.arg/2 * Complex.I)
     norm_cast
     #check Complex.sin_three_mul
+    #check Complex.cos_three_mul
     -- maybe Complex.ext_iff instead of Complex.ext_abs_arg_iff
     -- Yes, do it!!!!
     -- Just like in sqrt version!!!!
-    rw [Complex.ext_abs_arg_iff, Complex.abs_exp_ofReal_mul_I]
+    rw [Complex.ext_iff]
+    simp [Complex.exp_re, Complex.exp_im]
     constructor
     · simp; symm; apply div_self
       norm_cast at z_im_ne_zero
@@ -1152,13 +1172,13 @@ lemma trisect_angle {z : ℂ} (hz : z ∈ 𝕆) : Complex.exp (z.arg/3 * Complex
         · have := (Complex.arg_mem_Ioc z).1
           linarith
         · have := (Complex.arg_mem_Ioc z).2
-          linarith
+          linarith-/
 
 theorem 𝕆_cube_roots {z : ℂ} (hz : z ∈ 𝕆) : ∃ z' ∈ 𝕆, z = z'^3 := by
   obtain ⟨r,hr,hr_cubed_eq_abs⟩ := 𝕆_cube_roots_real (𝕆_abs hz)
   use r * Complex.exp (z.arg / 3 * Complex.I)
   constructor
-  · apply 𝕆_mul hr (trisect_angle hz)
+  · apply 𝕆_mul hr (𝕆_trisect_angle hz)
   · ring_nf
     norm_cast
     rw [hr_cubed_eq_abs]

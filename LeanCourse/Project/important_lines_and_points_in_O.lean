@@ -7,11 +7,13 @@ open ComplexConjugate
 
 -- **The most fundamental lines and points in 𝕆**
 
+-- It's always useful to have a proof ready for the two most basic points to lie in 𝕆
 lemma zero_in_𝕆 : 0 ∈ 𝕆 := by
   simp [𝕆]; use 0; simp
 lemma one_in_𝕆 : 1 ∈ 𝕆 := by
   simp [𝕆]; use 0; simp
 
+-- The real and imaginary axes will be used often
 noncomputable def reAxis : line := O1 0 1 zero_ne_one
 noncomputable def imAxis : line := O4 0 reAxis
 lemma reAxis_in_𝕆 : reAxis ∈ 𝕆.lines := by
@@ -19,6 +21,7 @@ lemma reAxis_in_𝕆 : reAxis ∈ 𝕆.lines := by
 lemma imAxis_in_𝕆 : imAxis ∈ 𝕆.lines := by
   exact O4_in_𝕆 zero_in_𝕆 reAxis_in_𝕆
 
+-- Hey, i is a great number!
 lemma i_in_𝕆 : Complex.I ∈ 𝕆 := by
   -- first define all necessary lines and points
   let l₁ : line := O4 1 reAxis

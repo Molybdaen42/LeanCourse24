@@ -3,7 +3,8 @@ open Classical
 open Construction
 open ComplexConjugate
 
-/- **Some Lemmata for 𝕆** -/
+section Proof_simplifying_lemmata
+/- **Some Lemmata for 𝕆ₙ and 𝕆 that simplify proofs** -/
 
 /-- 𝕆ₙ.points is increasing.-/
 lemma 𝕆ₙ.points_inc (n m : ℕ) (h: n ≤ m) : 𝕆ₙ.points n ⊆ 𝕆ₙ.points m := by
@@ -34,25 +35,8 @@ lemma 𝕆ₙ.lines_inc (n m : ℕ) (h: n ≤ m) : 𝕆ₙ.lines n ⊆ 𝕆ₙ.l
     · have : n = m + 1 := by linarith
       rw [this]
 
-lemma O4_not_parallel {l : line} {z : ℂ} :
-  ¬AreParallel l (O4 z l) := by
-    simp [AreParallel, O4, line.vec, div_self vec_well_defined]
-    rw [← line.vec]
-    constructor
-    · -- Essentially to show: 1 ≠ Complex.I
-      by_contra h
-      have := (mul_eq_right₀ (vec_ne_zero l)).mp h.symm
-      simp [Complex.ext_iff] at this
-    · -- Essentially to show: 1 ≠ -Complex.I
-      by_contra h
-      rw [← neg_mul] at h
-      have := (mul_eq_right₀ (vec_ne_zero l)).mp h.symm
-      simp [Complex.ext_iff] at this
-lemma O4_perpendicular {l : line} {z : ℂ} :
-  (l.vec * conj (O4 z l).vec).re = 0 := by
-    simp [O4, line.vec, div_self vec_well_defined]
-    ring
 
+-- The following lemmata allow us to improve the structure of our proofs
 lemma in_𝕆_if_eq (z : ℂ) {z' : ℂ} : z ∈ 𝕆 → z' = z → z' ∈ 𝕆 := by
   intro hz h
   rw [h]
@@ -69,6 +53,8 @@ lemma in_𝕆_lines_if_eqq (l : line) {l' : line} : l ∈ 𝕆.lines → l' = l 
   rw [h]
   assumption
 
+end Proof_simplifying_lemmata
+section Axioms_in_𝕆
 /- **Lemmata for the axioms being in 𝕆 if used on elements of 𝕆** -/
 
 /-- The result of O1 is in 𝕆 if the arguments are in 𝕆.-/
@@ -210,6 +196,10 @@ lemma Isect_in_𝕆 {l₁ l₂ : line} {h : ¬AreParallel l₁ l₂} (hl₁ : l�
   constructor; apply 𝕆ₙ.lines_inc N₂ N (le_max_right N₁ N₂); exact hl₂N
   use h
 
+end Axioms_in_𝕆
+section Random_stuff
+-- **More random but useful stuff**
+
 lemma Complex.sq_abs_eq {z : ℂ} : (Complex.abs z)^2 = (z.re : ℂ)^2 + (z.im : ℂ)^2 := by
   norm_cast
   simp [← Complex.sq_abs_sub_sq_im]
@@ -219,3 +209,22 @@ lemma Complex.sq_abs_eq_in_ℝ {z : ℂ} : (Complex.abs z)^2 = (z.re)^2 + (z.im)
 lemma div_abs {z : ℂ} (h : z ≠ 0) : (Complex.abs z : ℂ)/(Complex.abs z : ℂ) = 1 := by
   norm_cast
   exact div_self ((AbsoluteValue.ne_zero_iff Complex.abs).mpr h)
+
+lemma O4_not_parallel {l : line} {z : ℂ} :
+  ¬AreParallel l (O4 z l) := by
+    simp [AreParallel, O4, line.vec, div_self vec_well_defined]
+    rw [← line.vec]
+    constructor
+    · -- Essentially to show: 1 ≠ Complex.I
+      by_contra h
+      have := (mul_eq_right₀ (vec_ne_zero l)).mp h.symm
+      simp [Complex.ext_iff] at this
+    · -- Essentially to show: 1 ≠ -Complex.I
+      by_contra h
+      rw [← neg_mul] at h
+      have := (mul_eq_right₀ (vec_ne_zero l)).mp h.symm
+      simp [Complex.ext_iff] at this
+lemma O4_perpendicular {l : line} {z : ℂ} :
+  (l.vec * conj (O4 z l).vec).re = 0 := by
+    simp [O4, line.vec, div_self vec_well_defined]
+    ring

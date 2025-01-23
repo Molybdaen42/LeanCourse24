@@ -510,8 +510,7 @@ theorem 𝕆_inv {z : ℂ} (hz : z ∈ 𝕆) : z⁻¹ ∈ 𝕆 := by
       exact ne_of_gt this
 
 end mul
-
-
+section Field_theorem
 -- **Here comes the theorem stating that 𝕆 is a field.**
 
 noncomputable def 𝕆Field : Subfield ℂ where
@@ -528,8 +527,9 @@ noncomputable def 𝕆Field : Subfield ℂ where
 theorem 𝕆_isField : IsField 𝕆Field := by
   exact Field.toIsField 𝕆Field
 
-
--- *ℚ ⊆ 𝕆*
+end Field_theorem
+section Rational_numbers_are_in_𝕆
+-- **ℚ ⊆ 𝕆**
 
 lemma 𝕆_sub {z₁ z₂ : ℂ} (hz₁ : z₁ ∈ 𝕆) (hz₂ : z₂ ∈ 𝕆) : z₁ - z₂ ∈ 𝕆 := by
   rw [sub_eq_add_neg]

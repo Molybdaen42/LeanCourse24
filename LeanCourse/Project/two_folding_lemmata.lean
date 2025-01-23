@@ -4,7 +4,7 @@ open Classical
 open Construction
 open ComplexConjugate
 
--- **Two Folding Lemmata**
+section E1
 
 noncomputable def E1 (z : ℂ) (l : line) : line :=
   ⟨z,z - l.vec,(by simp [sub_eq_neg_add, vec_ne_zero l])⟩
@@ -43,6 +43,7 @@ lemma E1_parallel_l (z : ℂ) (l : line):
     simp
     exact this.symm
 
+end E1
 section E2
 variable (z : ℂ) (l : line)
 

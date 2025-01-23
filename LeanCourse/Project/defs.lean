@@ -1,6 +1,9 @@
 import Mathlib.Data.Complex.Basic
 import Mathlib.Order.Basic
 import Mathlib.Geometry.Euclidean.Sphere.Basic
+import Mathlib.Algebra.Field.Defs
+import Mathlib.Analysis.SpecialFunctions.PolarCoord
+import Mathlib.Algebra.CubicDiscriminant
 
 open ComplexConjugate
 open Classical

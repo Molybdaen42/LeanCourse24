@@ -2,9 +2,6 @@ import LeanCourse.Project.defs
 import LeanCourse.Project.lemmata_for_O
 import LeanCourse.Project.important_lines_and_points_in_O
 import LeanCourse.Project.two_folding_lemmata
-import Mathlib.Algebra.Field.Defs
-import Mathlib.Analysis.SpecialFunctions.PolarCoord
-import Mathlib.Algebra.CubicDiscriminant
 open Classical
 open Construction
 open ComplexConjugate

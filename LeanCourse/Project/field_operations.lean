@@ -1122,7 +1122,7 @@ lemma trisect_angle {z : ℂ} (hz : z ∈ 𝕆) : Complex.exp (z.arg/3 * Complex
     norm_cast
     #check Complex.sin_three_mul
     -- maybe Complex.ext_iff instead of Complex.ext_abs_arg_iff
-    -- YES!!!!
+    -- Yes, do it!!!!
     -- Just like in sqrt version!!!!
     rw [Complex.ext_abs_arg_iff, Complex.abs_exp_ofReal_mul_I]
     constructor

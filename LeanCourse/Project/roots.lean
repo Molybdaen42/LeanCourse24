@@ -8,8 +8,9 @@ open Construction
 open ComplexConjugate
 
 -- **𝕆 is closed under taking square and cube roots**
-
 section square_root
+
+/-- We can take sqrts of non-negative real numbers.-/
 lemma 𝕆_square_roots_nonneg_real {a : ℝ} {ha_nonneg : a ≥ 0} (ha : (a : ℂ) ∈ 𝕆) :
     (√a : ℂ) ∈ 𝕆 := by
   -- w.l.o.g. a > 0
@@ -83,6 +84,7 @@ lemma 𝕆_square_roots_nonneg_real {a : ℝ} {ha_nonneg : a ≥ 0} (ha : (a : �
       _ = a - a * ((a + a ^ 2) / (a + a ^ 2)) := by ring
       _ = 0 := by simp [h2]
 
+/-- The absolute value of any z ∈ 𝕆 lies in 𝕆.-/
 lemma 𝕆_abs {z : ℂ} (hz : z ∈ 𝕆) : (Complex.abs z : ℂ) ∈ 𝕆 := by
   simp [Complex.abs, Complex.normSq]
   by_cases h : z.re*z.re + z.im*z.im = 0
@@ -93,6 +95,7 @@ lemma 𝕆_abs {z : ℂ} (hz : z ∈ 𝕆) : (Complex.abs z : ℂ) ∈ 𝕆 := b
   · push_cast
     apply 𝕆_add (𝕆_mul (𝕆_re hz) (𝕆_re hz)) (𝕆_mul (𝕆_im hz) (𝕆_im hz))
 
+/-- The normalized direction vector of any constructible line is constructible.-/
 lemma vec_in_𝕆 {l : line} (hl : l ∈ 𝕆.lines) : l.vec ∈ 𝕆 := by
   -- w.l.o.g. l.vec ≠ ±i
   by_cases vec_ne_i : l.vec = Complex.I; · simp [vec_ne_i, i_in_𝕆]
@@ -155,11 +158,13 @@ lemma vec_in_𝕆 {l : line} (hl : l ∈ 𝕆.lines) : l.vec ∈ 𝕆 := by
     simp [vec_ne_zero]
     norm_cast
 
+/-- For r*exp(θi) ∈ 𝕆, sin(θ) ∈ 𝕆.-/
 lemma 𝕆_sin_arg {z : ℂ} (hz : z ∈ 𝕆) : Complex.sin (z.arg) ∈ 𝕆 := by
   norm_cast
   simp [Complex.sin_arg]
   exact 𝕆_div (𝕆_im hz) (𝕆_abs hz)
 
+/-- For r*exp(θi) ∈ 𝕆, cos(θ) ∈ 𝕆.-/
 lemma 𝕆_cos_arg {z : ℂ} (hz : z ∈ 𝕆) : Complex.cos (z.arg) ∈ 𝕆 := by
   -- w.l.o.g. z ≠ 0
   by_cases z_ne_zero : z = 0
@@ -169,6 +174,7 @@ lemma 𝕆_cos_arg {z : ℂ} (hz : z ∈ 𝕆) : Complex.cos (z.arg) ∈ 𝕆 :=
   simp [Complex.cos_arg z_ne_zero]
   exact 𝕆_div (𝕆_re hz) (𝕆_abs hz)
 
+/-- For r*exp(θi) ∈ 𝕆, sin(θ/2) ∈ 𝕆.-/
 lemma 𝕆_sin_arg_div_two {z : ℂ} (hz : z ∈ 𝕆) : Complex.sin (z.arg / 2) ∈ 𝕆 := by
   norm_cast
   have : ↑√((1 - Real.cos z.arg) / 2) ∈ 𝕆 := by
@@ -195,6 +201,7 @@ lemma 𝕆_sin_arg_div_two {z : ℂ} (hz : z ∈ 𝕆) : Complex.sin (z.arg / 2)
       linarith
     · exact le_of_lt z_arg_sign
 
+/-- For r*exp(θi) ∈ 𝕆, exp(θ/2 * i) ∈ 𝕆.-/
 lemma half_angle {z : ℂ} (hz : z ∈ 𝕆) : Complex.exp (z.arg/2 * Complex.I) ∈ 𝕆 := by
   rw [Complex.exp_mul_I]
   apply 𝕆_add
@@ -215,7 +222,7 @@ lemma half_angle {z : ℂ} (hz : z ∈ 𝕆) : Complex.exp (z.arg/2 * Complex.I)
       linarith
   · exact 𝕆_mul (𝕆_sin_arg_div_two hz) i_in_𝕆
 
-theorem 𝕆_square_roots {z : ℂ} (hz : z ∈ 𝕆) : ∃ z' ∈ 𝕆, z = z'^2 := by
+theorem 𝕆_square_roots' {z : ℂ} (hz : z ∈ 𝕆) : ∃ z' ∈ 𝕆, z = z'^2 := by
   use √(Complex.abs z) * Complex.exp (z.arg / 2 * Complex.I)
   constructor
   · apply 𝕆_mul
@@ -232,6 +239,20 @@ theorem 𝕆_square_roots {z : ℂ} (hz : z ∈ 𝕆) : ∃ z' ∈ 𝕆, z = z'^
     simp [← mul_assoc, mul_comm]
     rw [mul_comm, mul_comm Complex.I]
     exact Eq.symm (Complex.abs_mul_exp_arg_mul_I z)
+
+theorem 𝕆_square_roots {z z' : ℂ} (hz : z ∈ 𝕆) (h : z = z'^2) : z' ∈ 𝕆 := by
+  rw [Complex.ext_abs_arg_iff] at h
+  rw [← Complex.abs_mul_exp_arg_mul_I z'] at h
+  ring_nf at h
+  rw [← Complex.exp_nat_mul] at h
+  simp [Complex.abs_exp] at h
+  obtain ⟨h1,h2⟩ := h
+  have : Complex.abs z = (Complex.abs z' : ℂ)^2 := by norm_cast
+  rw [← this, Complex.arg_real_mul, ← mul_assoc] at h2
+  have h2 : z.arg = (Complex.exp (↑(2 * z'.arg) * Complex.I)).arg := by simp; exact h2
+  rw [Complex.arg_exp_mul_I (2*z'.arg)] at h2
+  sorry
+  sorry
 
 end square_root
 

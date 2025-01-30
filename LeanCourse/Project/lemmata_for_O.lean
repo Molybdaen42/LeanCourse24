@@ -200,16 +200,20 @@ end Axioms_in_𝕆
 section Random_stuff
 -- **More random but useful stuff**
 
+/-- |z|^2 = (z.re : ℂ)^2 + (z.im : ℂ)^2-/
 lemma Complex.sq_abs_eq {z : ℂ} : (Complex.abs z)^2 = (z.re : ℂ)^2 + (z.im : ℂ)^2 := by
   norm_cast
   simp [← Complex.sq_abs_sub_sq_im]
+/-- |z|^2 = z.re^2 + z.im^2-/
 lemma Complex.sq_abs_eq_in_ℝ {z : ℂ} : (Complex.abs z)^2 = (z.re)^2 + (z.im)^2 := by
   simp [← Complex.sq_abs_sub_sq_im]
 
+/-- If z ≠ 0, |z|/|z| = 1.-/
 lemma div_abs {z : ℂ} (h : z ≠ 0) : (Complex.abs z : ℂ)/(Complex.abs z : ℂ) = 1 := by
   norm_cast
   exact div_self ((AbsoluteValue.ne_zero_iff Complex.abs).mpr h)
 
+/-- O4(z,l) is not parallel to l.-/
 lemma O4_not_parallel {l : line} {z : ℂ} :
   ¬AreParallel l (O4 z l) := by
     simp [AreParallel, O4, line.vec, div_self vec_well_defined]
@@ -224,7 +228,20 @@ lemma O4_not_parallel {l : line} {z : ℂ} :
       rw [← neg_mul] at h
       have := (mul_eq_right₀ (vec_ne_zero l)).mp h.symm
       simp [Complex.ext_iff] at this
+/-- O4(z,l) is perpendicular to l.-/
 lemma O4_perpendicular {l : line} {z : ℂ} :
   (l.vec * conj (O4 z l).vec).re = 0 := by
     simp [O4, line.vec, div_self vec_well_defined]
     ring
+
+
+-- From now on all proofs are structured like this:
+/-
+1. Construct a point equaling the searched number
+  by using axioms or prior lemmata or theorems.
+2. apply in_𝕆_if_eq (constructed point)
+3. Show that the constructed point lies in 𝕆
+  (It's not longer necessary to dive into the definition of 𝕆.
+  Lemmata like O4_in_𝕆 suffice.)
+4. Show that the constructed point equals the searched number.
+-/

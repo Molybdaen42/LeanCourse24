@@ -222,48 +222,48 @@ lemma half_angle {z : ℂ} (hz : z ∈ 𝕆) : Complex.exp (z.arg/2 * Complex.I)
       linarith
   · exact 𝕆_mul (𝕆_sin_arg_div_two hz) i_in_𝕆
 
-theorem 𝕆_square_roots' {z : ℂ} (hz : z ∈ 𝕆) : ∃ z' ∈ 𝕆, z = z'^2 := by
-  use √(Complex.abs z) * Complex.exp (z.arg / 2 * Complex.I)
-  constructor
-  · apply 𝕆_mul
-    · by_cases h : Complex.abs z = 0
-      · simp [h, zero_in_𝕆]
-      · apply 𝕆_square_roots_nonneg_real
-        · exact AbsoluteValue.nonneg Complex.abs z
-        · exact 𝕆_abs hz
-    · exact half_angle hz
-  · ring_nf
+/-- For z ∈ 𝕆, the "positive" sqrt of z lies in 𝕆. -/
+theorem 𝕆_square_roots' {z : ℂ} (hz : z ∈ 𝕆) :
+      √(Complex.abs z) * Complex.exp (z.arg / 2 * Complex.I) ∈ 𝕆 := by
+  apply 𝕆_mul
+  · by_cases h : Complex.abs z = 0
+    · simp [h, zero_in_𝕆]
+    · apply 𝕆_square_roots_nonneg_real
+      · exact AbsoluteValue.nonneg Complex.abs z
+      · exact 𝕆_abs hz
+  · exact half_angle hz
+
+/-- Both alternatives for being the sqrt of a given number lie in 𝕆.-/
+theorem 𝕆_square_roots {z z' : ℂ} (hz : z ∈ 𝕆) (h : z = z'^2) : z' ∈ 𝕆 := by
+  have : z' = √(Complex.abs z) * Complex.exp (z.arg / 2 * Complex.I) ∨
+        z' = -(√(Complex.abs z) * Complex.exp (z.arg / 2 * Complex.I)) := by
+    apply sq_eq_sq_iff_eq_or_eq_neg.mp
+    rw [← h]
+    ring_nf
     norm_cast
     rw [Real.sq_sqrt (AbsoluteValue.nonneg Complex.abs z)]
     rw [← Complex.exp_nat_mul (z.arg * Complex.I * (1/2)) 2]
     simp [← mul_assoc, mul_comm]
     rw [mul_comm, mul_comm Complex.I]
     exact Eq.symm (Complex.abs_mul_exp_arg_mul_I z)
-
-theorem 𝕆_square_roots {z z' : ℂ} (hz : z ∈ 𝕆) (h : z = z'^2) : z' ∈ 𝕆 := by
-  rw [Complex.ext_abs_arg_iff] at h
-  rw [← Complex.abs_mul_exp_arg_mul_I z'] at h
-  ring_nf at h
-  rw [← Complex.exp_nat_mul] at h
-  simp [Complex.abs_exp] at h
-  obtain ⟨h1,h2⟩ := h
-  have : Complex.abs z = (Complex.abs z' : ℂ)^2 := by norm_cast
-  rw [← this, Complex.arg_real_mul, ← mul_assoc] at h2
-  have h2 : z.arg = (Complex.exp (↑(2 * z'.arg) * Complex.I)).arg := by simp; exact h2
-  rw [Complex.arg_exp_mul_I (2*z'.arg)] at h2
-  sorry
-  sorry
+  rcases this with hcase1|hcase2
+  · rw [hcase1]
+    exact 𝕆_square_roots' hz
+  · rw [hcase2]
+    exact 𝕆_neg (𝕆_square_roots' hz)
 
 end square_root
 
 
 section cube_root
 
+/-- The slope of a line is constructible.-/
 lemma slope_in_𝕆 {l : line} (hl : l ∈ 𝕆.lines) : (l.vec.im / l.vec.re : ℂ) ∈ 𝕆 := by
   apply 𝕆_div
   · exact 𝕆_im (vec_in_𝕆 hl)
   · exact 𝕆_re (vec_in_𝕆 hl)
 
+/-- All roots of a cubic x^3 + px + q are constructible.-/
 lemma 𝕆_depressed_cubics (p q : ℝ) (hp : (p : ℂ) ∈ 𝕆) (hq : (q : ℂ) ∈ 𝕆) :
     ∀ m : ℝ, (m : ℂ) ∈ (⟨1,0,p,q⟩ : Cubic ℂ).roots → (m : ℂ) ∈ 𝕆 := by
   -- m is a zero of the depressed cubic polynomial x^3 + p*x + q
@@ -408,6 +408,7 @@ lemma 𝕆_depressed_cubics (p q : ℝ) (hp : (p : ℂ) ∈ 𝕆) (hq : (q : ℂ
   -- Left to show: m = ↑l₃.vec.im / ↑l₃.vec.re
   simp [hl₃_vec, Complex.ext_iff]
 
+/-- All roots of a cubic x^3 + ax^2 + bx + c are constructible.-/
 lemma 𝕆_cubics (a b c : ℝ) (ha : (a : ℂ) ∈ 𝕆) (hb : (b : ℂ) ∈ 𝕆) (hc : (c : ℂ) ∈ 𝕆) :
     ∀ (m : ℝ), (m : ℂ) ∈ (⟨1,a,b,c⟩ : Cubic ℂ).roots → (m : ℂ) ∈ 𝕆 := by
   -- m is a zero of the cubic polynomial x^3 + a*x^2 + b*x + c
@@ -474,7 +475,8 @@ lemma 𝕆_cubics (a b c : ℝ) (ha : (a : ℂ) ∈ 𝕆) (hb : (b : ℂ) ∈ �
   apply 𝕆_div ha
   apply nat_in_𝕆
 
-lemma 𝕆_cube_roots_real {a : ℝ} (ha : (a : ℂ) ∈ 𝕆) :
+/-- The real cube root of a real number is constructible.-/
+lemma 𝕆_cube_roots_real' {a : ℝ} (ha : (a : ℂ) ∈ 𝕆) :
     ∃ (x : ℝ), (x : ℂ) ∈ 𝕆 ∧ x^3 = a := by
   have cubic := 𝕆_cubics 0 0 (-a) zero_in_𝕆 zero_in_𝕆 (by simp [𝕆_neg ha])
   simp [Cubic.roots, Cubic.toPoly] at cubic
@@ -510,6 +512,13 @@ lemma 𝕆_cube_roots_real {a : ℝ} (ha : (a : ℂ) ∈ 𝕆) :
     rw [this]
     simp [cubic]
 
+/-- Any cube root of a real number is constructible.-/
+lemma 𝕆_cube_roots_real {a : ℝ} {x : ℂ} (ha : (a : ℂ) ∈ 𝕆) (h : a = x^3) :
+    x ∈ 𝕆 := by
+
+  sorry
+
+/-- For r*exp(θi) ∈ 𝕆, sin(θ/3) ∈ 𝕆.-/
 lemma 𝕆_sin_arg_div_three {z : ℂ} (hz : z ∈ 𝕆) : Complex.sin (z.arg / 3) ∈ 𝕆 := by
   have h1 : ↑(-(3 : ℝ)/4) ∈ 𝕆 := by
     simp
@@ -538,6 +547,7 @@ lemma 𝕆_sin_arg_div_three {z : ℂ} (hz : z ∈ 𝕆) : Complex.sin (z.arg / 
   simp [this]
   ring_nf
 
+/-- We can trisect an angle.-/
 lemma 𝕆_trisect_angle {z : ℂ} (hz : z ∈ 𝕆) : Complex.exp (z.arg/3 * Complex.I) ∈ 𝕆 := by
   rw [Complex.exp_mul_I]
   apply 𝕆_add
@@ -558,8 +568,9 @@ lemma 𝕆_trisect_angle {z : ℂ} (hz : z ∈ 𝕆) : Complex.exp (z.arg/3 * Co
       linarith
   · exact 𝕆_mul (𝕆_sin_arg_div_three hz) i_in_𝕆
 
-theorem 𝕆_cube_roots {z : ℂ} (hz : z ∈ 𝕆) : ∃ z' ∈ 𝕆, z = z'^3 := by
-  obtain ⟨r,hr,hr_cubed_eq_abs⟩ := 𝕆_cube_roots_real (𝕆_abs hz)
+/-- We can find a cube root that lies in 𝕆. -/
+theorem 𝕆_cube_roots' {z : ℂ} (hz : z ∈ 𝕆) : ∃ z' ∈ 𝕆, z = z'^3 := by
+  obtain ⟨r,hr,hr_cubed_eq_abs⟩ := 𝕆_cube_roots_real' (𝕆_abs hz)
   use r * Complex.exp (z.arg / 3 * Complex.I)
   constructor
   · apply 𝕆_mul hr (𝕆_trisect_angle hz)
@@ -570,5 +581,9 @@ theorem 𝕆_cube_roots {z : ℂ} (hz : z ∈ 𝕆) : ∃ z' ∈ 𝕆, z = z'^3 
     simp [← mul_assoc, mul_comm]
     rw [mul_comm, mul_comm Complex.I]
     exact Eq.symm (Complex.abs_mul_exp_arg_mul_I z)
+
+/-- All three alternatives for being the cube root of a given number lie in 𝕆.-/
+theorem 𝕆_cube_roots {z z' : ℂ} (hz : z ∈ 𝕆) (h : z = z'^3) : z' ∈ 𝕆 := by
+  sorry
 
 end cube_root

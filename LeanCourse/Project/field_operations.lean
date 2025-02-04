@@ -403,6 +403,14 @@ theorem 𝕆_mul {z₁ z₂ : ℂ} (hz₁ : z₁ ∈ 𝕆) (hz₂ : z₂ ∈ �
   · apply 𝕆_real_mul_real
     all_goals simp [Complex.ofReal_im, 𝕆_im hz₁, 𝕆_re hz₂]
 
+lemma 𝕆_pow_nat {z : ℂ} {n : ℕ} (hz : z ∈ 𝕆) : z^n ∈ 𝕆 := by
+  induction n with
+  | zero => simp; exact one_in_𝕆
+  | succ n hn => simp [pow_add]; exact 𝕆_mul hn hz
+
+end mul
+section div
+
 /-- We can take the division of z ∈ 𝕆 \ ℝ by a ∈ 𝕆 ∩ ℝ.-/
 lemma 𝕆_cmpl_div_real {a z : ℂ} (ha_real : a.im = 0) (ha : (a:ℂ) ∈ 𝕆) (hz_not_real : z.im ≠ 0) (hz : z ∈ 𝕆) (ha_not_zero : a≠ 0) :  z/a ∈ 𝕆 := by
   --defining the lines from z to 0 and 1, not parallel which is why z not be real
@@ -530,11 +538,16 @@ theorem 𝕆_inv {z : ℂ} (hz : z ∈ 𝕆) : z⁻¹ ∈ 𝕆 := by
       exact ne_of_gt this
 
 /-- 𝕆 is closed under division.-/
-lemma 𝕆_div {z₁ z₂ : ℂ} (hz₁ : z₁ ∈ 𝕆) (hz₂ : z₂ ∈ 𝕆) : z₁/z₂ ∈ 𝕆 := by
+theorem 𝕆_div {z₁ z₂ : ℂ} (hz₁ : z₁ ∈ 𝕆) (hz₂ : z₂ ∈ 𝕆) : z₁/z₂ ∈ 𝕆 := by
   rw [← mul_one z₁, mul_div_assoc, ← inv_eq_one_div]
   exact 𝕆_mul hz₁ (𝕆_inv hz₂)
 
-end mul
+lemma 𝕆_pow_int {z : ℂ} {n : ℤ} (hz : z ∈ 𝕆) : z^n ∈ 𝕆 := by
+  induction n with
+  | ofNat n => exact 𝕆_pow_nat hz
+  | negSucc n => simp; rw [← inv_pow]; exact 𝕆_pow_nat (𝕆_inv hz)
+
+end div
 section Field_theorem
 -- **Here comes the theorem stating that 𝕆 is a field.**
 

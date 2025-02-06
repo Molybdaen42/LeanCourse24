@@ -679,7 +679,31 @@ theorem 𝕆_cube_roots {z : ℂ} (hz_cubed : z^3 ∈ 𝕆) : z ∈ 𝕆 := by
           exact h_three_arg_Ioc
       simp [this]
     · by_cases caseB : z.arg ∈ Set.Ioc (-Real.pi/2) (Real.pi/2)
-      · sorry
+      · right
+        simp_rw [← Complex.exp_add, ← add_mul, ← add_div]
+        norm_cast
+        by_cases caseSign : z.arg ≥ 0
+        · -- case 2
+          left
+          have z_arg_gt_pi_div_three : z.arg > Real.pi/3 := by
+            have : -Real.pi / 3 < z.arg := by
+              have := Real.pi_pos
+              linarith
+            simp only [Set.mem_Ioc, this, true_and, not_le] at caseA
+            exact caseA
+          have z_arg_le_pi_div_two : z.arg ≤ Real.pi/2 := by exact caseB.2
+          have : 2*Real.pi + (z^3).arg = 3 * z.arg := by
+            apply add_eq_of_eq_sub'
+            rw [pow_three]
+            rw [Complex.arg_mul z_ne_zero (mul_self_ne_zero.mpr z_ne_zero)]
+            /-rw [Complex.arg_mul z_ne_zero z_ne_zero h_two_arg_Ioc]
+            · ring_nf
+            · rw [Complex.arg_mul z_ne_zero z_ne_zero h_two_arg_Ioc]
+              exact h_three_arg_Ioc-/
+            sorry
+            sorry
+          simp [this]
+        · sorry
       · sorry
 
   -- Each of the three choices lies in 𝕆

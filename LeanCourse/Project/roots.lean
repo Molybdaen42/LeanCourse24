@@ -250,6 +250,7 @@ theorem 𝕆_square_roots {z : ℂ} (hz_sq : z^2 ∈ 𝕆) : z ∈ 𝕆 := by
   · rw [hcase2]
     exact 𝕆_neg (𝕆_square_root hz_sq)
 
+/-- The square roots of every z ∈ 𝕆 lie in 𝕆.-/
 theorem 𝕆_square_roots' {z x : ℂ} (hz : z ∈ 𝕆) : x ∈ Polynomial.nthRoots 2 z → x ∈ 𝕆 := by
   simp
   intro hx
@@ -605,7 +606,7 @@ theorem 𝕆_cube_root {z : ℂ} (hz : z ∈ 𝕆) : ∃ z' ∈ 𝕆, z = z'^3 :
 lemma 𝕆_cube_roots_of_unity :
     Complex.exp (2*Real.pi * 0/3 * Complex.I) ∈ 𝕆 ∧
     Complex.exp (2*Real.pi * 1/3 * Complex.I) ∈ 𝕆 ∧
-    Complex.exp (2*Real.pi * 2/3 * Complex.I) ∈ 𝕆 := by
+    Complex.exp (2*Real.pi * (-1)/3 * Complex.I) ∈ 𝕆 := by
   -- The first root equals 1.
   simp [one_in_𝕆]
 
@@ -619,11 +620,10 @@ lemma 𝕆_cube_roots_of_unity :
     exact 𝕆_trisect_angle (𝕆_neg one_in_𝕆)
 
   -- The third root can be constructed out of the second.
-  have : Complex.exp (2*Real.pi * 2/3 * Complex.I) = Complex.exp (2*Real.pi/3 * Complex.I)^2 := by
-    rw [← Complex.exp_nat_mul]
-    ring_nf
+  have : Complex.exp (-(2*Real.pi)/3 * Complex.I) = (Complex.exp (2*Real.pi/3 * Complex.I))⁻¹ := by
+    rw [neg_div, neg_mul, Complex.exp_neg]
   rw [this]
-  exact ⟨second, 𝕆_pow_nat second⟩
+  exact ⟨second, 𝕆_inv second⟩
 
 
 /-- All three alternatives for being the cube root of a given number lie in 𝕆.-/
@@ -654,16 +654,55 @@ theorem 𝕆_cube_roots {z : ℂ} (hz_cubed : z^3 ∈ 𝕆) : z ∈ 𝕆 := by
 
   -- We know that there are up to three choices for the cube root.
   have : Complex.exp (z.arg * Complex.I)
-     = Complex.exp (2*Real.pi * 0/3 * Complex.I) * Complex.exp ((z^3).arg/3 * Complex.I) ∨
+     = Complex.exp ((z^3).arg/3 * Complex.I) / Complex.exp (2*Real.pi * 0/3 * Complex.I) ∨
     Complex.exp (z.arg * Complex.I)
-     = Complex.exp (2*Real.pi * 1/3 * Complex.I) * Complex.exp ((z^3).arg/3 * Complex.I) ∨
+     = Complex.exp ((z^3).arg/3 * Complex.I) / Complex.exp (2*Real.pi * 1/3 * Complex.I) ∨
     Complex.exp (z.arg * Complex.I)
-     = Complex.exp (2*Real.pi * 2/3 * Complex.I) * Complex.exp ((z^3).arg/3 * Complex.I)
+     = Complex.exp ((z^3).arg/3 * Complex.I) / Complex.exp (2*Real.pi * (-1)/3 * Complex.I)
       := by
+    have pi_pos := Real.pi_pos
+    have arg_le_pi := Complex.arg_le_pi z
+    have neg_pi_lt_arg := Complex.neg_pi_lt_arg z
+
+    -- w.l.o.g. z.arg ≠ 0
+    by_cases arg_ne_zero : z.arg = 0
+    · left -- case 1
+      have : (z^3).arg = 0 := by
+        rw [Complex.arg_eq_zero_iff] at arg_ne_zero ⊢
+        rw [pow_three]
+        simp [arg_ne_zero.2]
+        have : z.re*z.re ≥ 0 := by apply mul_self_nonneg
+        exact mul_nonneg arg_ne_zero.1 this
+      rw [arg_ne_zero, this]
+      simp only [Complex.ofReal_zero, zero_mul, Complex.exp_zero, zero_div, mul_zero, ne_eq,
+        one_ne_zero, not_false_eq_true, div_self]
+    -- w.l.o.g. z.arg ≠ π
+    by_cases arg_ne_pi : z.arg = Real.pi
+    · right; right
+      have : (z^3).arg = Real.pi := by
+        rw [Complex.arg_eq_pi_iff] at arg_ne_pi ⊢
+        rw [pow_three]
+        simp [arg_ne_pi.2]
+        exact mul_neg_of_neg_of_pos arg_ne_pi.1 (lt_of_le_of_ne (mul_self_nonneg z.re) (mul_self_ne_zero.mpr (ne_of_lt arg_ne_pi.1)).symm)
+      rw [arg_ne_pi, this]
+      simp only [Complex.exp_pi_mul_I, mul_zero, zero_div, zero_mul, Complex.exp_zero, div_one, mul_one]
+      rw [← Complex.exp_sub]
+      ring_nf
+      exact Complex.exp_pi_mul_I.symm
+    -- This implies that z.im ≠ 0.
+    by_cases im_ne_zero : z.im = 0
+    · by_cases re_sign : z.re ≥ 0
+      · have := Complex.arg_eq_zero_iff.mpr ⟨re_sign, im_ne_zero⟩
+        contradiction
+      · rw [ge_iff_le, not_le] at re_sign
+        have := Complex.arg_eq_pi_iff.mpr ⟨re_sign, im_ne_zero⟩
+        contradiction
+
     simp
+    -- To decide which solution case we want to archive, we'll need to consider a few cases.
     by_cases caseA : z.arg ∈ Set.Ioc (-Real.pi/3) (Real.pi/3)
-    · -- case 1
-      left
+    · -- If -π/3 < z.arg ≤ π/3
+      left -- case 1
       have h_two_arg_Ioc : z.arg + z.arg ∈ Set.Ioc (-Real.pi) Real.pi := by
         have := caseA.1; have := caseA.2
         constructor; linarith; linarith
@@ -678,41 +717,168 @@ theorem 𝕆_cube_roots {z : ℂ} (hz_cubed : z^3 ∈ 𝕆) : z ∈ 𝕆 := by
         · rw [Complex.arg_mul z_ne_zero z_ne_zero h_two_arg_Ioc]
           exact h_three_arg_Ioc
       simp [this]
-    · by_cases caseB : z.arg ∈ Set.Ioc (-Real.pi/2) (Real.pi/2)
-      · right
-        simp_rw [← Complex.exp_add, ← add_mul, ← add_div]
+
+    · -- If z.arg ≤ -π/3 or π/3 < z.arg
+      by_cases caseB : z.arg ∈ Set.Ioc (-Real.pi/2) (Real.pi/2)
+      · -- If -π/2 < z.arg ≤ -π/3 or π/3 < z.arg ≤ π/2
+        simp_rw [← Complex.exp_sub, ← sub_mul, ← sub_div, sub_neg_eq_add]
         norm_cast
-        by_cases caseSign : z.arg ≥ 0
-        · -- case 2
-          left
+        right
+        by_cases caseSign : z.im > 0
+        · -- If π/3 < z.arg ≤ π/2
+          right -- case 3
           have z_arg_gt_pi_div_three : z.arg > Real.pi/3 := by
             have : -Real.pi / 3 < z.arg := by
-              have := Real.pi_pos
+              have := Complex.arg_nonneg_iff.mpr (le_of_lt caseSign)
               linarith
             simp only [Set.mem_Ioc, this, true_and, not_le] at caseA
             exact caseA
           have z_arg_le_pi_div_two : z.arg ≤ Real.pi/2 := by exact caseB.2
-          have : 2*Real.pi + (z^3).arg = 3 * z.arg := by
-            apply add_eq_of_eq_sub'
-            rw [pow_three]
-            rw [Complex.arg_mul z_ne_zero (mul_self_ne_zero.mpr z_ne_zero)]
-            /-rw [Complex.arg_mul z_ne_zero z_ne_zero h_two_arg_Ioc]
-            · ring_nf
-            · rw [Complex.arg_mul z_ne_zero z_ne_zero h_two_arg_Ioc]
-              exact h_three_arg_Ioc-/
-            sorry
-            sorry
-          simp [this]
-        · sorry
-      · sorry
+
+          have : ((z^3).arg + 2*Real.pi)/3 = z.arg:= by
+            suffices (z^3).arg = -2*Real.pi + 3 * z.arg by rw [this]; ring_nf
+            -- Rewrite z^3 = (z*(-z))*(-z)
+            rw [pow_three, ← (neg_mul_neg z z), ← mul_assoc]
+            have neg_z_arg : (-z).arg = z.arg - Real.pi :=
+              Complex.arg_neg_eq_arg_sub_pi_of_im_pos caseSign
+            have neg_z_ne_zero := neg_ne_zero.mpr z_ne_zero
+            have z_mul_neg_z_arg : (z * -z).arg = -Real.pi + 2 * z.arg := by
+              rw [Complex.arg_mul z_ne_zero neg_z_ne_zero]
+              · rw [neg_z_arg]
+                ring_nf
+              · rw [neg_z_arg]
+                constructor; linarith; linarith
+
+            rw [Complex.arg_mul (mul_ne_zero z_ne_zero neg_z_ne_zero) neg_z_ne_zero]
+            · rw [z_mul_neg_z_arg, neg_z_arg]
+              ring_nf
+            · rw [z_mul_neg_z_arg, neg_z_arg]
+              constructor; linarith; linarith
+          rw [← this]
+
+        · -- If -π/2 < z.arg ≤ -π/3
+          left -- case 2
+          rw [gt_iff_lt, not_lt] at caseSign
+          have caseSign : z.im < 0 := lt_of_le_of_ne caseSign im_ne_zero
+
+          have z_arg_le_neg_pi_div_two : z.arg ≤ -Real.pi/3 := by
+            have : Real.pi / 3 ≥ z.arg := by
+              have := Complex.arg_neg_iff.mpr caseSign
+              linarith
+            simp only [Set.mem_Ioc, this, and_true, not_lt] at caseA
+            exact caseA
+          have z_arg_le_pi_div_two : z.arg ≤ Real.pi/2 := by exact caseB.2
+
+          have : ((z^3).arg - 2*Real.pi)/3 = z.arg:= by
+            suffices (z^3).arg = 2*Real.pi + 3 * z.arg by rw [this]; ring_nf
+            -- Rewrite z^3 = (z*(-z))*(-z)
+            rw [pow_three, ← (neg_mul_neg z z), ← mul_assoc]
+            have neg_z_arg : (-z).arg = z.arg + Real.pi :=
+              Complex.arg_neg_eq_arg_add_pi_of_im_neg caseSign
+            have neg_z_ne_zero := neg_ne_zero.mpr z_ne_zero
+            have z_mul_neg_z_arg : (z * -z).arg = Real.pi + 2 * z.arg := by
+              rw [Complex.arg_mul z_ne_zero neg_z_ne_zero]
+              · rw [neg_z_arg]
+                ring_nf
+              · rw [neg_z_arg]
+                ring_nf
+                constructor; linarith; linarith
+
+            rw [Complex.arg_mul (mul_ne_zero z_ne_zero neg_z_ne_zero) neg_z_ne_zero]
+            · rw [z_mul_neg_z_arg, neg_z_arg]
+              ring_nf
+            · rw [z_mul_neg_z_arg, neg_z_arg]
+              constructor; linarith; linarith
+          rw [← this]
+
+      · -- If z.arg ≤ -π/2 or π/2 < z.arg (caseA is irrelevant now)
+        right
+        simp_rw [← Complex.exp_sub, ← sub_mul, ← sub_div]
+        norm_cast
+
+        by_cases caseSign : z.im > 0
+        · -- If π/2 < z.arg
+          right -- case 3
+          have z_arg_gt_pi_div_two : z.arg > Real.pi/2 := by
+            have : -Real.pi / 2 < z.arg := by
+              have := Complex.arg_nonneg_iff.mpr (le_of_lt caseSign)
+              linarith
+            simp only [Set.mem_Ioc, this, true_and, not_le] at caseB
+            exact caseB
+
+          have : ((z^3).arg + 2*Real.pi)/3 = z.arg:= by
+            suffices (z^3).arg = -2*Real.pi + 3 * z.arg by rw [this]; ring_nf
+            -- Rewrite z^3 = z*((-z)*(-z))
+            rw [pow_three, ← (neg_mul_neg z z)]
+            have neg_z_ne_zero := neg_ne_zero.mpr z_ne_zero
+            have neg_z_arg : (-z).arg = z.arg - Real.pi := by
+              rw [Complex.arg_neg_eq_arg_sub_pi_of_im_pos]
+              exact caseSign
+            have neg_z_mul_neg_z_arg : (-z * -z).arg = -2 * Real.pi + 2 * z.arg := by
+              rw [Complex.arg_mul neg_z_ne_zero neg_z_ne_zero]
+              · rw [neg_z_arg]
+                ring_nf
+              · rw [neg_z_arg]
+                constructor; linarith; linarith
+
+            rw [Complex.arg_mul z_ne_zero (mul_self_ne_zero.mpr neg_z_ne_zero)]
+            · rw [neg_z_mul_neg_z_arg]
+              ring_nf
+            · rw [neg_z_mul_neg_z_arg]
+              ring_nf
+              constructor
+              · linarith
+              · rw [neg_add_le_iff_le_add]
+                ring_nf
+                rw [mul_le_mul_right zero_lt_three]
+                exact Complex.arg_le_pi z
+          rw [← this]
+          simp
+
+        · -- If z.arg ≤ -π/2
+          left -- case 2
+          rw [gt_iff_lt, not_lt] at caseSign
+          have caseSign : z.im < 0 := lt_of_le_of_ne caseSign im_ne_zero
+
+          have z_arg_le_neg_pi_div_two : z.arg ≤ -Real.pi/2 := by
+            have : Real.pi / 2 ≥ z.arg := by
+              have := Complex.arg_neg_iff.mpr caseSign
+              linarith
+            simp only [Set.mem_Ioc, this, and_true, not_lt] at caseB
+            exact caseB
+
+          have : ((z^3).arg - 2*Real.pi)/3 = z.arg:= by
+            suffices (z^3).arg = 2*Real.pi + 3 * z.arg by rw [this]; ring_nf
+            -- Rewrite z^3 = z*((-z)*(-z))
+            rw [pow_three, ← (neg_mul_neg z z)]
+            have neg_z_ne_zero := neg_ne_zero.mpr z_ne_zero
+            have neg_z_arg : (-z).arg = z.arg + Real.pi := by
+              rw [Complex.arg_neg_eq_arg_add_pi_iff]
+              left
+              exact caseSign
+            have neg_z_mul_neg_z_arg : (-z * -z).arg = 2 * Real.pi + 2 * z.arg := by
+              rw [Complex.arg_mul neg_z_ne_zero neg_z_ne_zero]
+              · rw [neg_z_arg]
+                ring_nf
+              · rw [neg_z_arg]
+                constructor; linarith; linarith
+
+            rw [Complex.arg_mul z_ne_zero (mul_self_ne_zero.mpr neg_z_ne_zero)]
+            · rw [neg_z_mul_neg_z_arg]
+              ring_nf
+            · rw [neg_z_mul_neg_z_arg]
+              ring_nf
+              constructor; linarith; linarith
+          rw [← this]
 
   -- Each of the three choices lies in 𝕆
   rcases this with hcases|hcases|hcases
   all_goals rw [hcases]
-  · apply 𝕆_mul 𝕆_cube_roots_of_unity.1   (𝕆_trisect_angle hz_cubed)
-  · apply 𝕆_mul 𝕆_cube_roots_of_unity.2.1 (𝕆_trisect_angle hz_cubed)
-  · apply 𝕆_mul 𝕆_cube_roots_of_unity.2.2 (𝕆_trisect_angle hz_cubed)
+  · apply 𝕆_div (𝕆_trisect_angle hz_cubed) 𝕆_cube_roots_of_unity.1
+  · apply 𝕆_div (𝕆_trisect_angle hz_cubed) 𝕆_cube_roots_of_unity.2.1
+  · apply 𝕆_div (𝕆_trisect_angle hz_cubed) 𝕆_cube_roots_of_unity.2.2
 
+/-- The cube roots of every z ∈ 𝕆 lie in 𝕆.-/
 theorem 𝕆_cube_roots' {z x : ℂ} (hz : z ∈ 𝕆) : x ∈ Polynomial.nthRoots 3 z → x ∈ 𝕆 := by
   simp
   intro hx

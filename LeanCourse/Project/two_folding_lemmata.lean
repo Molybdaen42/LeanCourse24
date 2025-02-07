@@ -221,13 +221,4 @@ lemma E2_ne_z (h : z ∉ l.points) : z ≠ E2 z l := by
     have := z₁_on_l l
     contradiction
 
-/-lemma O2_on_E2' (z : ℂ) (l : line) (hz : z ∈ 𝕆) (hl : l ∈ 𝕆.lines) (h : z ∉ l.points) :
-  (O2 z (E2 z l hz hl) (E2_ne_z h)).eq l := by
-    simp_rw [line_eq_iff_both_points_lie_in_the_other']
-    simp [E2, O2]
-    constructor
-    · use 1 - (l.z₁-(l.z₁+((z.re-l.z₁.re)*l.vec.re+(z.im-l.z₁.im)*l.vec.im)*l.vec)) / (Complex.I*(2*(l.z₁+((z.re-l.z₁.re)*l.vec.re+(z.im-l.z₁.im)*l.vec.im)*l.vec)-2*z))
-      sorry
-    · sorry
--/
 end E2

@@ -15,14 +15,14 @@ lemma 𝕆_square_roots_nonneg_real {a : ℝ} {ha_nonneg : a ≥ 0} (ha : (a : �
     (√a : ℂ) ∈ 𝕆 := by
   -- w.l.o.g. a > 0
   by_cases ha_pos : ¬a > 0
-  · simp [eq_of_ge_of_not_gt ha_nonneg ha_pos]; exact zero_in_𝕆
+  · simp [eq_of_ge_of_not_gt ha_nonneg ha_pos]; exact 𝕆_zero
   simp at ha_pos
 
   let z₁ := Complex.I * (a - 1) / 2
   have hz₁ : z₁ ∈ 𝕆 := by
     apply 𝕆_div
-    · exact 𝕆_mul i_in_𝕆 (𝕆_sub ha one_in_𝕆)
-    apply nat_in_𝕆
+    · exact 𝕆_mul 𝕆_i (𝕆_sub ha 𝕆_one)
+    apply 𝕆_nat
   have hz₁_ne_neg_i : z₁ ≠ -Complex.I := by
     simp [z₁, Complex.ext_iff]
     simp [div_eq_iff, sub_eq_iff_eq_add]
@@ -49,13 +49,13 @@ lemma 𝕆_square_roots_nonneg_real {a : ℝ} {ha_nonneg : a ≥ 0} (ha : (a : �
       · simp [← sq, sq_nonneg]
       ring_nf
   have hl : l ∈ 𝕆.lines := by
-    apply O5_in_𝕆 (𝕆_neg i_in_𝕆) hz₁ reAxis_in_𝕆
+    apply O5_in_𝕆 (𝕆_neg 𝕆_i) hz₁ 𝕆_reAxis
     exact hl_in_O5
 
   -- The searched point z₂ is E2 of -i and l
   let z₂ := E2 (-Complex.I) l
   have hz₂ : z₂ ∈ 𝕆 := by
-    exact E2_in_𝕆 (-Complex.I) l (𝕆_neg i_in_𝕆) hl
+    exact 𝕆_E2 (-Complex.I) l (𝕆_neg 𝕆_i) hl
 
   -- We want to show that √a = z₂
   apply in_𝕆_if_eq z₂ hz₂
@@ -88,7 +88,7 @@ lemma 𝕆_square_roots_nonneg_real {a : ℝ} {ha_nonneg : a ≥ 0} (ha : (a : �
 lemma 𝕆_abs {z : ℂ} (hz : z ∈ 𝕆) : (Complex.abs z : ℂ) ∈ 𝕆 := by
   simp [Complex.abs, Complex.normSq]
   by_cases h : z.re*z.re + z.im*z.im = 0
-  · simp [h, zero_in_𝕆]
+  · simp [h, 𝕆_zero]
   apply 𝕆_square_roots_nonneg_real
   · ring_nf
     exact add_nonneg (sq_nonneg z.re) (sq_nonneg z.im)
@@ -98,12 +98,12 @@ lemma 𝕆_abs {z : ℂ} (hz : z ∈ 𝕆) : (Complex.abs z : ℂ) ∈ 𝕆 := b
 /-- The normalized direction vector of any constructible line is constructible.-/
 lemma 𝕆_vec {l : line} (hl : l ∈ 𝕆.lines) : l.vec ∈ 𝕆 := by
   -- w.l.o.g. l.vec ≠ ±i
-  by_cases vec_ne_i : l.vec = Complex.I; · simp [vec_ne_i, i_in_𝕆]
-  by_cases vec_ne_neg_i : l.vec = -Complex.I; · simp [vec_ne_neg_i, 𝕆_neg i_in_𝕆]
+  by_cases vec_ne_i : l.vec = Complex.I; · simp [vec_ne_i, 𝕆_i]
+  by_cases vec_ne_neg_i : l.vec = -Complex.I; · simp [vec_ne_neg_i, 𝕆_neg 𝕆_i]
 
   -- w.l.o.g. l (now called l₁) passes through 0
   let l₁ := E1 0 l
-  have hl₁ : l₁ ∈ 𝕆.lines := E1_in_𝕆 0 l zero_in_𝕆 hl
+  have hl₁ : l₁ ∈ 𝕆.lines := 𝕆_E1 0 l 𝕆_zero hl
   have hl₁_z₁ : l₁.z₁ = 0 := by
     simp [l₁, E1]
   have : -l₁.vec = l.vec := by
@@ -111,7 +111,7 @@ lemma 𝕆_vec {l : line} (hl : l ∈ 𝕆.lines) : l.vec ∈ 𝕆 := by
   rw [← this] at vec_ne_i vec_ne_neg_i ⊢
 
   let l₂ := O4 1 l₁
-  have hl₂ : l₂ ∈ 𝕆.lines := O4_in_𝕆 one_in_𝕆 hl₁
+  have hl₂ : l₂ ∈ 𝕆.lines := O4_in_𝕆 𝕆_one hl₁
   have hl₂_z₁ : l₂.z₁ = 1 := by
     simp_rw [l₂, O4]
   have hl₂_z₂ : l₂.z₂ = 1 + Complex.I * l₁.vec := by
@@ -168,7 +168,7 @@ lemma 𝕆_sin_arg {z : ℂ} (hz : z ∈ 𝕆) : Complex.sin (z.arg) ∈ 𝕆 :=
 lemma 𝕆_cos_arg {z : ℂ} (hz : z ∈ 𝕆) : Complex.cos (z.arg) ∈ 𝕆 := by
   -- w.l.o.g. z ≠ 0
   by_cases z_ne_zero : z = 0
-  · simp [z_ne_zero, one_in_𝕆]
+  · simp [z_ne_zero, 𝕆_one]
 
   norm_cast
   simp [Complex.cos_arg z_ne_zero]
@@ -183,8 +183,8 @@ lemma 𝕆_sin_arg_div_two {z : ℂ} (hz : z ∈ 𝕆) : Complex.sin (z.arg / 2)
       linarith
     · simp
       apply 𝕆_div
-      · exact 𝕆_sub one_in_𝕆 (𝕆_cos_arg hz)
-      · apply nat_in_𝕆
+      · exact 𝕆_sub 𝕆_one (𝕆_cos_arg hz)
+      · apply 𝕆_nat
 
   by_cases z_arg_sign : 0 ≤ z.arg
   · -- case 0 ≤ z.arg (or equivalently, 0 ≤ z.im)
@@ -211,7 +211,7 @@ lemma 𝕆_half_angle {z : ℂ} (hz : z ∈ 𝕆) : Complex.exp (z.arg/2 * Compl
       · simp
         exact Real.abs_sin_le_one (z.arg / 2)
       · simp
-        apply 𝕆_sub one_in_𝕆
+        apply 𝕆_sub 𝕆_one
         rw [sq]
         exact 𝕆_mul (𝕆_sin_arg_div_two hz) (𝕆_sin_arg_div_two hz)
     · have := (Complex.arg_mem_Ioc z).1
@@ -220,14 +220,14 @@ lemma 𝕆_half_angle {z : ℂ} (hz : z ∈ 𝕆) : Complex.exp (z.arg/2 * Compl
     · have := (Complex.arg_mem_Ioc z).2
       have := Real.pi_nonneg
       linarith
-  · exact 𝕆_mul (𝕆_sin_arg_div_two hz) i_in_𝕆
+  · exact 𝕆_mul (𝕆_sin_arg_div_two hz) 𝕆_i
 
 /-- For z ∈ 𝕆, the "positive" sqrt of z lies in 𝕆. -/
 theorem 𝕆_square_root {z : ℂ} (hz : z ∈ 𝕆) :
       √(Complex.abs z) * Complex.exp (z.arg / 2 * Complex.I) ∈ 𝕆 := by
   apply 𝕆_mul
   · by_cases h : Complex.abs z = 0
-    · simp [h, zero_in_𝕆]
+    · simp [h, 𝕆_zero]
     · apply 𝕆_square_roots_nonneg_real
       · exact AbsoluteValue.nonneg Complex.abs z
       · exact 𝕆_abs hz
@@ -278,14 +278,14 @@ lemma 𝕆_depressed_cubics (p q : ℝ) (hp : (p : ℂ) ∈ 𝕆) (hq : (q : ℂ
 
   -- w.l.o.g. m ≠ 0
   by_cases m_ne_zero : m = 0
-  · rw [m_ne_zero]; exact zero_in_𝕆
+  · rw [m_ne_zero]; exact 𝕆_zero
 
   -- w.l.o.g. m^3 + m ≠ 0
   by_cases m_cubed_plus_m_ne_zero : Complex.I = q+p*Complex.I
   · simp [Complex.ext_iff] at m_cubed_plus_m_ne_zero
     simp [← m_cubed_plus_m_ne_zero, pow_three, ← mul_add_one] at hm
     rcases hm with hm|hm
-    · rw [hm]; exact zero_in_𝕆
+    · rw [hm]; exact 𝕆_zero
     · rw [← sq, add_eq_zero_iff_eq_neg, ← Complex.I_sq, sq_eq_sq_iff_eq_or_eq_neg] at hm
       simp [Complex.ext_iff] at hm
 
@@ -302,12 +302,12 @@ lemma 𝕆_depressed_cubics (p q : ℝ) (hp : (p : ℂ) ∈ 𝕆) (hq : (q : ℂ
 
   -- Define two lines l₁
   let l₁ := O1 (-Complex.I) (1-Complex.I) (by simp [Complex.ext_iff])
-  have hl₁ : l₁ ∈ 𝕆.lines := O1_in_𝕆 (𝕆_neg i_in_𝕆) (𝕆_sub one_in_𝕆 i_in_𝕆)
+  have hl₁ : l₁ ∈ 𝕆.lines := O1_in_𝕆 (𝕆_neg 𝕆_i) (𝕆_sub 𝕆_one 𝕆_i)
   have hl₁_vec : l₁.vec = 1 := by simp [l₁, O1, line.vec]
 
   -- and l₂
   let l₂ := O1 (-q) (-q+Complex.I) (by simp [Complex.ext_iff])
-  have hl₂ : l₂ ∈ 𝕆.lines := O1_in_𝕆 (𝕆_neg hq) (𝕆_add (𝕆_neg hq) i_in_𝕆)
+  have hl₂ : l₂ ∈ 𝕆.lines := O1_in_𝕆 (𝕆_neg hq) (𝕆_add (𝕆_neg hq) 𝕆_i)
   have hl₂_z₁ : l₂.z₁ = -q := by simp [l₂, O1]
   have hl₂_vec : l₂.vec = Complex.I := by simp [l₂, O1, line.vec]
 
@@ -325,7 +325,7 @@ lemma 𝕆_depressed_cubics (p q : ℝ) (hp : (p : ℂ) ∈ 𝕆) (hq : (q : ℂ
     · simp [hl₃_vec, hl₁_vec, hl₂_vec, Complex.ext_iff]
     constructor
     · use 2*m + m*m*Complex.I
-      simp [dist_point_line, hl₁_vec, Complex.ext_iff]
+      simp [l₃, dist_point_line, hl₁_vec, Complex.ext_iff]
       rw [add_assoc, hm', neg_mul, ← sub_eq_add_neg]
       constructor
       · -- 2m + m^2*i lies in l₃.points ...
@@ -367,6 +367,7 @@ lemma 𝕆_depressed_cubics (p q : ℝ) (hp : (p : ℂ) ∈ 𝕆) (hq : (q : ℂ
       constructor
       · -- q/(m^2) + (q/m - m^2)*i lies in l₃.points ...
         use 1 - q/(m*m)
+        simp [l₃, hm'']
         ring_nf
         simp [sq, mul_assoc, m_ne_zero]
       · ring_nf
@@ -388,7 +389,9 @@ lemma 𝕆_depressed_cubics (p q : ℝ) (hp : (p : ℂ) ∈ 𝕆) (hq : (q : ℂ
           norm_cast at h; simp at h
           simp_rw [← sq, Real.sqrt_sq_eq_abs] at h
           rw [Real.sqrt_eq_iff_mul_self_eq, abs_mul_abs_self] at h
-          · rw [← sub_eq_zero] at h
+          · -- try, because some versions of Lean need it and some don't
+            try rw [hm''] at h ⊢
+            rw [← sub_eq_zero] at h
             ring_nf at h
             simp [m_ne_zero] at h
             ring_nf at h ⊢
@@ -404,7 +407,7 @@ lemma 𝕆_depressed_cubics (p q : ℝ) (hp : (p : ℂ) ∈ 𝕆) (hq : (q : ℂ
           · apply abs_nonneg
 
   have hl₃ : l₃ ∈ 𝕆.lines := by
-    apply O6_in_𝕆 i_in_𝕆 (𝕆_add hq (𝕆_mul hp i_in_𝕆)) hl₁ hl₂
+    apply O6_in_𝕆 𝕆_i (𝕆_add hq (𝕆_mul hp 𝕆_i)) hl₁ hl₂
     exact this
 
   apply in_𝕆_if_eq (l₃.vec.im / l₃.vec.re)
@@ -430,10 +433,10 @@ lemma 𝕆_cubics (a b c : ℝ) (ha : (a : ℂ) ∈ 𝕆) (hb : (b : ℂ) ∈ �
     apply 𝕆_div
     · apply 𝕆_sub
       · apply 𝕆_mul
-        · apply nat_in_𝕆
+        · apply 𝕆_nat
         · exact hb
       · exact 𝕆_mul ha ha
-    · apply nat_in_𝕆
+    · apply 𝕆_nat
 
   let q := (2*a^3 - 9*a*b + 27*c)/27
   have hq : (q : ℂ) ∈ 𝕆 := by
@@ -442,17 +445,17 @@ lemma 𝕆_cubics (a b c : ℝ) (ha : (a : ℂ) ∈ 𝕆) (hb : (b : ℂ) ∈ �
     · apply 𝕆_add
       · apply 𝕆_sub
         · apply 𝕆_mul
-          · apply nat_in_𝕆
+          · apply 𝕆_nat
           · exact 𝕆_mul ha (𝕆_mul ha ha)
         · apply 𝕆_mul
           · apply 𝕆_mul
-            · apply nat_in_𝕆
+            · apply 𝕆_nat
             · exact ha
           · exact hb
       · apply 𝕆_mul
-        · apply nat_in_𝕆
+        · apply 𝕆_nat
         · exact hc
-    · apply nat_in_𝕆
+    · apply 𝕆_nat
 
   let depr_poly := (⟨1,0,p,q⟩ : Cubic ℂ)
 
@@ -464,10 +467,9 @@ lemma 𝕆_cubics (a b c : ℝ) (ha : (a : ℂ) ∈ 𝕆) (hb : (b : ℂ) ∈ �
     · simp [Polynomial.ext_iff]
       use 3
       simp [Polynomial.coeff]
-    · norm_cast at hm ⊢
-      ring_nf
+    · simp [m']
       calc
-       _ = m ^ 3 + a * m ^ 2 + b * m + c := by ring_nf
+       _ = (m ^ 3 + a * m ^ 2 + b * m + c : ℂ) := by ring_nf
        _ = 0 := by exact hm
   -- since m' is a root of a depressed cubic, it lies in 𝕆
   have : (m' : ℂ) ∈ 𝕆 := by
@@ -475,15 +477,15 @@ lemma 𝕆_cubics (a b c : ℝ) (ha : (a : ℂ) ∈ 𝕆) (hb : (b : ℂ) ∈ �
     exact this
   -- m and m' differ only by numbers in 𝕆 and operations which are closed in 𝕆.
   rw [← add_zero m, ← sub_self (a/3), ← add_sub_assoc]
-  push_cast
-  apply 𝕆_sub (by norm_cast)
+  suffices (m' - a / 3 : ℂ) ∈ 𝕆 by norm_cast at this
+  apply 𝕆_sub this
   apply 𝕆_div ha
-  apply nat_in_𝕆
+  apply 𝕆_nat
 
 /-- The real cube root of a real number is constructible.-/
 lemma 𝕆_cube_roots_real' {a : ℝ} (ha : (a : ℂ) ∈ 𝕆) :
     ∃ (x : ℝ), (x : ℂ) ∈ 𝕆 ∧ x^3 = a := by
-  have cubic := 𝕆_cubics 0 0 (-a) zero_in_𝕆 zero_in_𝕆 (by simp [𝕆_neg ha])
+  have cubic := 𝕆_cubics 0 0 (-a) 𝕆_zero 𝕆_zero (by simp [𝕆_neg ha])
   simp [Cubic.roots, Cubic.toPoly] at cubic
   have : Polynomial.X ^ 3 + -Polynomial.C (a : ℂ) ≠ 0 := by
     simp [← sub_eq_add_neg, sub_eq_zero, Polynomial.ext_iff]
@@ -531,6 +533,7 @@ lemma 𝕆_cube_roots_real {a : ℝ} (ha_cubed : (a^3 : ℂ) ∈ 𝕆) :
       ring_nf
     · apply strictMonoOn_of_deriv_pos (convex_Ici 0) (continuousOn_pow 3)
       simp
+      intro x
       apply sq_pos_of_pos
   have : x = a := by
     apply StrictMono.injective this
@@ -544,13 +547,13 @@ lemma 𝕆_sin_arg_div_three {z : ℂ} (hz : z ∈ 𝕆) : Complex.sin (z.arg / 
     simp
     apply 𝕆_div
     · apply 𝕆_neg
-      apply nat_in_𝕆
-    · apply nat_in_𝕆
+      apply 𝕆_nat
+    · apply 𝕆_nat
   have h2 : ↑((Real.sin z.arg)/4) ∈ 𝕆 := by
     simp
     apply 𝕆_div (𝕆_sin_arg hz)
-    apply nat_in_𝕆
-  have cubic := 𝕆_cubics 0 (-(3 : ℝ)/4) ((Real.sin z.arg)/4) zero_in_𝕆 h1 h2
+    apply 𝕆_nat
+  have cubic := 𝕆_cubics 0 (-(3 : ℝ)/4) ((Real.sin z.arg)/4) 𝕆_zero h1 h2
   specialize cubic (Real.sin (z.arg / 3))
   simp at cubic
   apply cubic
@@ -577,7 +580,7 @@ lemma 𝕆_trisect_angle {z : ℂ} (hz : z ∈ 𝕆) : Complex.exp (z.arg/3 * Co
       · simp
         exact Real.abs_sin_le_one (z.arg / 3)
       · simp
-        apply 𝕆_sub one_in_𝕆
+        apply 𝕆_sub 𝕆_one
         rw [sq]
         exact 𝕆_mul (𝕆_sin_arg_div_three hz) (𝕆_sin_arg_div_three hz)
     · have := (Complex.arg_mem_Ioc z).1
@@ -586,7 +589,7 @@ lemma 𝕆_trisect_angle {z : ℂ} (hz : z ∈ 𝕆) : Complex.exp (z.arg/3 * Co
     · have := (Complex.arg_mem_Ioc z).2
       have := Real.pi_nonneg
       linarith
-  · exact 𝕆_mul (𝕆_sin_arg_div_three hz) i_in_𝕆
+  · exact 𝕆_mul (𝕆_sin_arg_div_three hz) 𝕆_i
 
 /-- We can find a cube root that lies in 𝕆. -/
 theorem 𝕆_cube_root {z : ℂ} (hz : z ∈ 𝕆) : ∃ z' ∈ 𝕆, z = z'^3 := by
@@ -608,7 +611,7 @@ lemma 𝕆_cube_roots_of_unity :
     Complex.exp (2*Real.pi * 1/3 * Complex.I) ∈ 𝕆 ∧
     Complex.exp (2*Real.pi * (-1)/3 * Complex.I) ∈ 𝕆 := by
   -- The first root equals 1.
-  simp [one_in_𝕆]
+  simp [𝕆_one]
 
   -- The second root.
   have second : Complex.exp (2 * ↑Real.pi / 3 * Complex.I) ∈ 𝕆 := by
@@ -617,7 +620,7 @@ lemma 𝕆_cube_roots_of_unity :
       ring_nf
     rw [this, ← Complex.arg_neg_one]
     apply 𝕆_pow_nat
-    exact 𝕆_trisect_angle (𝕆_neg one_in_𝕆)
+    exact 𝕆_trisect_angle (𝕆_neg 𝕆_one)
 
   -- The third root can be constructed out of the second.
   have : Complex.exp (-(2*Real.pi)/3 * Complex.I) = (Complex.exp (2*Real.pi/3 * Complex.I))⁻¹ := by
@@ -630,7 +633,7 @@ lemma 𝕆_cube_roots_of_unity :
 theorem 𝕆_cube_roots {z : ℂ} (hz_cubed : z^3 ∈ 𝕆) : z ∈ 𝕆 := by
   --w.l.o.g. z ≠ 0
   by_cases z_ne_zero : z = 0
-  · rw [z_ne_zero]; exact zero_in_𝕆
+  · rw [z_ne_zero]; exact 𝕆_zero
 
   have h_abs_cubed: (Complex.abs z ^ 3 : ℂ) ∈ 𝕆 := by
     norm_cast

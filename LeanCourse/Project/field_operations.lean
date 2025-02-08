@@ -13,14 +13,14 @@ section add
 theorem 𝕆_neg {z : ℂ} (hz : z ∈ 𝕆) : -z ∈ 𝕆 := by
   -- W.l.o.g. z ≠ 0
   by_cases z_ne_zero : z = 0
-  · simp [z_ne_zero]; exact zero_in_𝕆
+  · simp [z_ne_zero]; exact 𝕆_zero
 
   -- Idea: Mirror z across the perpendicular line sitting at 0.
   let l₁ := O1 z 0 z_ne_zero
-  have hl₁ : l₁ ∈ 𝕆.lines := O1_in_𝕆 hz zero_in_𝕆
+  have hl₁ : l₁ ∈ 𝕆.lines := O1_in_𝕆 hz 𝕆_zero
 
   let l₂ := O4 0 l₁
-  have hl₂ : l₂ ∈ 𝕆.lines := O4_in_𝕆 zero_in_𝕆 hl₁
+  have hl₂ : l₂ ∈ 𝕆.lines := O4_in_𝕆 𝕆_zero hl₁
   have hl₂_z₁ : l₂.z₁ = 0 := by simp [l₂, O4]
   have hl₂_z₂ : l₂.z₂ = -Complex.I * z / Complex.abs z := by
     simp [l₂, O4, line.vec, l₁, O1]
@@ -29,7 +29,7 @@ theorem 𝕆_neg {z : ℂ} (hz : z ∈ 𝕆) : -z ∈ 𝕆 := by
     simp [line.vec, hl₂_z₁, hl₂_z₂, div_abs z_ne_zero, neg_div]
 
   apply in_𝕆_if_eq (E2 z l₂)
-  · exact E2_in_𝕆 z l₂ hz hl₂
+  · exact 𝕆_E2 z l₂ hz hl₂
   simp [E2, hl₂_z₁, hl₂_vec]
   ring_nf
 
@@ -37,11 +37,11 @@ theorem 𝕆_neg {z : ℂ} (hz : z ∈ 𝕆) : -z ∈ 𝕆 := by
 lemma 𝕆_double {z : ℂ} (hz : z ∈ 𝕆) : 2 * z ∈ 𝕆 := by
   -- W.l.o.g. z ≠ 0
   by_cases z_ne_zero : z = 0
-  · simp [z_ne_zero]; exact zero_in_𝕆
+  · simp [z_ne_zero]; exact 𝕆_zero
 
   -- Idea: Mirror the 0 across the perpendicular line sitting at z.
   let l₁ := O1 z 0 z_ne_zero
-  have hl₁ : l₁ ∈ 𝕆.lines := O1_in_𝕆 hz zero_in_𝕆
+  have hl₁ : l₁ ∈ 𝕆.lines := O1_in_𝕆 hz 𝕆_zero
 
   let l₂ := O4 z l₁
   have hl₂ : l₂ ∈ 𝕆.lines := O4_in_𝕆 hz hl₁
@@ -53,7 +53,7 @@ lemma 𝕆_double {z : ℂ} (hz : z ∈ 𝕆) : 2 * z ∈ 𝕆 := by
     simp [line.vec, hl₂_z₁, hl₂_z₂, div_abs z_ne_zero, neg_div]
 
   apply in_𝕆_if_eq (E2 0 l₂)
-  · exact E2_in_𝕆 0 l₂ zero_in_𝕆 hl₂
+  · exact 𝕆_E2 0 l₂ 𝕆_zero hl₂
   simp [E2, hl₂_z₁, hl₂_vec, z_ne_zero]
   ring_nf
 
@@ -63,7 +63,7 @@ lemma 𝕆_add_multiples {z₁ z₂ : ℂ} (hz₁ : z₁ ∈ 𝕆) (hz₂ : z₂
   -- Here is the proof why we can assume w.l.o.g. that |z₁| < |z₂| holds.
   by_cases h_abs_ne : z₁ = z₂ ∨ z₁ = -z₂
   · -- The case that z₁ = ±z₂,
-    -- therefore their sum equals 0 or 2 * z₁. Apply zero_in_𝕆 or 𝕆_double.
+    -- therefore their sum equals 0 or 2 * z₁. Apply 𝕆_zero or 𝕆_double.
 
     simp [ha] at h_abs_ne
     rcases h_abs_ne with a_one|a_neg_one
@@ -72,7 +72,7 @@ lemma 𝕆_add_multiples {z₁ z₂ : ℂ} (hz₁ : z₁ ∈ 𝕆) (hz₂ : z₂
       exact 𝕆_double hz₂
     · -- a = -1
       simp [ha, a_neg_one, ← two_mul]
-      exact zero_in_𝕆
+      exact 𝕆_zero
   · -- The case that z₁ ≠ ±z.
     have hz₁_ne_z₂ : z₁ ≠ z₂ := by
       by_contra h
@@ -87,7 +87,7 @@ lemma 𝕆_add_multiples {z₁ z₂ : ℂ} (hz₁ : z₁ ∈ 𝕆) (hz₂ : z₂
 
     -- First mark the line l₁ passing through 0, z₁ and z₂.
     let l₁ := O1 z₁ 0 hz₁_ne_zero
-    have hl₁ : l₁ ∈ 𝕆.lines := O1_in_𝕆 hz₁ zero_in_𝕆
+    have hl₁ : l₁ ∈ 𝕆.lines := O1_in_𝕆 hz₁ 𝕆_zero
 
     -- Next, we fold z₂ onto z₁ using O2.
     let l₂ := O2 z₁ z₂ hz₁_ne_z₂
@@ -95,7 +95,7 @@ lemma 𝕆_add_multiples {z₁ z₂ : ℂ} (hz₁ : z₁ ∈ 𝕆) (hz₂ : z₂
 
     -- Now, let's mirror 0 across l₂ and get z₁+z₂
     apply in_𝕆_if_eq (E2 0 l₂)
-    · exact E2_in_𝕆 0 l₂ zero_in_𝕆 hl₂
+    · exact 𝕆_E2 0 l₂ 𝕆_zero hl₂
     simp [E2, l₂, O2, line.vec, ha]
     ring_nf
 
@@ -111,15 +111,15 @@ theorem 𝕆_add {z₁ z₂ : ℂ} (hz₁ : z₁ ∈ 𝕆) (hz₂ : z₂ ∈ �
   -- First step: create two lines from 0 to z₁ resp. z₂.
   let l₁ := O1 0 z₁ hz₁_ne_zero.symm
   let l₂ := O1 0 z₂ hz₂_ne_zero.symm
-  have hl₁ : l₁ ∈ 𝕆.lines := O1_in_𝕆 zero_in_𝕆 hz₁
-  have hl₂ : l₂ ∈ 𝕆.lines := O1_in_𝕆 zero_in_𝕆 hz₂
+  have hl₁ : l₁ ∈ 𝕆.lines := O1_in_𝕆 𝕆_zero hz₁
+  have hl₂ : l₂ ∈ 𝕆.lines := O1_in_𝕆 𝕆_zero hz₂
 
   -- Second step: fold a line parallel to l₁ that goes through z₂
   -- and a line parallel to l₂ that goes through z₁.
   let l₃ := E1 z₂ l₁
   let l₄ := E1 z₁ l₂
-  have hl₃ : l₃ ∈ 𝕆.lines := E1_in_𝕆 z₂ l₁ hz₂ hl₁
-  have hl₄ : l₄ ∈ 𝕆.lines := E1_in_𝕆 z₁ l₂ hz₁ hl₂
+  have hl₃ : l₃ ∈ 𝕆.lines := 𝕆_E1 z₂ l₁ hz₂ hl₁
+  have hl₄ : l₄ ∈ 𝕆.lines := 𝕆_E1 z₁ l₂ hz₁ hl₂
   have hl₃_z₁ : l₃.z₁ = z₂                       := by simp [l₃, E1]
   have hl₃_z₂ : l₃.z₂ = z₂ - z₁ / Complex.abs z₁ := by simp [l₃, E1, l₁, O1, line.vec]
   have hl₄_z₁ : l₄.z₁ = z₁                       := by simp [l₄, E1]
@@ -204,13 +204,13 @@ lemma 𝕆_real_mul_cmpl {a z : ℂ} (ha_real : a.im = 0) (ha : (a:ℂ) ∈ 𝕆
   have z_ne_zero: z ≠ 0 := by simp [Complex.ext_iff, hz_not_real]
   have z_abs_ne_zero : Complex.abs z ≠ 0 := by simp[sub_ne_zero_of_ne z_ne_zero]; push_neg; exact z_ne_zero;
   let l₁ := O1 0 z z_ne_zero.symm
-  have l₁_in_𝕆 : l₁ ∈ 𝕆.lines := by exact O1_in_𝕆 zero_in_𝕆 hz
+  have l₁_in_𝕆 : l₁ ∈ 𝕆.lines := by exact O1_in_𝕆 𝕆_zero hz
   have l₁_vec : l₁.vec = z/Complex.abs z := by simp[line.vec,l₁, O1]
   have z_ne_one: z ≠ 1 := by simp [Complex.ext_iff, hz_not_real]
   have z_abs_ne_one : Complex.abs (z-1) ≠ 0 := by simp[sub_ne_zero_of_ne z_ne_zero]; push_neg; exact z_ne_one;
   let l₂ := O1 1 z z_ne_one.symm
   have l₂_vec : l₂.vec = (z-1)/Complex.abs (z-1) := by simp[line.vec,l₂, O1]
-  have l₂_in_𝕆 : l₂ ∈ 𝕆.lines := by exact O1_in_𝕆 one_in_𝕆 hz
+  have l₂_in_𝕆 : l₂ ∈ 𝕆.lines := by exact O1_in_𝕆 𝕆_one hz
   have l₁_l₂_not_parallel : ¬AreParallel l₁ l₂ := by
     unfold AreParallel
     push_neg
@@ -237,7 +237,7 @@ lemma 𝕆_real_mul_cmpl {a z : ℂ} (ha_real : a.im = 0) (ha : (a:ℂ) ∈ 𝕆
         linarith
   --defining the line parallel to l₂ going through a
   let l₃ := E1 a l₂
-  have l₃_in_𝕆 : l₃ ∈ 𝕆.lines := by exact E1_in_𝕆 a l₂ ha l₂_in_𝕆
+  have l₃_in_𝕆 : l₃ ∈ 𝕆.lines := by exact 𝕆_E1 a l₂ ha l₂_in_𝕆
   --helps a  lot with the computations
   have : Complex.abs (z-1) ≠ 0 := by simp[sub_ne_zero_of_ne z_ne_one]; push_neg; exact z_ne_one;
   have l₃_vec : l₃.vec = (1-z)/Complex.abs (z-1) := by
@@ -284,7 +284,7 @@ lemma 𝕆_real_mul_cmpl {a z : ℂ} (ha_real : a.im = 0) (ha : (a:ℂ) ∈ 𝕆
 lemma 𝕆_re {z : ℂ} (hz : z ∈ 𝕆) : (z.re : ℂ) ∈ 𝕆 := by
   let l := O4 z reAxis
   apply in_𝕆_if_eq (Isect reAxis l O4_not_parallel)
-  · exact Isect_in_𝕆 reAxis_in_𝕆 (O4_in_𝕆 hz reAxis_in_𝕆)
+  · exact Isect_in_𝕆 𝕆_reAxis (O4_in_𝕆 hz 𝕆_reAxis)
   simp [Isect, reAxis, O1, line.vec, l, O4]
 
 /-- We can multiply two real numbers.-/
@@ -294,24 +294,24 @@ lemma 𝕆_real_mul_real {a b : ℂ} (ha_real : a.im = 0) (hb_real : b.im = 0) (
   · apply 𝕆_re
     apply 𝕆_real_mul_cmpl ha_real ha
     · simp [hb_real]
-    apply 𝕆_add hz i_in_𝕆
+    apply 𝕆_add hz 𝕆_i
   simp [Complex.ext_iff, ha_real, hb_real]
 
 /-- We can multiply with i, i.e. rotate by π/2 radians.-/
 lemma 𝕆_i_mul {z : ℂ} (hz : z ∈ 𝕆) : Complex.I * z ∈ 𝕆 := by
   -- W.l.o.g., suppose that z ≠ 0.
   by_cases hz_ne_zero : z = 0
-  · simp [hz_ne_zero, zero_in_𝕆]
+  · simp [hz_ne_zero, 𝕆_zero]
 
   -- Draw the line going through 0 and z.
   let l₁ := O1 z 0 hz_ne_zero
-  have hl₁ : l₁ ∈ 𝕆.lines := O1_in_𝕆 hz zero_in_𝕆
+  have hl₁ : l₁ ∈ 𝕆.lines := O1_in_𝕆 hz 𝕆_zero
   have hl₁_vec : l₁.vec = -z / Complex.abs z := by
     simp [l₁, O1, line.vec]
 
   -- Rotate the line by π/2 radians.
   let l₂ := O4 0 l₁
-  have hl₂ : l₂ ∈ 𝕆.lines := O4_in_𝕆 zero_in_𝕆 hl₁
+  have hl₂ : l₂ ∈ 𝕆.lines := O4_in_𝕆 𝕆_zero hl₁
   have hl₂_vec : l₂.vec = Complex.I * (-z / Complex.abs z) := by
     simp [l₂, O4, line.vec, div_self vec_well_defined]
     simp [l₁, O1]
@@ -347,7 +347,7 @@ lemma 𝕆_i_mul {z : ℂ} (hz : z ∈ 𝕆) : Complex.I * z ∈ 𝕆 := by
 
   -- ... such that we can mirror z across it.
   apply in_𝕆_if_eq (E2 z l₃)
-  · exact E2_in_𝕆 z l₃ hz hl₃
+  · exact 𝕆_E2 z l₃ hz hl₃
   simp [E2, hl₃_z₁, hl₃_z₂, line.vec, div_abs hz_ne_zero]
   simp [div_add_div_same, div_div, mul_div_assoc', neg_div']
   simp [← neg_mul, ← add_mul, ← mul_div, mul_assoc, ← div_div, div_abs hz_ne_zero]
@@ -379,7 +379,7 @@ lemma 𝕆_i_mul {z : ℂ} (hz : z ∈ 𝕆) : Complex.I * z ∈ 𝕆 := by
 lemma 𝕆_im {z : ℂ} (hz : z ∈ 𝕆) : (z.im : ℂ) ∈ 𝕆 := by
   let l := O4 z imAxis
   apply in_𝕆_if_eq (-(Complex.I * Isect imAxis l O4_not_parallel))
-  · exact 𝕆_neg (𝕆_i_mul (Isect_in_𝕆 imAxis_in_𝕆 (O4_in_𝕆 hz imAxis_in_𝕆)))
+  · exact 𝕆_neg (𝕆_i_mul (Isect_in_𝕆 𝕆_imAxis (O4_in_𝕆 hz 𝕆_imAxis)))
   simp [Isect, l, O4, line.vec, imAxis, reAxis, O1, mul_comm, ← mul_assoc]
 
 /-- 𝕆 is closed under multiplication.-/
@@ -405,7 +405,7 @@ theorem 𝕆_mul {z₁ z₂ : ℂ} (hz₁ : z₁ ∈ 𝕆) (hz₂ : z₂ ∈ �
 
 lemma 𝕆_pow_nat {z : ℂ} {n : ℕ} (hz : z ∈ 𝕆) : z^n ∈ 𝕆 := by
   induction n with
-  | zero => simp; exact one_in_𝕆
+  | zero => simp; exact 𝕆_one
   | succ n hn => simp [pow_add]; exact 𝕆_mul hn hz
 
 end mul
@@ -418,7 +418,7 @@ lemma 𝕆_cmpl_div_real {a z : ℂ} (ha_real : a.im = 0) (ha : (a:ℂ) ∈ 𝕆
   have z_ne_zero: z ≠ 0 := by simp [Complex.ext_iff, hz_not_real]
   have z_abs_ne_zero : Complex.abs z ≠ 0 := by simp[sub_ne_zero_of_ne z_ne_zero]; push_neg; exact z_ne_zero;
   let l₁ := O1 0 z z_ne_zero.symm
-  have l₁_in_𝕆 : l₁ ∈ 𝕆.lines := by exact O1_in_𝕆 zero_in_𝕆 hz
+  have l₁_in_𝕆 : l₁ ∈ 𝕆.lines := by exact O1_in_𝕆 𝕆_zero hz
   have l₁_vec : l₁.vec = z/Complex.abs z := by simp[line.vec,l₁, O1]
   have z_ne_a : a≠ z := by simp[Complex.ext_iff];intro h;rw[ha_real, Eq.comm];push_neg; exact   hz_not_real;
   have z_a_abs_ne_zero : Complex.abs (z-a)≠ 0 := by simp [Eq.comm, z_ne_a]
@@ -461,7 +461,7 @@ lemma 𝕆_cmpl_div_real {a z : ℂ} (ha_real : a.im = 0) (ha : (a:ℂ) ∈ 𝕆
         contradiction
   --defining the line parallel to l₂ going through a
   let l₃ := E1 1 l₂
-  have l₃_in_𝕆 : l₃ ∈ 𝕆.lines := by exact E1_in_𝕆 1 l₂ one_in_𝕆 l₂_in_𝕆
+  have l₃_in_𝕆 : l₃ ∈ 𝕆.lines := by exact 𝕆_E1 1 l₂ 𝕆_one l₂_in_𝕆
   --helps a  lot with the computations
   have l₃_vec : l₃.vec = (a-z)/Complex.abs (z-a) := by
     simp [l₃,line.vec, E1,l₂_vec,l₂,O1]
@@ -494,7 +494,7 @@ lemma 𝕆_real_div_real {a b : ℂ} (ha_real : a.im = 0) (hb_real : b.im = 0) (
   · apply 𝕆_re
     apply 𝕆_cmpl_div_real hb_real hb
     · simp [ha_real]
-    · apply 𝕆_add ha i_in_𝕆
+    · apply 𝕆_add ha 𝕆_i
     · exact hb_ne_zero
   simp [Complex.ext_iff, ha_real, hb_real]
   constructor
@@ -505,7 +505,7 @@ lemma 𝕆_real_div_real {a b : ℂ} (ha_real : a.im = 0) (hb_real : b.im = 0) (
 theorem 𝕆_inv {z : ℂ} (hz : z ∈ 𝕆) : z⁻¹ ∈ 𝕆 := by
   -- W.l.o.g., suppose that z ≠ 0.
   by_cases hz_ne_zero : z = 0
-  · simp [hz_ne_zero, zero_in_𝕆]
+  · simp [hz_ne_zero, 𝕆_zero]
   · -- We can write
     rw[inv_eq_one_div]
     have : 1/z = (z.re - z.im*Complex.I)/(z.re*z.re+z.im*z.im) := by simp [Complex.ext_iff, Complex.normSq, Complex.div_re, Complex.div_im,← neg_mul, mul_div_assoc, ← div_eq_mul_inv];
@@ -514,7 +514,7 @@ theorem 𝕆_inv {z : ℂ} (hz : z ∈ 𝕆) : z⁻¹ ∈ 𝕆 := by
     · rw[hz_not_real]
       simp
       rw[inv_eq_one_div]
-      apply 𝕆_real_div_real rfl rfl one_in_𝕆 (𝕆_re hz)
+      apply 𝕆_real_div_real rfl rfl 𝕆_one (𝕆_re hz)
       · simp [Complex.ext_iff] at hz_ne_zero
         by_contra h
         push_neg at hz_ne_zero
@@ -531,7 +531,7 @@ theorem 𝕆_inv {z : ℂ} (hz : z ∈ 𝕆) : z⁻¹ ∈ 𝕆 := by
     · rw [ sub_eq_add_neg]
       apply 𝕆_add (𝕆_re hz)
       apply 𝕆_neg
-      apply 𝕆_mul (𝕆_im hz) (i_in_𝕆)
+      apply 𝕆_mul (𝕆_im hz) (𝕆_i)
     · have := Complex.normSq_pos.mpr hz_ne_zero
       rw [Complex.normSq_apply] at this
       norm_cast
@@ -554,9 +554,9 @@ section Field_theorem
 noncomputable def 𝕆Field : Subfield ℂ where
   carrier := 𝕆
   mul_mem' := 𝕆_mul
-  one_mem' := one_in_𝕆
+  one_mem' := 𝕆_one
   add_mem' := 𝕆_add
-  zero_mem' := zero_in_𝕆
+  zero_mem' := 𝕆_zero
   neg_mem' := 𝕆_neg
   inv_mem' := by
     intro z
@@ -572,29 +572,29 @@ section Rational_numbers_are_in_𝕆
 -- It's also true that ℚ is a subfield of 𝕆, but we won't prove this.
 
 /-- The natural numbers are constructible.-/
-lemma nat_in_𝕆 {n : ℕ} : (n : ℂ) ∈ 𝕆 := by
+lemma 𝕆_nat {n : ℕ} : (n : ℂ) ∈ 𝕆 := by
   induction n with
-  | zero => norm_cast; exact zero_in_𝕆
-  | succ n hn => push_cast; exact 𝕆_add hn one_in_𝕆
+  | zero => norm_cast; exact 𝕆_zero
+  | succ n hn => push_cast; exact 𝕆_add hn 𝕆_one
 
 /-- The integers are constructible.-/
-lemma int_in_𝕆 {n : ℤ} : (n : ℂ) ∈ 𝕆 := by
+lemma 𝕆_int {n : ℤ} : (n : ℂ) ∈ 𝕆 := by
   induction n with
-  | ofNat n => exact nat_in_𝕆
-  | negSucc n => simp; rw [← neg_add]; apply 𝕆_neg; norm_cast; exact nat_in_𝕆
+  | ofNat n => exact 𝕆_nat
+  | negSucc n => simp; rw [← neg_add]; apply 𝕆_neg; norm_cast; exact 𝕆_nat
 
 /-- The rational numbers are constructible.-/
-theorem rat_in_𝕆 {r : ℚ} : (r : ℂ) ∈ 𝕆 := by
+theorem 𝕆_rat {r : ℚ} : (r : ℂ) ∈ 𝕆 := by
   have : (r : ℂ) = r.num / r.den := by norm_cast; symm; exact Rat.divInt_self r
   simp_rw [this]
   apply 𝕆_div
-  · apply int_in_𝕆
-  · apply nat_in_𝕆
+  · apply 𝕆_int
+  · apply 𝕆_nat
 
-theorem Rat_subset_𝕆 : Set.range Complex.instRatCast.ratCast ⊆ 𝕆 := by
+theorem 𝕆_rat' : Set.range Complex.instRatCast.ratCast ⊆ 𝕆 := by
   intro z
   simp
   intro q hqz
   rw [← hqz]
   have : RatCast.ratCast q = (q : ℂ) := by rfl
-  exact rat_in_𝕆
+  exact 𝕆_rat

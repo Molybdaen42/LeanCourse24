@@ -10,7 +10,7 @@ noncomputable def E1 (z : ℂ) (l : line) : line :=
   ⟨z,z - l.vec,(by simp [sub_eq_neg_add, vec_ne_zero l])⟩
 
 /-- Given a point z and a line l, fold a line parallel to l that goes through z.-/
-lemma E1_in_𝕆 (z : ℂ) (l : line) (hz : z ∈ 𝕆) (hl : l ∈ 𝕆.lines) :
+lemma 𝕆_E1 (z : ℂ) (l : line) (hz : z ∈ 𝕆) (hl : l ∈ 𝕆.lines) :
   E1 z l ∈ 𝕆.lines := by
     unfold E1
     apply in_𝕆_lines_if_eqq (O4 z (O4 z l))
@@ -22,11 +22,11 @@ lemma E1_in_𝕆 (z : ℂ) (l : line) (hz : z ∈ 𝕆) (hl : l ∈ 𝕆.lines) 
       rfl
 
 /-- Given a point z and a line l, fold a line parallel to l that goes through z.-/
-lemma E1_in_𝕆' (z : ℂ) (l : line) (hz : z ∈ 𝕆) (hl : l ∈ 𝕆.lines) :
+lemma 𝕆_E1' (z : ℂ) (l : line) (hz : z ∈ 𝕆) (hl : l ∈ 𝕆.lines) :
   ∃ l' ∈ 𝕆.lines, l'.z₁ = z ∧ l'.z₂ = z - l.vec := by
     use ⟨z,z - l.vec,(by simp [sub_eq_neg_add, vec_ne_zero l])⟩
     constructor
-    · exact E1_in_𝕆 z l hz hl
+    · exact 𝕆_E1 z l hz hl
     · simp
 
 lemma E1_parallel_l (z : ℂ) (l : line):
@@ -139,7 +139,7 @@ lemma O4_on_z₁_and_l₄ :
     simp [div_self this]
     simp [neg_add_eq_sub, Complex.ext_iff, ← neg_div, neg_add_eq_sub]
 
-lemma E2_in_𝕆 (hz : z ∈ 𝕆) (hl : l ∈ 𝕆.lines) :
+lemma 𝕆_E2 (hz : z ∈ 𝕆) (hl : l ∈ 𝕆.lines) :
   E2 z l ∈ 𝕆 := by
     -- l₁ is perpendicular to l and passes through z.
     let l₁ := O4 z l
@@ -149,7 +149,7 @@ lemma E2_in_𝕆 (hz : z ∈ 𝕆) (hl : l ∈ 𝕆.lines) :
 
     -- l₂ is parallel to l and passes through z.
     let l₂ := E1 z l
-    have hl₂ : l₂ ∈ 𝕆.lines := E1_in_𝕆 z l hz hl
+    have hl₂ : l₂ ∈ 𝕆.lines := 𝕆_E1 z l hz hl
     have hl₁_l₂_not_parallel : ¬AreParallel l₁ l₂ := O4_not_parallel_to_E1 z l
 
     -- l₃ bisects the angle between l₁ and l₂. The three of them intersect in z.
